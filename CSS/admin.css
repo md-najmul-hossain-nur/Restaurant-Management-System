@@ -1156,7 +1156,7 @@ body {
 .menu-action-row {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
