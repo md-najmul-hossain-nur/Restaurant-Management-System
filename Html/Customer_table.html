@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Feliciano — Table Reservations</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=DM+Sans:wght@300;400;500;600;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="../CSS/customer_table.css"/>
 </head>
@@ -17,9 +17,9 @@
       <div class="brand">Feliciano</div>
       <div class="top-right">
         <div class="dashboard-label">Customer<br>Dashboard</div>
-         <div class="logout" onclick="window.location.href='login.html'">
+        <div class="logout" onclick="window.location.href='login.html'">
           <img src="../Images/logout.png" alt="Logout" class="logout-icon">
-         </div>
+        </div>
       </div>
     </header>
 
@@ -45,13 +45,18 @@
       <!-- Main Content -->
       <main class="main-content">
 
-        <!-- Page Header Row -->
+        <!-- Page Header -->
         <div class="page-header">
           <div class="page-header-left">
             <h1 class="page-title">Table Reservations</h1>
-            <p class="page-subtitle">Book a table for your next visit</p>
+            <p class="page-subtitle">Browse our tables and book your perfect spot</p>
           </div>
-          <button class="book-btn">
+          <!--
+            STEP 1: Opens the Table Browser so the user can
+            see all tables with images & descriptions first,
+            then choose one to book.
+          -->
+          <button class="book-btn" onclick="openBookingBrowser()">
             <i class="fas fa-plus"></i> Book a Table
           </button>
         </div>
@@ -78,6 +83,18 @@
               <i class="fas fa-check-circle"></i>
               Your reservation is confirmed! See you soon.
             </div>
+            <div class="card-footer-row">
+              <!--
+                Logically correct: user already booked Table 5,
+                they want to see what it looks like / its details.
+              -->
+              <button class="view-details-btn" onclick="viewReservationTable('table5')">
+                <i class="fas fa-eye"></i> View Table Details
+              </button>
+              <button class="cancel-btn">
+                <i class="fas fa-times"></i> Cancel
+              </button>
+            </div>
           </div>
 
           <!-- Reservation Card 2 — Pending -->
@@ -89,18 +106,218 @@
               </span>
             </div>
             <div class="card-meta">
-              <span style="display: block; margin-bottom: 16px;"><i class="far fa-calendar"></i> 12/03/2026 at 19:00</span>
+              <span style="display: block; margin-bottom: 16px;">
+                <i class="far fa-calendar"></i> 12/03/2026 at 19:00
+              </span>
               <span><i class="fas fa-users"></i> 4 guests</span>
+            </div>
+            <div class="card-footer-row">
+              <!--
+                Logically correct: user booked Table 7 (pending),
+                they want to see the table image & description.
+              -->
+              <button class="view-details-btn" onclick="viewReservationTable('table7')">
+                <i class="fas fa-eye"></i> View Table Details
+              </button>
+              <button class="cancel-btn">
+                <i class="fas fa-times"></i> Cancel
+              </button>
             </div>
           </div>
 
         </div>
       </main>
 
-    </div>
-    <!-- /outer-wrapper -->
-
+    </div><!-- /outer-wrapper -->
   </div>
+
+  <!-- ================================================
+       STEP 1 — TABLE BROWSER MODAL
+       Opens when user clicks "Book a Table".
+       Shows all tables with image + description
+       so user can browse and choose.
+  ================================================ -->
+  <div class="modal-overlay" id="tableBrowserOverlay" onclick="handleOverlayClick(event,'tableBrowserOverlay')">
+    <div class="modal-panel browser-panel">
+
+      <div class="browser-header">
+        <div>
+          <div class="modal-table-title">Choose Your Table</div>
+          <div class="modal-table-subtitle">Browse available tables — tap one to see full details or reserve directly</div>
+        </div>
+        <button class="modal-close" onclick="closeModal('tableBrowserOverlay')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Dynamically populated by JS -->
+      <div class="table-browser-grid" id="tableBrowserGrid"></div>
+
+    </div>
+  </div>
+
+  <!-- ================================================
+       STEP 2 — TABLE DETAIL MODAL
+       Opens from browser (full detail + Reserve CTA)
+       OR from reservation card (View Table Details).
+  ================================================ -->
+  <div class="modal-overlay" id="tableDetailOverlay" onclick="handleOverlayClick(event,'tableDetailOverlay')">
+    <div class="modal-panel">
+
+      <div class="modal-image-wrap">
+        <img id="modalImage" src="" alt="Table Image"/>
+        <span class="modal-image-badge" id="modalBadge"></span>
+        <button class="modal-close" onclick="closeModal('tableDetailOverlay')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="modal-header-row">
+          <div>
+            <div class="modal-table-title" id="modalTitle"></div>
+            <div class="modal-table-subtitle" id="modalSubtitle"></div>
+          </div>
+        </div>
+        <div class="feature-pills" id="modalPills"></div>
+        <div class="modal-desc-label">About this table</div>
+        <p class="modal-desc" id="modalDesc"></p>
+        <div class="modal-stats" id="modalStats"></div>
+        <div class="modal-cta-row">
+          <!-- onclick is set dynamically by JS depending on context -->
+          <button class="btn-primary" id="detailReserveBtn">
+            <i class="fas fa-calendar-plus"></i> Reserve This Table
+          </button>
+          <button class="btn-secondary" onclick="closeModal('tableDetailOverlay')">
+            <i class="fas fa-arrow-left"></i> Back
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================
+       STEP 3 — BOOKING FORM MODAL
+       Opens after user has chosen a table.
+       Table chip is pre-selected.
+  ================================================ -->
+  <div class="booking-modal-overlay" id="bookingOverlay" onclick="handleOverlayClick(event,'bookingOverlay')">
+    <div class="booking-panel">
+
+      <div class="booking-header">
+        <div>
+          <div class="booking-title">Confirm Your Reservation</div>
+          <div class="booking-subtitle">Fill in the details to complete your booking</div>
+        </div>
+        <button class="booking-close" onclick="closeModal('bookingOverlay')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="booking-form">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-input" id="bookDate"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Time</label>
+            <input type="time" class="form-input" id="bookTime" value="19:00"/>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Number of Guests</label>
+          <select class="form-select" id="bookGuests">
+            <option>1 guest</option>
+            <option>2 guests</option>
+            <option>3 guests</option>
+            <option selected>4 guests</option>
+            <option>5 guests</option>
+            <option>6 guests</option>
+            <option>7–8 guests (large table)</option>
+          </select>
+        </div>
+
+        <div class="form-divider"></div>
+
+        <div>
+          <div class="table-picker-label">Selected Table</div>
+          <div class="table-grid">
+            <div class="table-chip" onclick="selectTable(this)" data-table="1">
+              <i class="fas fa-chair"></i>
+              <span>Table 1</span>
+              <span class="chip-cap">2 seats</span>
+            </div>
+            <div class="table-chip" onclick="selectTable(this)" data-table="2">
+              <i class="fas fa-chair"></i>
+              <span>Table 2</span>
+              <span class="chip-cap">2 seats</span>
+            </div>
+            <div class="table-chip" onclick="selectTable(this)" data-table="3">
+              <i class="fas fa-chair"></i>
+              <span>Table 3</span>
+              <span class="chip-cap">4 seats</span>
+            </div>
+            <div class="table-chip" onclick="selectTable(this)" data-table="4">
+              <i class="fas fa-chair"></i>
+              <span>Table 4</span>
+              <span class="chip-cap">4 seats</span>
+            </div>
+            <div class="table-chip" onclick="selectTable(this)" data-table="5">
+              <i class="fas fa-chair"></i>
+              <span>Table 5</span>
+              <span class="chip-cap">4 seats</span>
+            </div>
+            <div class="table-chip" onclick="selectTable(this)" data-table="6">
+              <i class="fas fa-chair"></i>
+              <span>Table 6</span>
+              <span class="chip-cap">6 seats</span>
+            </div>
+            <div class="table-chip" onclick="selectTable(this)" data-table="7">
+              <i class="fas fa-chair"></i>
+              <span>Table 7</span>
+              <span class="chip-cap">6 seats</span>
+            </div>
+            <div class="table-chip" onclick="selectTable(this)" data-table="8">
+              <i class="fas fa-chair"></i>
+              <span>Table 8</span>
+              <span class="chip-cap">8 seats</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Capacity warning — shown/hidden by JS -->
+        <div class="capacity-warning" id="capacityWarning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span id="capacityWarningMsg">This table cannot accommodate your party size.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Special Requests
+            <span class="form-label-optional">(optional)</span>
+          </label>
+          <input type="text" class="form-input" placeholder="e.g. window seat, birthday décor…"/>
+        </div>
+
+        <button class="booking-submit" id="bookingSubmitBtn" onclick="submitBooking()">
+          <i class="fas fa-check"></i> Confirm Reservation
+        </button>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg">Reservation confirmed!</span>
+  </div>
+
+  <script src="../JavaScript/customer_table.js"></script>
 
 </body>
 </html>

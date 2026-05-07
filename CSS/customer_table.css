@@ -18,30 +18,33 @@
   --radius-card:    10px;
 }
 
-    .logout {
-      width: 32px;
-      height: 32px;
-      border: 1px solid rgba(224,194,143,.6);
-      border-radius: 6px;
-      display: grid;
-      place-items: center;
-      color: #e0c28f;
-      font-size: 18px;
-    }
+/* ==========================================
+   Logout Icon
+========================================== */
+.logout {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(224,194,143,.6);
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: #e0c28f;
+  font-size: 18px;
+  cursor: pointer;
+}
 
-    .logout::before {
-      content: "";
-      width: 18px;
-      height: 18px;
-      background-color: #e0c28f;
-      -webkit-mask: url('../Images/logout.png') no-repeat center / contain;
-      mask: url('../Images/logout.png') no-repeat center / contain;
-      display: block;
-    }
+.logout::before {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background-color: #e0c28f;
+  -webkit-mask: url('../Images/logout.png') no-repeat center / contain;
+  mask: url('../Images/logout.png') no-repeat center / contain;
+  display: block;
+}
 
-    .logout img {
-      display: none;
-    }
+.logout img { display: none; }
+
 /* ==========================================
    Reset & Base
 ========================================== */
@@ -227,10 +230,9 @@ body {
 
 .page-title {
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   line-height: 1.2;
-  opacity: 30;
 }
 
 .page-subtitle {
@@ -238,7 +240,6 @@ body {
   color: #f0e8d8;
   margin-top: 6px;
   font-weight: 300;
-  
 }
 
 .book-btn {
@@ -270,7 +271,7 @@ body {
 ========================================== */
 .section-title {
   font-size: 25px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-primary);
   margin-bottom: 16px;
 }
@@ -306,7 +307,6 @@ body {
   box-shadow: 0 16px 48px rgba(0,0,0,0.45);
 }
 
-/* Top row: table name + badge */
 .card-top-row {
   display: flex;
   justify-content: space-between;
@@ -324,7 +324,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   padding: 6px 14px;
   border-radius: 20px;
@@ -342,7 +342,6 @@ body {
   border: 1px solid rgba(255,213,79,0.35);
 }
 
-/* Meta info: date, guests */
 .card-meta {
   display: flex;
   flex-direction: column;
@@ -358,11 +357,10 @@ body {
 }
 
 .card-meta i {
-  font-size: 12px;
+  font-size: 15px;
   color: var(--text-muted);
 }
 
-/* Confirmation message bar */
 .confirmation-msg {
   display: flex;
   align-items: center;
@@ -378,7 +376,810 @@ body {
   -webkit-backdrop-filter: blur(4px);
 }
 
-.confirmation-msg i {
-  color: #81c784;
-  font-size: 14px;
+.confirmation-msg i { color: #81c784; font-size: 17px; }
+
+/* ==========================================
+   Card Footer Row
+========================================== */
+.card-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.07);
 }
+
+.view-details-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-light);
+  background: rgba(200,169,106,0.08);
+  border: 1px solid rgba(200,169,106,0.25);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  letter-spacing: 0.3px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.view-details-btn:hover {
+  background: rgba(200,169,106,0.22);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.view-details-btn i { font-size: 14px; }
+
+.cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,100,100,0.75);
+  background: rgba(255,80,80,0.07);
+  border: 1px solid rgba(255,80,80,0.20);
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  font-family: 'Poppins', sans-serif;
+}
+
+.cancel-btn:hover {
+  background: rgba(255,80,80,0.18);
+  border-color: rgba(255,100,100,0.55);
+  color: #ff6464;
+}
+
+/* ==========================================
+   Shared Modal Overlay
+========================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(10,12,10,0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ==========================================
+   STEP 1 — Table Browser Modal
+   (shown when "Book a Table" is clicked)
+========================================== */
+.browser-panel {
+  width: min(960px, 94vw);
+  max-height: 88vh;
+  background: rgba(22,24,20,0.96);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.65);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(24px) scale(0.97);
+  opacity: 0;
+  transition: transform 0.30s cubic-bezier(.22,.68,0,1.2), opacity 0.28s ease;
+}
+
+.modal-overlay.open .browser-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.browser-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+/* Scrollable grid */
+.table-browser-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+  padding: 22px 28px 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.table-browser-grid::-webkit-scrollbar { width: 3px; }
+.table-browser-grid::-webkit-scrollbar-track { background: transparent; }
+.table-browser-grid::-webkit-scrollbar-thumb { background: var(--accent-dark); border-radius: 4px; }
+
+/* Individual browser card */
+.browser-card {
+  background: rgba(40,42,38,0.55);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.browser-card:hover {
+  border-color: rgba(200,169,106,0.40);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.45);
+  transform: translateY(-3px);
+}
+
+.browser-card-img-wrap {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.browser-card-img-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.75);
+  transition: transform 0.40s ease;
+}
+
+.browser-card:hover .browser-card-img-wrap img {
+  transform: scale(1.06);
+}
+
+.browser-card-badge {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  background: rgba(20,22,18,0.70);
+  border: 1px solid rgba(200,169,106,0.40);
+  backdrop-filter: blur(6px);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-light);
+  letter-spacing: 0.4px;
+}
+
+.browser-card-cap {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  background: rgba(20,22,18,0.70);
+  border: 1px solid rgba(255,255,255,0.12);
+  backdrop-filter: blur(4px);
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.browser-card-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.browser-card-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.browser-card-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.browser-card-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.browser-card-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+/* Reserve button inside browser card */
+.browser-select-btn {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 9px 14px;
+  background: var(--accent);
+  color: #1c1e1a;
+  border: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.22s;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.browser-select-btn:hover {
+  background: var(--accent-light);
+  box-shadow: 0 4px 16px rgba(200,169,106,0.40);
+}
+
+/* ==========================================
+   STEP 2 — Table Detail Modal
+   (full info + image; opens from browser or card)
+========================================== */
+.modal-panel {
+  width: min(780px, 92vw);
+  background: rgba(28,30,26,0.88);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  transform: translateY(24px) scale(0.97);
+  transition: transform 0.30s cubic-bezier(.22,.68,0,1.2), opacity 0.28s ease;
+  opacity: 0;
+}
+
+.modal-overlay.open .modal-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.modal-image-wrap {
+  position: relative;
+  width: 100%;
+  height: 230px;
+  overflow: hidden;
+}
+
+.modal-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.78);
+  transition: transform 0.45s ease;
+}
+
+.modal-panel:hover .modal-image-wrap img { transform: scale(1.03); }
+
+.modal-image-badge {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  background: rgba(20,22,18,0.65);
+  border: 1px solid rgba(200,169,106,0.40);
+  backdrop-filter: blur(6px);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-light);
+  letter-spacing: 0.5px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  width: 34px;
+  height: 34px;
+  background: rgba(20,22,18,0.70);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  backdrop-filter: blur(4px);
+}
+
+.modal-close:hover {
+  background: rgba(200,169,106,0.22);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.modal-body { padding: 26px 28px 28px; }
+
+.modal-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modal-table-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.15;
+}
+
+.modal-table-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* Feature pills */
+.feature-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(200,169,106,0.10);
+  border: 1px solid rgba(200,169,106,0.25);
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-light);
+}
+
+.pill i { font-size: 13px; }
+
+.modal-desc-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.modal-desc {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text-secondary);
+  margin-bottom: 22px;
+}
+
+.modal-stats {
+  display: flex;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 22px;
+}
+
+.stat-item {
+  flex: 1;
+  padding: 14px 16px;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.09);
+  background: rgba(255,255,255,0.03);
+}
+
+.stat-item:last-child { border-right: none; }
+
+.stat-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent-light);
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  letter-spacing: 0.5px;
+}
+
+.modal-cta-row { display: flex; gap: 12px; }
+
+.btn-primary {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--accent);
+  color: #1c1e1a;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.22s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-primary:hover {
+  background: var(--accent-light);
+  box-shadow: 0 6px 20px rgba(200,169,106,0.40);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  padding: 12px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s;
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-secondary:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.28);
+  color: var(--text-primary);
+}
+
+/* ==========================================
+   STEP 3 — Booking Form Modal
+   (opens after table is chosen)
+========================================== */
+.booking-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(10,12,10,0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+
+.booking-modal-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.booking-panel {
+  width: min(520px, 92vw);
+  background: rgba(28,30,26,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.65);
+  transform: translateY(24px) scale(0.97);
+  opacity: 0;
+  transition: transform 0.30s cubic-bezier(.22,.68,0,1.2), opacity 0.28s ease;
+}
+
+.booking-modal-overlay.open .booking-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.booking-header {
+  padding: 22px 26px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.booking-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.booking-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.booking-close {
+  width: 34px;
+  height: 34px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.booking-close:hover {
+  background: rgba(200,169,106,0.15);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.booking-form {
+  padding: 22px 26px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row { display: flex; gap: 14px; }
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.form-label-optional {
+  font-size: 11px;
+  opacity: 0.55;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.form-input,
+.form-select {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text-primary);
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+}
+
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--accent);
+  background: rgba(200,169,106,0.07);
+}
+
+.form-select option { background: #1c1e1a; color: var(--text-primary); }
+
+.table-picker-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.table-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 6px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.table-chip i {
+  font-size: 24px;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.table-chip:hover {
+  border-color: rgba(200,169,106,0.35);
+  background: rgba(200,169,106,0.08);
+  color: var(--accent-light);
+}
+
+.table-chip:hover i { color: var(--accent-light); }
+
+.table-chip.selected {
+  border-color: var(--accent);
+  background: rgba(200,169,106,0.16);
+  color: var(--accent);
+}
+
+.table-chip.selected i { color: var(--accent); }
+
+.chip-cap {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.form-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 2px 0;
+}
+
+.booking-submit {
+  width: 100%;
+  padding: 13px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: #1c1e1a;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  transition: all 0.22s;
+  font-family: 'Poppins', sans-serif;
+  letter-spacing: 0.3px;
+}
+
+.booking-submit:hover {
+  background: var(--accent-light);
+  box-shadow: 0 6px 22px rgba(200,169,106,0.40);
+}
+
+/* ==========================================
+   Toast Notification
+========================================== */
+.toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(30px);
+  background: rgba(46,125,50,0.90);
+  color: #c8f5cb;
+  border: 1px solid rgba(129,199,132,0.40);
+  border-radius: 10px;
+  padding: 13px 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2000;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+/* ==========================================
+   Capacity Warning Banner
+========================================== */
+.capacity-warning {
+  display: none;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(180, 83, 9, 0.18);
+  border: 1px solid rgba(251, 146, 60, 0.45);
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fbbf24;
+  line-height: 1.5;
+  animation: warnSlide 0.25s cubic-bezier(.22,.68,0,1.2);
+}
+
+.capacity-warning.show {
+  display: flex;
+}
+
+.capacity-warning i {
+  font-size: 17px;
+  color: #f97316;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+@keyframes warnSlide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Disabled submit button when capacity exceeded */
+.booking-submit.disabled {
+  background: rgba(255,255,255,0.08);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.booking-submit.disabled:hover {
+  background: rgba(255,255,255,0.08);
+  box-shadow: none;
+}
+
+/* Warn-state highlight on over-capacity chips */
+.table-chip.selected.over-capacity {
+  border-color: rgba(249, 115, 22, 0.70);
+  background: rgba(249, 115, 22, 0.12);
+  color: #fb923c;
+}
+.table-chip.selected.over-capacity i { color: #fb923c; }
+
+/* Nav icon explicit sizing */
+.nav-item i {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+/* Action button icon sizing */
+.book-btn i          { font-size: 16px; }
+.browser-select-btn i{ font-size: 14px; }
+.btn-primary i       { font-size: 15px; }
+.btn-secondary i     { font-size: 15px; }
+.booking-submit i    { font-size: 17px; }
+.cancel-btn i        { font-size: 14px; }
+.view-details-btn i  { font-size: 14px; }
