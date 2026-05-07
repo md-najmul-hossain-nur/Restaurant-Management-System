@@ -14,32 +14,12 @@
   --glass-shadow:   0 12px 40px rgba(0,0,0,0.35);
   --card-bg:        rgba(40,42,38,0.52);
   --radius-card:    10px;
+  --danger:         #e05555;
+  --warning:        #e0a040;
+  --success:        #4caf50;
 }
 
-    .logout {
-    width: 32px;
-    height: 32px;
-    border: 1px solid rgba(224,194,143,.6);
-    border-radius: 6px;
-    display: grid;
-    place-items: center;
-    color: #e0c28f;
-    font-size: 18px;
-  }
 
-  .logout::before {
-    content: "";
-    width: 18px;
-    height: 18px;
-    background-color: #e0c28f;
-    -webkit-mask: url('../Images/logout.png') no-repeat center / contain;
-    mask: url('../Images/logout.png') no-repeat center / contain;
-    display: block;
-  }
-
-  .logout img {
-    display: none;
-  }
 /* ==========================================
    Reset & Base
 ========================================== */
@@ -333,7 +313,7 @@ body {
   align-items: flex-start;
   gap: 14px;
   min-width: 270px;
-  min-height: 100px;;
+  min-height: 100px;
 }
 
 .stat-icon {
@@ -412,7 +392,7 @@ body {
   padding: 10px 4px;
   border: 1px solid transparent;
   backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: blur(3px);
 }
 
 .recent-thumb {
@@ -655,7 +635,7 @@ gap: 14px 20px;
 }
 
 .form-modal--narrow .form-grid {
-grid-template-columns: 1fr 1fr;
+grid-template-columns: 1fr;
 }
 
 .form-group {
