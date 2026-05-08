@@ -330,101 +330,118 @@
               </div>
             </div>
 
-            <div class="profile-right">
-              <button class="profile-settings-btn" type="button" data-profile-settings>
-                <i class="fa-solid fa-gear"></i>
-                <span>Settings</span>
-              </button>
-
-              <div class="profile-settings-popover" id="profileSettingsPopover" aria-hidden="true" inert>
-                <div class="profile-settings-title">
-                  <i class="fa-solid fa-gear"></i>
-                  <span>Settings</span>
-                </div>
-                <div class="profile-settings-sub">Manage your account settings and update your profile information.</div>
-                <div class="profile-settings-actions">
-                  <button class="profile-settings-action" type="button" data-open-edit-profile>
-                    <i class="fa-solid fa-pen-to-square"></i>
-                    <span>Edit Profile</span>
-                  </button>
-                  <button class="profile-settings-action" type="button" data-open-password>
-                    <i class="fa-solid fa-key"></i>
-                    <span>Password</span>
-                  </button>
-                </div>
-              </div>
-            </div>
+                       <div class="profile-right">
+  <button class="profile-settings-btn" id="openSettingsBtn" type="button">
+    <i class="fa-solid fa-gear"></i>
+    <span>Settings</span>
+  </button>
+</div>
           </div>
         </div>
-
-      </main>
+<!-- ======= Settings Picker Modal ======= -->
+<div class="modal-overlay" id="settingsOverlay" role="dialog" aria-modal="true">
+  <div class="settings-modal">
+    <h3 class="settings-modal-title">Settings</h3>
+    <p class="settings-modal-sub">What would you like to update?</p>
+    <div class="settings-options">
+      <button class="settings-option-btn" id="openEditProfile">
+        <span class="option-icon"><i class="far fa-user-circle"></i></span>
+        <div class="option-text">
+          <span class="option-label">Edit Profile</span>
+          <span class="option-desc">Update your name, phone &amp; address</span>
+        </div>
+        <i class="fas fa-chevron-right option-arrow"></i>
+      </button>
+      <button class="settings-option-btn" id="openEditPassword">
+        <span class="option-icon"><i class="fas fa-lock"></i></span>
+        <div class="option-text">
+          <span class="option-label">Change Password</span>
+          <span class="option-desc">Update your current password</span>
+        </div>
+        <i class="fas fa-chevron-right option-arrow"></i>
+      </button>
     </div>
-
+    <button class="modal-cancel-btn" id="closeSettings">Cancel</button>
   </div>
+</div>
 
-  <!-- Edit Profile Modal -->
-  <div class="modal" id="editProfileModal" aria-hidden="true">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Edit Profile</h3>
-        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+<!-- ======= Edit Profile Modal ======= -->
+<div class="modal-overlay" id="editProfileOverlay" role="dialog" aria-modal="true">
+  <div class="form-modal">
+    <h3 class="form-modal-title"><i class="far fa-user-circle"></i> Update Profile</h3>
+    <div class="form-grid">
+      <div class="form-group-cp">
+        <label class="form-label-cp" for="inputName"><i class="far fa-id-card"></i> Full Name</label>
+        <input type="text" id="inputName" class="form-input-cp" placeholder="Your full name" />
+        <span class="field-error" id="nameError"></span>
       </div>
-      <form class="employee-form" id="editProfileForm">
-        <div class="form-row-flex">
-          <div class="form-group">
-            <label for="profileFullName">Full Name</label>
-            <input type="text" id="profileFullName" name="profileFullName" value="Richard Clark" required>
-          </div>
-          <div class="form-group">
-            <label for="profileEmail">Email</label>
-            <input type="email" id="profileEmail" name="profileEmail" value="richard.clark@feliciano.com" required>
-          </div>
-        </div>
-        <div class="form-row-flex">
-          <div class="form-group">
-            <label for="profilePhone">Phone</label>
-            <input type="text" id="profilePhone" name="profilePhone" value="+880 1XXX-XX-XX-XX" required>
-          </div>
-          <div class="form-group">
-            <label for="profileLocation">Location</label>
-            <input type="text" id="profileLocation" name="profileLocation" value="New York, NY" required>
-          </div>
-        </div>
-        <div class="btn-row">
-          <button type="submit" class="btn-primary">Save Changes</button>
-          <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Change Password Modal -->
-  <div class="modal" id="changePasswordModal" aria-hidden="true">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Change Password</h3>
-        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      <div class="form-group-cp">
+        <label class="form-label-cp" for="inputAddress"><i class="fas fa-location-dot"></i> Address</label>
+        <input type="text" id="inputAddress" class="form-input-cp" placeholder="Your address" />
+        <span class="field-error" id="addressError"></span>
       </div>
-      <form class="employee-form" id="changePasswordForm">
-        <div class="form-group full-width">
-          <label for="currentPassword">Current Password</label>
-          <input type="password" id="currentPassword" name="currentPassword" required>
-        </div>
-        <div class="form-group full-width">
-          <label for="newPassword">New Password</label>
-          <input type="password" id="newPassword" name="newPassword" required>
-        </div>
-        <div class="form-group full-width">
-          <label for="confirmPassword">Confirm Password</label>
-          <input type="password" id="confirmPassword" name="confirmPassword" required>
-        </div>
-        <div class="btn-row">
-          <button type="submit" class="btn-primary">Update Password</button>
-          <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
-        </div>
-      </form>
+      <div class="form-group-cp">
+        <label class="form-label-cp" for="inputPhone"><i class="fas fa-phone"></i> Phone Number</label>
+        <input type="tel" id="inputPhone" class="form-input-cp" placeholder="+1 (555) 000-0000" />
+        <span class="field-error" id="phoneError"></span>
+      </div>
+      <div class="form-group-cp">
+        <label class="form-label-cp" for="inputEmail"><i class="far fa-envelope"></i> Email</label>
+        <input type="email" id="inputEmail" class="form-input-cp" placeholder="you@email.com" />
+        <span class="field-error" id="emailError"></span>
+      </div>
+    </div>
+    <div class="form-actions-cp">
+      <button class="btn-update-cp" id="saveProfile">Update Profile</button>
+      <button class="btn-cancel-cp" id="closeEditProfile">Cancel</button>
     </div>
   </div>
+</div>
+
+<!-- ======= Change Password Modal ======= -->
+<div class="modal-overlay" id="editPasswordOverlay" role="dialog" aria-modal="true">
+  <div class="form-modal form-modal--narrow">
+    <h3 class="form-modal-title"><i class="fas fa-lock"></i> Change Password</h3>
+    <div class="form-grid form-grid--single">
+      <div class="form-group-cp">
+        <label class="form-label-cp" for="inputCurrentPwd"><i class="fas fa-key"></i> Current Password</label>
+        <div class="pw-wrap-cp">
+          <input type="password" id="inputCurrentPwd" class="form-input-cp" placeholder="Enter current password" />
+          <button type="button" class="pw-toggle-cp" data-target="inputCurrentPwd"><i class="far fa-eye"></i></button>
+        </div>
+        <span class="field-error" id="currentPwdError"></span>
+      </div>
+      <div class="form-group-cp">
+        <label class="form-label-cp" for="inputNewPwd"><i class="fas fa-lock-open"></i> New Password</label>
+        <div class="pw-wrap-cp">
+          <input type="password" id="inputNewPwd" class="form-input-cp" placeholder="At least 8 characters" />
+          <button type="button" class="pw-toggle-cp" data-target="inputNewPwd"><i class="far fa-eye"></i></button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <span class="strength-label" id="strengthLabel"></span>
+        <span class="field-error" id="newPwdError"></span>
+      </div>
+      <div class="form-group-cp">
+        <label class="form-label-cp" for="inputConfirmPwd"><i class="fas fa-check-double"></i> Confirm Password</label>
+        <div class="pw-wrap-cp">
+          <input type="password" id="inputConfirmPwd" class="form-input-cp" placeholder="Re-enter new password" />
+          <button type="button" class="pw-toggle-cp" data-target="inputConfirmPwd"><i class="far fa-eye"></i></button>
+        </div>
+        <span class="field-error" id="confirmPwdError"></span>
+      </div>
+    </div>
+    <div class="form-actions-cp">
+      <button class="btn-update-cp" id="savePassword">Update Password</button>
+      <button class="btn-cancel-cp" id="closeEditPassword">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======= Toast ======= -->
+<div class="success-toast" id="successToast" role="status" aria-live="polite">
+  <span class="toast-icon"><i class="fas fa-check"></i></span>
+  <span class="toast-msg">Order placed successfully!</span>
+</div>
 
   <script src="../JavaScript/admin.js"></script>
   <script src="../JavaScript/waiter.js"></script>
