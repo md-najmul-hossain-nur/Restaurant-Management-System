@@ -3,16 +3,742 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Feliciano Waiter Dashboard</title>
-<link rel="stylesheet" href="../CSS/waiter.css" />
+  <title>Feliciano — Waiter Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../CSS/waiter.css" />
 </head>
 <body>
   <div class="dashboard">
+     <!-- Topbar -->
     <header class="topbar">
       <div class="brand">Feliciano</div>
       <div class="top-right">
         <div class="admin-title">Waiter<br>Dashboard</div>
-        <div class="logout">
-        </div>
+        <div class="logout" onclick="window.location.href='login.html'">
+          <img src="../Images/logout.png" alt="Logout" class="logout-icon">
+         </div>
       </div>
     </header>
+    <!-- Outer glass wrapper -->
+    <div class="outer-wrapper">
+        <section class="panel hero">
+            <div>
+            <p class="eyebrow">Service command center</p>
+                <h1 class="page-title">Work Status</h1>
+            <p class="page-subtitle">You’re currently on shift. Track tables and orders, and keep service moving from one shared interface.</p>
+            </div>
+            <button class="btn btn-primary" data-clock-out>Clock Out</button>
+        </section>
+      <!-- Navbar / Tabs -->
+      <nav class="navbar">
+        <div class="tab active" data-section="overview">
+          <i class="fas fa-chart-pie"></i>
+          <span>Overview</span>
+        </div>
+        <div class="tab" data-section="tables">
+          <i class="fas fa-chair"></i>
+          <span>Tables</span>
+        </div>
+        <div class="tab" data-section="order">
+          <i class="fas fa-utensils"></i>
+          <span>Order</span>
+        </div>
+        <div class="tab" data-section="profile">
+          <i class="fas fa-file-chart-column"></i>
+          <span>Profile</span>
+        </div>
+      </nav>
+
+      <!-- Main Scrollable Content -->
+      <main class="main-content">
+
+        <!-- ===================== OVERVIEW ===================== -->
+        <div class="section-content active" id="overview">
+
+          <h1 class="page-title">Overview</h1>
+          <p class="page-subtitle">Your shift status at a glance</p>
+
+          <div class="stats waiter-stats">
+            <div class="card waiter-card waiter-stat--pending">
+              <div class="waiter-stat">
+                <div class="waiter-stat-icon" aria-hidden="true">
+                  <i class="fas fa-receipt"></i>
+                </div>
+                <div class="waiter-stat-body">
+                  <div class="waiter-stat-label">Pending Orders</div>
+                  <div class="waiter-stat-value">0</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card waiter-card waiter-stat--progress">
+              <div class="waiter-stat">
+                <div class="waiter-stat-icon" aria-hidden="true">
+                  <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="waiter-stat-body">
+                  <div class="waiter-stat-label">In Progress</div>
+                  <div class="waiter-stat-value">2</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card waiter-card waiter-stat--completed">
+              <div class="waiter-stat">
+                <div class="waiter-stat-icon" aria-hidden="true">
+                  <i class="fas fa-circle-check"></i>
+                </div>
+                <div class="waiter-stat-body">
+                  <div class="waiter-stat-label">Completed Today</div>
+                  <div class="waiter-stat-value">16</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+        </div>
+
+        <!-- ===================== EMPLOYEES ===================== -->
+        <div class="section-content" id="employees">
+
+          <div class="employees-header">
+            <div>
+              <h2>Employee Management</h2>
+              <p class="sub">Add and manage chefs and waiters</p>
+            </div>
+            <button class="add-employee-btn" type="button" id="openAddEmployee">
+              <i class="fas fa-plus"></i> Add Employee
+            </button>
+          </div>
+
+          <div class="employees-grid">
+            <div class="employee-card">
+              <div class="employee-info">
+                <h4>Marco Rossi</h4>
+                <p>marco.rossi@feliciano.com</p>
+                <div class="status-badges">
+                  <span class="badge clocked-out"><i class="fas fa-clock"></i> Clocked Out</span>
+                  <span class="badge approved"><i class="fas fa-check"></i> Approved</span>
+                </div>
+              </div>
+              <span class="role-badge waiter">Waiter</span>
+            </div>
+
+            <div class="employee-card">
+              <div class="employee-info">
+                <h4>Antonio Guido</h4>
+                <p>antonio.guido@feliciano.com</p>
+                <div class="status-badges">
+                  <span class="badge clocked-out"><i class="fas fa-clock"></i> Clocked Out</span>
+                  <span class="badge approved"><i class="fas fa-check"></i> Approved</span>
+                </div>
+              </div>
+              <span class="role-badge chef">Chef</span>
+            </div>
+
+            <div class="employee-card">
+              <div class="employee-info">
+                <h4>Isabella Romano</h4>
+                <p>isabella.romano@feliciano.com</p>
+                <div class="status-badges">
+                  <span class="badge clocked-out"><i class="fas fa-clock"></i> Clocked Out</span>
+                  <span class="badge approved"><i class="fas fa-check"></i> Approved</span>
+                </div>
+              </div>
+              <span class="role-badge waiter">Waiter</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== CUSTOMER ===================== -->
+        <div class="section-content" id="customer">
+          <div class="customer-approval">
+            <div class="customer-approval-header">
+              <h2>Customer Approval</h2>
+              <p class="sub">Approve or reject customer account requests</p>
+            </div>
+
+            <div class="customer-block">
+              <h3>Pending Approvals (<span id="pendingCount">1</span>)</h3>
+              <div class="customer-requests" id="pendingCustomers">
+                <div class="customer-request" data-customer-id="pending-1">
+                  <div class="customer-request-info">
+                    <h4>Bob Brown</h4>
+                    <p>bob@email.com</p>
+                    <small>Member since 3/10/2026</small>
+                  </div>
+                  <div class="customer-request-actions">
+                    <button type="button" class="customer-action-btn approve" data-action="approve">
+                      <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button type="button" class="customer-action-btn reject" data-action="reject">
+                      <i class="fas fa-times"></i> Reject
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="customer-block">
+              <h3>Approved Customers (<span id="approvedCount">1</span>)</h3>
+              <div class="approved-customers" id="approvedCustomers">
+                <div class="customer-request approved" data-customer-id="approved-1">
+                  <div class="customer-request-info">
+                    <h4>Alice Johnson</h4>
+                    <p>alice.johnson@email.com</p>
+                    <small>Approved on 2/28/2026</small>
+                  </div>
+                  <div class="customer-request-status">
+                    <span class="status-badge approved-badge"><i class="fas fa-check-circle"></i> Approved</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== TABLES ===================== -->
+        <div class="section-content" id="tables">
+          <h1 class="page-title">Tables</h1>
+          <p class="page-subtitle">Assigned tables and available seating</p>
+
+          <div class="waiter-table-section">
+            <h2 class="waiter-table-title">My Tables (2)</h2>
+            <div class="waiter-table-grid">
+              <div class="waiter-table-card">
+                <div class="waiter-table-media">
+                  <img class="waiter-table-img" src="../Images/Table/window%20table.jpg" alt="Table 1" />
+                </div>
+                <div class="waiter-table-name">Table 1</div>
+                <div class="waiter-table-meta">Seats: 4</div>
+                <button class="waiter-table-action waiter-table-action--release" type="button">Release Table</button>
+              </div>
+
+              <div class="waiter-table-card">
+                <div class="waiter-table-media">
+                  <img class="waiter-table-img" src="../Images/Table/Couple%20table.jpg" alt="Table 2" />
+                </div>
+                <div class="waiter-table-name">Table 2</div>
+                <div class="waiter-table-meta">Seats: 2</div>
+                <button class="waiter-table-action waiter-table-action--release" type="button">Release Table</button>
+              </div>
+            </div>
+
+            <h2 class="waiter-table-title waiter-table-title--spaced">Available Tables (5)</h2>
+            <div class="waiter-table-grid">
+              <div class="waiter-table-card">
+                <div class="waiter-table-media">
+                  <img class="waiter-table-img" src="../Images/Table/Outdoor.jpg" alt="Table 3" />
+                </div>
+                <div class="waiter-table-name">Table 3</div>
+                <div class="waiter-table-meta">Seats: 5</div>
+                <button class="waiter-table-action waiter-table-action--take" type="button">Take Table</button>
+              </div>
+
+              <div class="waiter-table-card">
+                <div class="waiter-table-media">
+                  <img class="waiter-table-img" src="../Images/Table/Family%20Table.jpg" alt="Table 4" />
+                </div>
+                <div class="waiter-table-name">Table 4</div>
+                <div class="waiter-table-meta">Seats: 6</div>
+                <button class="waiter-table-action waiter-table-action--take" type="button">Take Table</button>
+              </div>
+
+              <div class="waiter-table-card">
+                <div class="waiter-table-media">
+                  <img class="waiter-table-img" src="../Images/Table/Family%20Round%20table.jpg" alt="Table 5" />
+                </div>
+                <div class="waiter-table-name">Table 5</div>
+                <div class="waiter-table-meta">Seats: 5</div>
+                <button class="waiter-table-action waiter-table-action--take" type="button">Take Table</button>
+              </div>
+
+              <div class="waiter-table-card">
+                <div class="waiter-table-media">
+                  <img class="waiter-table-img" src="../Images/Table/candle%20table.jpg" alt="Table 6" />
+                </div>
+                <div class="waiter-table-name">Table 6</div>
+                <div class="waiter-table-meta">Seats: 4</div>
+                <button class="waiter-table-action waiter-table-action--take" type="button">Take Table</button>
+              </div>
+
+              <div class="waiter-table-card">
+                <div class="waiter-table-media">
+                  <img class="waiter-table-img" src="../Images/Table/4%20ppl%20window.jpg" alt="Table 7" />
+                </div>
+                <div class="waiter-table-name">Table 7</div>
+                <div class="waiter-table-meta">Seats: 2</div>
+                <button class="waiter-table-action waiter-table-action--take" type="button">Take Table</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== ORDER ===================== -->
+        <div class="section-content" id="order">
+          <div class="order-header">
+            <div>
+              <h1 class="page-title">My Orders (1)</h1>
+            </div>
+            <button class="order-new-btn" type="button" data-new-order>New Order</button>
+          </div>
+
+          <div class="order-list">
+            <div class="order-card">
+              <div class="order-card-top">
+                <div class="order-left">
+                  <div class="order-table">Table 3</div>
+                  <div class="order-muted">Alice Williams</div>
+                  <div class="order-muted">11:39:33 AM</div>
+                  <div class="order-items">
+                    <div>2x Margherita</div>
+                    <div>1x Pizza</div>
+                    <div>1x Caesar Salad</div>
+                  </div>
+                  <div class="order-total-label">Total (incl. tax)</div>
+                </div>
+
+                <div class="order-right">
+                  <div class="order-status order-status--ready">Ready</div>
+                  <div class="order-prices">
+                    <div class="order-price">$25.98</div>
+                    <div class="order-price">$08.98</div>
+                    <div class="order-grand">$38.98</div>
+                  </div>
+                  <button class="order-deliver-btn" type="button" data-deliver-order>Mark as Delivered</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="order-card">
+              <div class="order-card-top">
+                <div class="order-left">
+                  <div class="order-table">Table 3</div>
+                  <div class="order-muted">Alice Williams</div>
+                  <div class="order-muted">11:39:33 AM</div>
+                  <div class="order-items">
+                    <div>2x Margherita</div>
+                    <div>1x Pizza</div>
+                    <div>1x Caesar Salad</div>
+                  </div>
+                  <div class="order-total-label">Total (incl. tax)</div>
+                </div>
+
+                <div class="order-right">
+                  <div class="order-status order-status--kitchen">In Kitchen</div>
+                  <div class="order-prices">
+                    <div class="order-price">$25.98</div>
+                    <div class="order-price">$08.98</div>
+                    <div class="order-grand">$38.98</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Order Modal -->
+          <div class="order-modal" id="newOrderModal" aria-hidden="true">
+            <div class="order-modal-backdrop" data-order-close></div>
+            <div class="order-modal-content" role="dialog" aria-modal="true" aria-label="New Order">
+              <div class="order-modal-header">
+                <div class="order-modal-title">New Order</div>
+                <button class="order-modal-x" type="button" data-order-close aria-label="Close">&times;</button>
+              </div>
+
+              <div class="order-form">
+                <label class="order-label" for="orderTableSelect">Select Table:</label>
+                <select id="orderTableSelect" class="order-select">
+                  <option value="">Select Your Table</option>
+                  <option value="1">Table 1</option>
+                  <option value="2">Table 2</option>
+                  <option value="3">Table 3</option>
+                  <option value="4">Table 4</option>
+                  <option value="5">Table 5</option>
+                  <option value="6">Table 6</option>
+                  <option value="7">Table 7</option>
+                </select>
+              </div>
+
+              <div class="order-items-grid" aria-label="Menu items">
+                <button class="order-item-chip" type="button" data-menu-item data-name="Margherita Pizza" data-price="12.99">Margherita Pizza <span>$12.99</span></button>
+                <button class="order-item-chip" type="button" data-menu-item data-name="Pepperoni Pizza" data-price="12.99">Pepperoni Pizza <span>$12.99</span></button>
+                <button class="order-item-chip" type="button" data-menu-item data-name="Classic Burger" data-price="12.99">Classic Burger <span>$12.99</span></button>
+                <button class="order-item-chip" type="button" data-menu-item data-name="Grilled Salmon" data-price="12.99">Grilled Salmon <span>$12.99</span></button>
+                <button class="order-item-chip" type="button" data-menu-item data-name="Pasta Carbonara" data-price="12.99">Pasta Carbonara <span>$12.99</span></button>
+                <button class="order-item-chip" type="button" data-menu-item data-name="Caesar Salad" data-price="12.99">Caesar Salad <span>$12.99</span></button>
+              </div>
+
+              <div class="order-selected">
+                <div class="order-selected-title">Selected Items:</div>
+                <div class="order-selected-list" id="selectedItemsList"></div>
+
+                <div class="order-selected-footer">
+                  <div class="order-selected-total" id="selectedItemsTotal">$0.00</div>
+                  <div class="order-selected-actions">
+                    <button class="order-place-btn" type="button" data-order-place>Place</button>
+                    <button class="order-cancel-btn" type="button" data-order-close>Cancel</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== PROFILE ===================== -->
+        <div class="section-content" id="profile">
+          <h1 class="page-title">Profile</h1>
+          <p class="page-subtitle">Your account details and settings</p>
+
+          <div class="profile-card">
+            <div class="profile-left">
+              <div class="profile-avatar" aria-hidden="true">
+                <img src="../Images/Customer/pexels-emad-hussien-830139385-27856326.jpg" alt="Profile" />
+              </div>
+
+              <div class="profile-info">
+                <div class="profile-name">Richard Clark</div>
+                <div class="profile-sub">Member since Jan 2024</div>
+
+                <div class="profile-rows">
+                  <div class="profile-row">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>my.rushnaosran@gmail.com</span>
+                  </div>
+                  <div class="profile-row">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>+880 1XXX-XX-XX-XX</span>
+                  </div>
+                  <div class="profile-row">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>New York, NY</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-right">
+              <button class="profile-settings-btn" type="button" data-profile-settings>
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+              </button>
+
+              <div class="profile-settings-popover" id="profileSettingsPopover" aria-hidden="true" inert>
+                <div class="profile-settings-title">
+                  <i class="fa-solid fa-gear"></i>
+                  <span>Settings</span>
+                </div>
+                <div class="profile-settings-sub">Manage your account settings and update your profile information.</div>
+
+                <div class="profile-settings-actions">
+                  <button class="profile-settings-action" type="button" data-open-edit-profile>
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Edit profile</span>
+                  </button>
+                  <button class="profile-settings-action" type="button" data-open-password>
+                    <i class="fa-solid fa-key"></i>
+                    <span>Password</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== REPORTS ===================== -->
+        <div class="section-content" id="reports">
+          <div class="reports-panel">
+            <div class="reports-header">
+              <div>
+                <h2>Financial Reports</h2>
+                <p class="sub">View Revenue And Sales Analytics</p>
+              </div>
+              <button type="button" class="download-report-btn">
+                <i class="fas fa-download"></i> Download Report
+              </button>
+            </div>
+
+            <div class="reports-filter">
+              <div class="date-field">
+                <label for="reportStart">Start Date</label>
+                <input type="date" id="reportStart" name="reportStart" value="2026-02-04">
+              </div>
+              <div class="date-field">
+                <label for="reportEnd">End Date</label>
+                <input type="date" id="reportEnd" name="reportEnd" value="2026-02-04">
+              </div>
+            </div>
+
+            <div class="reports-cards">
+              <div class="report-card">
+                <div class="report-icon green"><i class="fas fa-dollar-sign"></i></div>
+                <div>
+                  <p>Total Revenue</p>
+                  <h3>$122</h3>
+                </div>
+              </div>
+              <div class="report-card">
+                <div class="report-icon blue"><i class="fas fa-receipt"></i></div>
+                <div>
+                  <p>Total Orders</p>
+                  <h3>0</h3>
+                </div>
+              </div>
+              <div class="report-card">
+                <div class="report-icon purple"><i class="fas fa-chart-line"></i></div>
+                <div>
+                  <p>Avg Order Value</p>
+                  <h3>$0</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+    <!-- /outer-wrapper -->
+
+  </div>
+  <!-- Add Employee Modal -->
+  <div class="modal" id="addEmployeeModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add New Employee</h3>
+        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="employeeForm" class="employee-form">
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" placeholder="Enter full name" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter email" required>
+          </div>
+        </div>
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="role">Role</label>
+            <select id="role" name="role" required>
+              <option value="">Select Role</option>
+              <option value="waiter">Waiter</option>
+              <option value="chef">Chef</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter password" required>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label for="certificate">Certificate (PDF)</label>
+          <input type="file" id="certificate" name="certificate" accept=".pdf" required>
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Add Employee</button>
+          <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Table Modal -->
+  <div class="modal" id="addTableModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add New Table</h3>
+        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="tableForm" class="employee-form">
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="tableNumber">Table Number</label>
+            <input type="number" id="tableNumber" name="tableNumber" min="1" step="1" required>
+          </div>
+          <div class="form-group">
+            <label for="tableCapacity">Capacity</label>
+            <input type="number" id="tableCapacity" name="tableCapacity" min="1" step="1" required>
+          </div>
+        </div>
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="tablePosition">Position</label>
+            <select id="tablePosition" name="tablePosition" required>
+              <option value="">Select Position</option>
+              <option value="window">Window</option>
+              <option value="center">Center</option>
+              <option value="corner">Corner</option>
+              <option value="outdoor">Outdoor</option>
+              <option value="entrance">Near Entrance</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label for="tableImageFile">Upload Table Image</label>
+          <input type="file" id="tableImageFile" name="tableImageFile" accept="image/*">
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Add Table</button>
+          <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Table Modal -->
+  <div class="modal" id="editTableModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Table</h3>
+        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="editTableForm" class="employee-form">
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="editTableNumber">Table Number</label>
+            <input type="text" id="editTableNumber" name="editTableNumber" disabled>
+          </div>
+          <div class="form-group">
+            <label for="editTableCapacity">Capacity</label>
+            <input type="number" id="editTableCapacity" name="editTableCapacity" min="1" step="1" required>
+          </div>
+        </div>
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="editTablePosition">Position</label>
+            <select id="editTablePosition" name="editTablePosition" required>
+              <option value="">Select Position</option>
+              <option value="window">Window</option>
+              <option value="center">Center</option>
+              <option value="corner">Corner</option>
+              <option value="outdoor">Outdoor</option>
+              <option value="entrance">Near Entrance</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label for="editTableImageFile">Update Table Image</label>
+          <input type="file" id="editTableImageFile" name="editTableImageFile" accept="image/*">
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Save Changes</button>
+          <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
+          <button type="button" class="btn-danger" id="deleteTableBtn">Delete Table</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Menu Modal -->
+  <div class="modal" id="editMenuModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Menu Item</h3>
+        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="editMenuForm" class="employee-form">
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="editMenuName">Item Name</label>
+            <input type="text" id="editMenuName" name="editMenuName" required>
+          </div>
+          <div class="form-group">
+            <label for="editMenuPrice">Price</label>
+            <input type="text" id="editMenuPrice" name="editMenuPrice" placeholder="$12.99" required>
+          </div>
+        </div>
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="editMenuTag">Category</label>
+            <input type="text" id="editMenuTag" name="editMenuTag" required>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label for="editMenuDesc">Description</label>
+          <textarea id="editMenuDesc" name="editMenuDesc" rows="3" required></textarea>
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Save Changes</button>
+          <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal" id="editProfileModal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Profile</h3>
+        <button type="button" class="modal-close" data-profile-modal-close aria-label="Close">&times;</button>
+      </div>
+
+      <form class="employee-form" id="editProfileForm">
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="profileFullName">Full Name</label>
+            <input type="text" id="profileFullName" name="profileFullName" value="Richard Clark" required>
+          </div>
+          <div class="form-group">
+            <label for="profileEmail">Email</label>
+            <input type="email" id="profileEmail" name="profileEmail" value="my.rushnaosran@gmail.com" required>
+          </div>
+        </div>
+
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="profilePhone">Phone</label>
+            <input type="text" id="profilePhone" name="profilePhone" value="+880 1XXX-XX-XX-XX" required>
+          </div>
+          <div class="form-group">
+            <label for="profileLocation">Location</label>
+            <input type="text" id="profileLocation" name="profileLocation" value="New York, NY" required>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Save</button>
+          <button type="button" class="btn-secondary modal-close-btn" data-profile-modal-close>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div class="modal" id="changePasswordModal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Change Password</h3>
+        <button type="button" class="modal-close" data-profile-modal-close aria-label="Close">&times;</button>
+      </div>
+
+      <form class="employee-form" id="changePasswordForm">
+        <div class="form-group full-width">
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" name="currentPassword" required>
+        </div>
+        <div class="form-group full-width">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" name="newPassword" required>
+        </div>
+        <div class="form-group full-width">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Update</button>
+          <button type="button" class="btn-secondary modal-close-btn" data-profile-modal-close>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+   
+  <script src="../JavaScript/admin.js"></script>
+  <script src="../JavaScript/waiter.js"></script>
+</body>
+</html>
