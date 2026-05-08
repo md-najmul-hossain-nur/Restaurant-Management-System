@@ -246,8 +246,29 @@ const editMenuModal = document.getElementById('editMenuModal');
 const editMenuForm = document.getElementById('editMenuForm');
 
 if (editMenuModal) {
+  let currentMenuCard = null;
+
   document.querySelectorAll('.menu-edit-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      const card = btn.closest('.menu-card');
+      if (!card) return;
+
+      currentMenuCard = card;
+
+      // Populate form with current data
+      const name = card.querySelector('.menu-name').textContent;
+      const price = card.querySelector('.menu-price').textContent;
+      const desc = card.querySelector('.menu-desc').textContent;
+      const tag = card.querySelector('.menu-tag').textContent;
+
+      document.getElementById('editMenuName').value = name;
+      document.getElementById('editMenuPrice').value = price;
+      document.getElementById('editMenuDesc').value = desc;
+      document.getElementById('editMenuTag').value = tag;
+
+      // Clear image input
+      document.getElementById('editMenuImage').value = '';
+
       editMenuModal.classList.add('active');
     });
   });
@@ -256,6 +277,7 @@ if (editMenuModal) {
   if (closeBtn) {
     closeBtn.addEventListener('click', () => {
       editMenuModal.classList.remove('active');
+      currentMenuCard = null;
     });
   }
 
@@ -263,13 +285,44 @@ if (editMenuModal) {
   if (cancelBtn) {
     cancelBtn.addEventListener('click', () => {
       editMenuModal.classList.remove('active');
+      currentMenuCard = null;
     });
   }
 
   if (editMenuForm) {
     editMenuForm.addEventListener('submit', (e) => {
       e.preventDefault();
+
+      if (!currentMenuCard) return;
+
+      // Get form data
+      const name = document.getElementById('editMenuName').value.trim();
+      const price = document.getElementById('editMenuPrice').value.trim();
+      const desc = document.getElementById('editMenuDesc').value.trim();
+      const tag = document.getElementById('editMenuTag').value.trim();
+      const imageFile = document.getElementById('editMenuImage').files[0];
+
+      // Update the card
+      currentMenuCard.querySelector('.menu-name').textContent = name;
+      currentMenuCard.querySelector('.menu-price').textContent = price;
+      currentMenuCard.querySelector('.menu-desc').textContent = desc;
+      currentMenuCard.querySelector('.menu-tag').textContent = tag;
+
+      // Update image if provided
+      if (imageFile) {
+        const img = currentMenuCard.querySelector('.menu-thumb img');
+        if (img) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            img.src = e.target.result;
+            img.alt = name;
+          };
+          reader.readAsDataURL(imageFile);
+        }
+      }
+
       editMenuModal.classList.remove('active');
+      currentMenuCard = null;
     });
   }
 }

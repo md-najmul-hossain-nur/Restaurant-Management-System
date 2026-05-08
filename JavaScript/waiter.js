@@ -276,12 +276,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameInput = document.getElementById('recipeName');
     const detailsInput = document.getElementById('recipeDetails');
     const priceInput = document.getElementById('recipePrice');
-    const statusSelect = document.getElementById('recipeStatus');
     const imagePathSelect = document.getElementById('recipeImagePath');
     const imageFileInput = document.getElementById('recipeImageFile');
     const preview = document.getElementById('recipeImagePreview');
 
     let previewObjectUrl = null;
+    let editingCard = null;
 
     const setPreview = (src) => {
       if (!preview) return;
@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const openRecipeModal = () => {
       recipeModal.removeAttribute('inert');
-      recipeModal.classList.add('active');
+      recipeModal.classList.add('open');
       recipeModal.setAttribute('aria-hidden', 'false');
 
       setTimeout(() => {
@@ -322,9 +322,16 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const closeRecipeModal = () => {
-      recipeModal.classList.remove('active');
+      recipeModal.classList.remove('open');
       recipeModal.setAttribute('aria-hidden', 'true');
       recipeModal.setAttribute('inert', '');
+
+      editingCard = null;
+
+      const modalTitle = recipeModal.querySelector('.recipe-modal-heading');
+      if (modalTitle) modalTitle.textContent = 'Add Recipe';
+      const submitBtn = recipeModal.querySelector('[type="submit"]');
+      if (submitBtn) submitBtn.textContent = 'Add Recipe';
 
       clearPreviewObjectUrl();
       setPreview('');
@@ -352,8 +359,38 @@ document.addEventListener('DOMContentLoaded', () => {
       el.addEventListener('click', closeRecipeModal);
     });
 
+    recipesGrid.addEventListener('click', e => {
+      const editBtn = e.target.closest('[data-edit-recipe]');
+      if (!editBtn) return;
+      const card = editBtn.closest('.recipe-card');
+      if (!card) return;
+      editingCard = card;
+      // Populate form
+      const title = card.querySelector('.card-title').textContent;
+      const desc = card.querySelector('.recipe-desc').textContent.replace('Details: ', '');
+      const priceText = card.querySelector('.recipe-price').textContent.replace('$', '');
+      const price = parseFloat(priceText);
+      const status = card.querySelector('.status-badge').textContent;
+      if (nameInput) nameInput.value = title;
+      if (detailsInput) detailsInput.value = desc;
+      if (priceInput) priceInput.value = price;
+      editingCard.dataset.status = status;
+      // Image
+      const img = card.querySelector('.order-image');
+      if (img && preview) {
+        preview.src = img.src;
+        preview.hidden = false;
+      }
+      // Change modal title and button
+      const modalTitle = recipeModal.querySelector('.recipe-modal-heading');
+      if (modalTitle) modalTitle.textContent = 'Edit Recipe';
+      const submitBtn = recipeModal.querySelector('[type="submit"]');
+      if (submitBtn) submitBtn.textContent = 'Update';
+      openRecipeModal();
+    });
+
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && recipeModal.classList.contains('active')) {
+      if (e.key === 'Escape' && recipeModal.classList.contains('open')) {
         closeRecipeModal();
       }
     });
@@ -390,84 +427,88 @@ document.addEventListener('DOMContentLoaded', () => {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        const name = (nameInput && nameInput.value ? nameInput.value : '').trim() || 'New Recipe';
-        const detailsRaw = (detailsInput && detailsInput.value ? detailsInput.value : '').trim() || 'Details not provided.';
-        const details = detailsRaw.replace(/^details:\s*/i, '');
-        const price = Number(priceInput && priceInput.value ? priceInput.value : 0);
-        const status = (statusSelect && statusSelect.value ? statusSelect.value : 'Pending').trim() || 'Pending';
+        // Validation helpers
+        const setError = (inp, errEl, msg) => {
+          inp.classList.add('input-error');
+          if (errEl) errEl.textContent = msg;
+        };
+        const clearError = (inp, errEl) => {
+          inp.classList.remove('input-error');
+          if (errEl) errEl.textContent = '';
+        };
 
-        let imgSrc = '';
-        const file = imageFileInput && imageFileInput.files && imageFileInput.files[0] ? imageFileInput.files[0] : null;
-        if (file) {
-          clearPreviewObjectUrl();
-          previewObjectUrl = URL.createObjectURL(file);
-          imgSrc = previewObjectUrl;
-        } else if (imagePathSelect && imagePathSelect.value) {
-          imgSrc = imagePathSelect.value;
+        const name = (nameInput && nameInput.value ? nameInput.value : '').trim();
+        if (!name) {
+          setError(nameInput, document.getElementById('recipeNameError'), 'Recipe name is required.');
+          return;
         } else {
-          imgSrc = '../Images/food/hello.jpg';
+          clearError(nameInput, document.getElementById('recipeNameError'));
         }
 
-        const article = document.createElement('article');
-        article.className = 'card order-card recipe-card grid-6';
+        const detailsRaw = (detailsInput && detailsInput.value ? detailsInput.value : '').trim();
+        if (!detailsRaw) {
+          setError(detailsInput, document.getElementById('recipeDetailsError'), 'Details are required.');
+          return;
+        } else {
+          clearError(detailsInput, document.getElementById('recipeDetailsError'));
+        }
 
-        const badge = document.createElement('span');
-        badge.className = 'status-badge corner-badge';
-        badge.textContent = status;
+        const price = Number(priceInput && priceInput.value ? priceInput.value : 0);
+        if (isNaN(price) || price <= 0) {
+          setError(priceInput, document.getElementById('recipePriceError'), 'Enter a valid price greater than 0.');
+          return;
+        } else {
+          clearError(priceInput, document.getElementById('recipePriceError'));
+        }
 
-        const img = document.createElement('img');
-        img.className = 'order-image';
-        img.src = imgSrc;
-        img.alt = name;
+        const details = detailsRaw.replace(/^details:\s*/i, '');
+        const status = editingCard
+          ? editingCard.dataset.status || 'Pending'
+          : 'Pending';
 
-        const body = document.createElement('div');
-        body.className = 'order-body';
+        if (editingCard) {
+          // Update existing card
+          const titleEl = editingCard.querySelector('.card-title');
+          if (titleEl) titleEl.textContent = name;
+          const descEl = editingCard.querySelector('.recipe-desc');
+          if (descEl) descEl.textContent = `Details: ${details}`;
+          const priceEl = editingCard.querySelector('.recipe-price');
+          if (priceEl) priceEl.textContent = formatMoney(price);
+          const badge = editingCard.querySelector('.status-badge');
+          if (badge) badge.textContent = status;
+          // Image
+          const file = imageFileInput && imageFileInput.files && imageFileInput.files[0] ? imageFileInput.files[0] : null;
+          if (file) {
+            clearPreviewObjectUrl();
+            previewObjectUrl = URL.createObjectURL(file);
+            const img = editingCard.querySelector('.order-image');
+            if (img) img.src = previewObjectUrl;
+          }
+          editingCard = null;
+          closeRecipeModal();
+          // Show success toast
+          const toast = document.getElementById('successToast');
+          if (toast) {
+            toast.querySelector('.toast-msg').textContent = 'Recipe updated successfully!';
+            toast.classList.add('show');
+            setTimeout(() => {
+              toast.classList.remove('show');
+            }, 1800);
+          }
+        } else {
+          // Add new recipe (just show success)
+          clearPreviewObjectUrl();
+          closeRecipeModal();
 
-        const head = document.createElement('div');
-        head.className = 'card-head';
-
-        const headInner = document.createElement('div');
-
-        const title = document.createElement('h3');
-        title.className = 'card-title';
-        title.textContent = name;
-
-        const subtitle = document.createElement('p');
-        subtitle.className = 'card-subtitle';
-        subtitle.textContent = 'Chef added recipe';
-
-        headInner.appendChild(title);
-        headInner.appendChild(subtitle);
-        head.appendChild(headInner);
-
-        const desc = document.createElement('p');
-        desc.className = 'recipe-desc';
-        desc.textContent = `Details: ${details}`;
-
-        const divider = document.createElement('div');
-        divider.className = 'divider';
-
-        const actions = document.createElement('div');
-        actions.className = 'actions recipe-actions';
-
-        const pricePill = document.createElement('span');
-        pricePill.className = 'pill recipe-price';
-        pricePill.textContent = formatMoney(price);
-
-        actions.appendChild(pricePill);
-
-        body.appendChild(head);
-        body.appendChild(desc);
-        body.appendChild(divider);
-        body.appendChild(actions);
-
-        article.appendChild(badge);
-        article.appendChild(img);
-        article.appendChild(body);
-
-        recipesGrid.prepend(article);
-
-        closeRecipeModal();
+          // Show success toast
+          const toast = document.getElementById('successToast');
+          if (toast) {
+            toast.classList.add('show');
+            setTimeout(() => {
+              toast.classList.remove('show');
+            }, 1800);
+          }
+        }
       });
     }
   }
