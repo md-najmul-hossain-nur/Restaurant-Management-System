@@ -25,13 +25,14 @@
         Join Feliciano Restaurant<br>
         Create An Account And Start Enjoying.
       </p>
-      <form class="login-form" onsubmit="handleSignup(event)">
+      <form class="login-form" onsubmit="handleSignup(event)" novalidate>
         <div class="form-group">
           <label for="role">Role</label>
           <select id="role" name="role" required>
             <option value="" disabled selected></option>
             <option value="customer">Customer</option>
-            <option value="staff">Staff</option>
+            <option value="chief">Chief</option>
+            <option value="waiter">Waiter</option>
             <option value="admin">Admin</option>
             <option value="chef">Chef</option>
           </select>
@@ -107,4 +108,6 @@
  
 
 </body>
+
+<script src="../JavaScript/auth.js"></script>
 </html>
