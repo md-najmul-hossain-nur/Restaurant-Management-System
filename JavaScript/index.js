@@ -50,6 +50,13 @@ document.addEventListener('DOMContentLoaded', function() {
     currentIndex = (currentIndex + 1) % heroData.length;
   }
 
+  // Set initial image and subtitle before rotation starts
+  if (heroData.length > 0) {
+    heroHome.style.backgroundImage = `url('${heroData[0].image}')`;
+    heroSubtitle.innerHTML = heroData[0].subtitle;
+    currentIndex = 1;
+  }
+
   // Set transitions - synchronized fade for subtitle
   heroSubtitle.style.transition = 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
   heroHome.style.transition = 'background-image 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
