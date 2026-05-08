@@ -114,12 +114,17 @@
   
 .hero-home {
   position: relative;
-  min-height: 100vh;
-  background-image: url('../Images/index.jpg');
+  width: 100%;
+  height: 100vh;
+  background-image: url('../Images/admin-bg.jpg');
   background-size: cover;
-  background-position: center;
+  background-position: center center;
   background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-color: #1a1a1a;
   overflow: hidden;
+  transition: background-image 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: background-image;
 }
 
 .hero-overlay {
@@ -145,7 +150,6 @@
   font-size: clamp(3.8rem, 6vw, 6rem);
   line-height: 1;
   margin-bottom: 6px;
-
 }
 
 .hero-center h1 {
@@ -156,6 +160,8 @@
   text-transform: uppercase;
   max-width: 1100px;
   margin: 0 auto;
+  will-change: opacity;
+  transform: translateZ(0);
 }
 
 .dish-row {

@@ -2,6 +2,7 @@
   --gold: #c8a96e;
   --dark: #1a1a1a;
   --light: #f7f3ee;
+  --white: #ffffff;
 }
 
 * {
@@ -18,8 +19,8 @@ body {
 
 .order-hero {
   position: relative;
-  height: 400px;
-  background-image: url('../Images/index.jpg');
+  min-height: 40vh;
+  background-image: url('../Images/Hero.png');
   background-size: cover;
   background-position: center;
   overflow: hidden;
@@ -28,6 +29,7 @@ body {
 .order-hero-overlay {
   position: absolute;
   inset: 0;
+  height: 420px;
   background: linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45));
 }
 
@@ -35,15 +37,15 @@ body {
   position: absolute;
   inset: 0;
   display: flex;
-  margin-top: 150px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   color: #ffffff;
   z-index: 1;
-  padding-top: 80px;
-  min-height: 220px;
+  padding-top: 40px;
+  margin-top: 180px;
+
 }
 
 .order-hero-text h1 {
@@ -74,7 +76,6 @@ body {
   justify-content: space-between;
   height: 64px;
   padding: 0 40px;
-  color: white;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.45);
 }
@@ -280,6 +281,7 @@ body {
     color: rgba(255, 255, 255, 0.7);
     padding: 60px 80px 30px;
     font-weight: 800;
+    margin-top: -200px;
   }
   
  
