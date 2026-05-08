@@ -1,9 +1,7 @@
-// Hero Section Carousel - Images Auto Rotation
 document.addEventListener('DOMContentLoaded', function() {
   const heroSubtitle = document.getElementById('heroSubtitle');
   const heroHome = document.querySelector('.hero-home');
   
-  // Array of hero data: images and subtitle
   const heroData = [
     {
       image: '../Images/admin-bg.jpg',
@@ -24,10 +22,9 @@ document.addEventListener('DOMContentLoaded', function() {
   ];
 
   let currentIndex = 0;
-  const rotationInterval = 4000; // 4 seconds
+  const rotationInterval = 3000; 
   const transitionDuration = 600;
 
-  // Preload all images
   heroData.forEach(data => {
     const img = new Image();
     img.src = data.image;
