@@ -867,6 +867,7 @@ body.is-clocked-out .navbar {
 /* Clock In button should look green */
 body.is-clocked-out .panel.hero .btn.btn-primary[data-clock-out] {
   background: var(--green);
+  filter: brightness(0.85) saturate(1.05);
 }
 
 .order-list {
