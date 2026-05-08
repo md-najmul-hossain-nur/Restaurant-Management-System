@@ -1001,16 +1001,13 @@ body.is-clocked-out .panel.hero .btn.btn-primary[data-clock-out] {
 }
 
 .order-delivered-btn {
-  width: 100%;
-  padding: 14px 18px;
+ padding: 8px 16px;
   border-radius: 10px;
-  border: none;
+  border: 1px solid rgba(255,255,255,0.18);
   background: var(--green);
   color: var(--text-primary);
   font-weight: 900;
-  font-size: 18px;
   cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
 }
 
 .order-delivered-btn:hover {

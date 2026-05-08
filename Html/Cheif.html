@@ -249,7 +249,7 @@
                                 <h3 class="card-title">Table 14</h3>
                                 <p class="card-subtitle">Large table, family service</p>
                             </div>
-                            <span class="status-badge">Serving</span>
+                            <span class="status-badge">Served</span>
                         </div>
                         <div class="order-meta">
                             <span class="pill">Dam biriani</span>
@@ -257,7 +257,6 @@
                         </div>
                         <div class="divider"></div>
                         <div class="actions">
-                          <button class="btn btn-secondary" type="button" data-mark-ready>Mark Ready</button>
                             <span class="pill">High priority</span>
                         </div>
                     </div>
@@ -380,13 +379,9 @@
 
                 <label class="order-label" for="recipeDetails">Details</label>
                 <textarea class="order-select" id="recipeDetails" name="recipeDetails" rows="3" placeholder="Ingredients / short description" required></textarea>
-
-                  <div>
-                    <label class="order-label" for="recipePrice">Price</label>
-                    <input class="order-select" id="recipePrice" name="recipePrice" type="number" step="0.01" min="0" placeholder="e.g., 12.99" required />
-                  </div>
-
-                <label class="order-label" for="recipeImageFile">Upload Image</label>
+                <label class="order-label" for="recipePrice">Price</label>
+                <input class="order-select" id="recipePrice" name="recipePrice" type="number" step="0.01" min="0" placeholder="e.g., 12.99" required />
+                <label class="order-label" for="recipeImageFile">Recipe Image</label>
                 <input class="order-select" id="recipeImageFile" name="recipeImageFile" type="file" accept="image/*" />
 
                 <img class="recipe-preview" id="recipeImagePreview" alt="" hidden />
