@@ -613,3 +613,272 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 });
+/* =============================================
+   Profile Settings Modal System
+   (Customer Profile style — Waiter/Chief)
+============================================= */
+(function () {
+
+  const overlays = {
+    settings:      document.getElementById('settingsOverlay'),
+    editProfile:   document.getElementById('editProfileOverlay'),
+    editPassword:  document.getElementById('editPasswordOverlay'),
+  };
+
+  const toast = document.getElementById('successToast');
+  let toastTimer = null;
+
+  /* --- Modal Helpers --- */
+  function openModal(key) {
+    const el = overlays[key];
+    if (el) el.classList.add('active');
+  }
+  function closeModal(key) {
+    const el = overlays[key];
+    if (el) el.classList.remove('active');
+  }
+
+  /* --- Toast --- */
+  function showToast(msg, isError = false) {
+    if (!toast) return;
+    const msgSpan = toast.querySelector('.toast-msg');
+    const iconEl  = toast.querySelector('.toast-icon i');
+    if (msgSpan) msgSpan.textContent = msg;
+    if (iconEl)  iconEl.className = isError ? 'fas fa-xmark' : 'fas fa-check';
+    toast.style.borderColor = isError
+      ? 'rgba(224,85,85,0.45)'
+      : 'rgba(200,169,106,0.45)';
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  /* --- Validation Helpers --- */
+  function setError(inp, errEl, msg) {
+    inp.classList.add('input-error');
+    if (errEl) errEl.textContent = msg;
+    return false;
+  }
+  function clearError(inp, errEl) {
+    inp.classList.remove('input-error');
+    if (errEl) errEl.textContent = '';
+    return true;
+  }
+  function validateNotEmpty(inp, errEl, label) {
+    return inp.value.trim()
+      ? clearError(inp, errEl)
+      : setError(inp, errEl, `${label} is required.`);
+  }
+  function validateEmail(inp, errEl) {
+    if (!inp.value.trim()) return setError(inp, errEl, 'Email is required.');
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inp.value.trim())
+      ? clearError(inp, errEl)
+      : setError(inp, errEl, 'Enter a valid email address.');
+  }
+  function validatePhone(inp, errEl) {
+    if (!inp.value.trim()) return setError(inp, errEl, 'Phone is required.');
+    return /^[\+]?[\d\s\-().]{7,20}$/.test(inp.value.trim())
+      ? clearError(inp, errEl)
+      : setError(inp, errEl, 'Enter a valid phone number.');
+  }
+
+  /* --- Password Strength --- */
+  function updateStrengthUI(pwd) {
+    const fill  = document.getElementById('strengthFill');
+    const label = document.getElementById('strengthLabel');
+    if (!fill || !label) return;
+    let score = 0;
+    if (pwd.length >= 8)           score++;
+    if (pwd.length >= 12)          score++;
+    if (/[A-Z]/.test(pwd))         score++;
+    if (/[0-9]/.test(pwd))         score++;
+    if (/[^A-Za-z0-9]/.test(pwd))  score++;
+    const levels = [
+      { pct: 0,   color: 'transparent', text: '' },
+      { pct: 20,  color: '#e05555',     text: 'Very Weak' },
+      { pct: 40,  color: '#e07040',     text: 'Weak' },
+      { pct: 60,  color: '#e0a040',     text: 'Fair' },
+      { pct: 80,  color: '#8bc34a',     text: 'Strong' },
+      { pct: 100, color: '#4caf50',     text: 'Very Strong' },
+    ];
+    const lvl = levels[score];
+    fill.style.width      = lvl.pct + '%';
+    fill.style.background = lvl.color;
+    label.textContent     = lvl.text;
+    label.style.color     = lvl.color;
+  }
+
+  /* --- Live Profile Update --- */
+  function applyProfileToPage(name, email, phone, address) {
+    const map = {
+      displayName:     name,
+      displayEmail:    email,
+      displayPhone:    phone,
+      displayLocation: address, // Waiter uses displayLocation
+      displayAddress:  address, // fallback
+    };
+    Object.entries(map).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val;
+    });
+  }
+
+  /* --- Password Toggles --- */
+  function initPasswordToggles() {
+    document.querySelectorAll('.pw-toggle-cp').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const inp  = document.getElementById(btn.dataset.target);
+        const icon = btn.querySelector('i');
+        if (!inp) return;
+        if (inp.type === 'password') {
+          inp.type = 'text';
+          icon.className = 'far fa-eye-slash';
+        } else {
+          inp.type = 'password';
+          icon.className = 'far fa-eye';
+        }
+      });
+    });
+  }
+
+  /* --- Profile Form --- */
+  function initProfileForm() {
+    const nameInput    = document.getElementById('inputName');
+    const addressInput = document.getElementById('inputAddress');
+    const phoneInput   = document.getElementById('inputPhone');
+    const emailInput   = document.getElementById('inputEmail');
+    const saveBtn      = document.getElementById('saveProfile');
+    if (!saveBtn) return;
+
+    // Pre-fill with current displayed values
+    const fillVal = (inputEl, sourceId) => {
+      const src = document.getElementById(sourceId);
+      if (inputEl && src) inputEl.value = src.textContent.trim();
+    };
+    fillVal(nameInput,    'displayName');
+    fillVal(emailInput,   'displayEmail');
+    fillVal(phoneInput,   'displayPhone');
+    fillVal(addressInput, 'displayLocation');
+    if (!addressInput.value) fillVal(addressInput, 'displayAddress');
+
+    saveBtn.addEventListener('click', () => {
+      const v1 = validateNotEmpty(nameInput,    document.getElementById('nameError'),    'Full name');
+      const v2 = validateNotEmpty(addressInput, document.getElementById('addressError'), 'Address');
+      const v3 = validatePhone   (phoneInput,   document.getElementById('phoneError'));
+      const v4 = validateEmail   (emailInput,   document.getElementById('emailError'));
+      if (!v1 || !v2 || !v3 || !v4) return;
+
+      applyProfileToPage(
+        nameInput.value.trim(),
+        emailInput.value.trim(),
+        phoneInput.value.trim(),
+        addressInput.value.trim()
+      );
+      closeModal('editProfile');
+      showToast('Profile updated successfully!');
+    });
+  }
+
+  /* --- Password Form --- */
+  function initPasswordForm() {
+    const curInp  = document.getElementById('inputCurrentPwd');
+    const newInp  = document.getElementById('inputNewPwd');
+    const confInp = document.getElementById('inputConfirmPwd');
+    const saveBtn = document.getElementById('savePassword');
+    if (!saveBtn) return;
+
+    newInp?.addEventListener('input', () => {
+      updateStrengthUI(newInp.value);
+      clearError(newInp, document.getElementById('newPwdError'));
+    });
+
+    saveBtn.addEventListener('click', () => {
+      let valid = true;
+      if (!curInp.value) {
+        setError(curInp, document.getElementById('currentPwdError'), 'Enter your current password.');
+        valid = false;
+      } else {
+        clearError(curInp, document.getElementById('currentPwdError'));
+      }
+      const newPwd = newInp.value;
+      if (!newPwd) {
+        setError(newInp, document.getElementById('newPwdError'), 'Enter a new password.');
+        valid = false;
+      } else if (newPwd.length < 8) {
+        setError(newInp, document.getElementById('newPwdError'), 'Password must be at least 8 characters.');
+        valid = false;
+      } else if (newPwd === curInp.value) {
+        setError(newInp, document.getElementById('newPwdError'), 'New password must differ from current.');
+        valid = false;
+      } else {
+        clearError(newInp, document.getElementById('newPwdError'));
+      }
+      if (!confInp.value) {
+        setError(confInp, document.getElementById('confirmPwdError'), 'Please confirm your new password.');
+        valid = false;
+      } else if (confInp.value !== newPwd) {
+        setError(confInp, document.getElementById('confirmPwdError'), 'Passwords do not match.');
+        valid = false;
+      } else {
+        clearError(confInp, document.getElementById('confirmPwdError'));
+      }
+      if (!valid) return;
+
+      curInp.value = ''; newInp.value = ''; confInp.value = '';
+      updateStrengthUI('');
+      closeModal('editPassword');
+      showToast('Password changed successfully!');
+    });
+  }
+
+  /* --- Modal Wiring --- */
+  function initModals() {
+    document.getElementById('openSettingsBtn')
+      ?.addEventListener('click', () => openModal('settings'));
+    document.getElementById('closeSettings')
+      ?.addEventListener('click', () => closeModal('settings'));
+    document.getElementById('closeEditProfile')
+      ?.addEventListener('click', () => closeModal('editProfile'));
+    document.getElementById('closeEditPassword')
+      ?.addEventListener('click', () => closeModal('editPassword'));
+
+    document.getElementById('openEditProfile')?.addEventListener('click', () => {
+      closeModal('settings');
+      openModal('editProfile');
+    });
+    document.getElementById('openEditPassword')?.addEventListener('click', () => {
+      closeModal('settings');
+      openModal('editPassword');
+    });
+
+    // Click outside → close
+    Object.values(overlays).forEach(overlay => {
+      overlay?.addEventListener('click', e => {
+        if (e.target === overlay) overlay.classList.remove('active');
+      });
+    });
+
+    // Escape key → close
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      const active = Object.entries(overlays).find(([, el]) => el?.classList.contains('active'));
+      if (active) closeModal(active[0]);
+    });
+  }
+
+  /* --- Boot --- */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initModals();
+      initPasswordToggles();
+      initProfileForm();
+      initPasswordForm();
+    });
+  } else {
+    initModals();
+    initPasswordToggles();
+    initProfileForm();
+    initPasswordForm();
+  }
+
+})();
