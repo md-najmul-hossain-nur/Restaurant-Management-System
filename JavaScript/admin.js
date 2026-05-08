@@ -4,6 +4,8 @@ const sections = document.querySelectorAll('.section-content');
 
 tabs.forEach(tab => {
   tab.addEventListener('click', () => {
+    // When clocked out (Clock In mode), keep tabs visible but disabled.
+    if (document.body.classList.contains('is-clocked-out')) return;
     const sectionId = tab.getAttribute('data-section'); 
     tabs.forEach(t => t.classList.remove('active'));
     sections.forEach(s => s.classList.remove('active'));
@@ -12,6 +14,40 @@ tabs.forEach(tab => {
     document.getElementById(sectionId).classList.add('active');
   });
 });
+
+// -----------
+// Clock Out / Clock In (shared by dashboards)
+// In-page toggle: shows a "clocked out" banner but keeps tabs usable.
+(() => {
+  const clockBtn = document.querySelector('.panel.hero [data-clock-out]');
+  if (!clockBtn) return;
+
+  const main = document.querySelector('.main-content');
+  const bannerId = 'clockoutBanner';
+  let banner = document.getElementById(bannerId);
+
+  if (!banner && main) {
+    banner = document.createElement('div');
+    banner.id = bannerId;
+    banner.className = 'clockout-banner';
+    banner.textContent = 'You are in clock out Now';
+    main.prepend(banner);
+  }
+
+  const applyState = (isClockedOut) => {
+    document.body.classList.toggle('is-clocked-out', isClockedOut);
+    clockBtn.textContent = isClockedOut ? 'Clock In' : 'Clock Out';
+    clockBtn.setAttribute('aria-pressed', String(isClockedOut));
+  };
+
+  // Default: clocked in
+  applyState(false);
+
+  clockBtn.addEventListener('click', () => {
+    const next = !document.body.classList.contains('is-clocked-out');
+    applyState(next);
+  });
+})();
 
 //-----------
 
@@ -113,20 +149,31 @@ if (addTableBtn) {
 const editMenuModal = document.getElementById('editMenuModal');
 const editMenuForm = document.getElementById('editMenuForm');
 
-document.querySelectorAll('.menu-edit-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    editMenuModal.classList.add('active');
+if (editMenuModal) {
+  document.querySelectorAll('.menu-edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      editMenuModal.classList.add('active');
+    });
   });
-});
 
-editMenuModal.querySelector('.modal-close').addEventListener('click', () => {
-  editMenuModal.classList.remove('active');
-});
+  const closeBtn = editMenuModal.querySelector('.modal-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      editMenuModal.classList.remove('active');
+    });
+  }
 
-editMenuModal.querySelector('.btn-secondary').addEventListener('click', () => {
-  editMenuModal.classList.remove('active');
-});
-editMenuForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  editMenuModal.classList.remove('active');
-});
+  const cancelBtn = editMenuModal.querySelector('.btn-secondary, button[type="reset"]');
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      editMenuModal.classList.remove('active');
+    });
+  }
+
+  if (editMenuForm) {
+    editMenuForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      editMenuModal.classList.remove('active');
+    });
+  }
+}

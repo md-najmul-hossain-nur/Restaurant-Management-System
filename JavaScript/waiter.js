@@ -2,6 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const modal = document.getElementById('newOrderModal');
   const openBtn = document.querySelector('[data-new-order]');
 
+  // Add Recipe (Chief dashboard)
+  const recipeModal = document.getElementById('addRecipeModal');
+  const recipeOpenBtn = document.querySelector('[data-add-recipe]');
+  const recipesGrid = document.getElementById('recipesGrid');
+
   // Order delivery logic (only deliver Ready orders)
   const orderSection = document.getElementById('order');
   const orderList = orderSection ? orderSection.querySelector('.order-list') : null;
@@ -126,6 +131,209 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     updateSelectedUI();
+  }
+
+  // Add Recipe modal logic
+  if (recipeModal && recipeOpenBtn && recipesGrid) {
+    const closeEls = recipeModal.querySelectorAll('[data-recipe-close]');
+    const form = document.getElementById('addRecipeForm');
+    const nameInput = document.getElementById('recipeName');
+    const detailsInput = document.getElementById('recipeDetails');
+    const priceInput = document.getElementById('recipePrice');
+    const statusSelect = document.getElementById('recipeStatus');
+    const imagePathSelect = document.getElementById('recipeImagePath');
+    const imageFileInput = document.getElementById('recipeImageFile');
+    const preview = document.getElementById('recipeImagePreview');
+
+    let previewObjectUrl = null;
+
+    const setPreview = (src) => {
+      if (!preview) return;
+
+      if (!src) {
+        preview.hidden = true;
+        preview.removeAttribute('src');
+        return;
+      }
+
+      preview.src = src;
+      preview.hidden = false;
+    };
+
+    const clearPreviewObjectUrl = () => {
+      if (previewObjectUrl) {
+        try {
+          URL.revokeObjectURL(previewObjectUrl);
+        } catch {
+          // ignore
+        }
+        previewObjectUrl = null;
+      }
+    };
+
+    const openRecipeModal = () => {
+      recipeModal.removeAttribute('inert');
+      recipeModal.classList.add('active');
+      recipeModal.setAttribute('aria-hidden', 'false');
+
+      setTimeout(() => {
+        try {
+          if (nameInput) nameInput.focus();
+        } catch {
+          // ignore
+        }
+      }, 0);
+    };
+
+    const closeRecipeModal = () => {
+      recipeModal.classList.remove('active');
+      recipeModal.setAttribute('aria-hidden', 'true');
+      recipeModal.setAttribute('inert', '');
+
+      clearPreviewObjectUrl();
+      setPreview('');
+
+      if (form) {
+        try {
+          form.reset();
+        } catch {
+          // ignore
+        }
+      }
+
+      if (recipeModal.contains(document.activeElement)) {
+        try {
+          recipeOpenBtn.focus();
+        } catch {
+          // ignore
+        }
+      }
+    };
+
+    recipeOpenBtn.addEventListener('click', openRecipeModal);
+
+    closeEls.forEach((el) => {
+      el.addEventListener('click', closeRecipeModal);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && recipeModal.classList.contains('active')) {
+        closeRecipeModal();
+      }
+    });
+
+    if (imageFileInput) {
+      imageFileInput.addEventListener('change', () => {
+        clearPreviewObjectUrl();
+        const file = imageFileInput.files && imageFileInput.files[0] ? imageFileInput.files[0] : null;
+        if (file) {
+          previewObjectUrl = URL.createObjectURL(file);
+          setPreview(previewObjectUrl);
+        } else if (imagePathSelect && imagePathSelect.value) {
+          setPreview(imagePathSelect.value);
+        } else {
+          setPreview('');
+        }
+      });
+    }
+
+    if (imagePathSelect) {
+      imagePathSelect.addEventListener('change', () => {
+        const hasFile = imageFileInput && imageFileInput.files && imageFileInput.files.length > 0;
+        if (hasFile) return;
+        setPreview(imagePathSelect.value || '');
+      });
+    }
+
+    const formatMoney = (amount) => {
+      const safe = Number.isFinite(amount) ? amount : 0;
+      return `$${safe.toFixed(2)}`;
+    };
+
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const name = (nameInput && nameInput.value ? nameInput.value : '').trim() || 'New Recipe';
+        const detailsRaw = (detailsInput && detailsInput.value ? detailsInput.value : '').trim() || 'Details not provided.';
+        const details = detailsRaw.replace(/^details:\s*/i, '');
+        const price = Number(priceInput && priceInput.value ? priceInput.value : 0);
+        const status = (statusSelect && statusSelect.value ? statusSelect.value : 'Pending').trim() || 'Pending';
+
+        let imgSrc = '';
+        const file = imageFileInput && imageFileInput.files && imageFileInput.files[0] ? imageFileInput.files[0] : null;
+        if (file) {
+          clearPreviewObjectUrl();
+          previewObjectUrl = URL.createObjectURL(file);
+          imgSrc = previewObjectUrl;
+        } else if (imagePathSelect && imagePathSelect.value) {
+          imgSrc = imagePathSelect.value;
+        } else {
+          imgSrc = '../Images/food/hello.jpg';
+        }
+
+        const article = document.createElement('article');
+        article.className = 'card order-card recipe-card grid-6';
+
+        const badge = document.createElement('span');
+        badge.className = 'status-badge corner-badge';
+        badge.textContent = status;
+
+        const img = document.createElement('img');
+        img.className = 'order-image';
+        img.src = imgSrc;
+        img.alt = name;
+
+        const body = document.createElement('div');
+        body.className = 'order-body';
+
+        const head = document.createElement('div');
+        head.className = 'card-head';
+
+        const headInner = document.createElement('div');
+
+        const title = document.createElement('h3');
+        title.className = 'card-title';
+        title.textContent = name;
+
+        const subtitle = document.createElement('p');
+        subtitle.className = 'card-subtitle';
+        subtitle.textContent = 'Chef added recipe';
+
+        headInner.appendChild(title);
+        headInner.appendChild(subtitle);
+        head.appendChild(headInner);
+
+        const desc = document.createElement('p');
+        desc.className = 'recipe-desc';
+        desc.textContent = `Details: ${details}`;
+
+        const divider = document.createElement('div');
+        divider.className = 'divider';
+
+        const actions = document.createElement('div');
+        actions.className = 'actions recipe-actions';
+
+        const pricePill = document.createElement('span');
+        pricePill.className = 'pill recipe-price';
+        pricePill.textContent = formatMoney(price);
+
+        actions.appendChild(pricePill);
+
+        body.appendChild(head);
+        body.appendChild(desc);
+        body.appendChild(divider);
+        body.appendChild(actions);
+
+        article.appendChild(badge);
+        article.appendChild(img);
+        article.appendChild(body);
+
+        recipesGrid.prepend(article);
+
+        closeRecipeModal();
+      });
+    }
   }
 
   // Profile settings popover + modals

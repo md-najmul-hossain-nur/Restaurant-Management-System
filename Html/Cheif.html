@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Feliciano — Chief Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="../CSS/chief.css" />
+</head>
+<body>
+  <div class="dashboard">
+     <!-- Topbar -->
+    <header class="topbar">
+      <div class="brand">Feliciano</div>
+      <div class="top-right">
+        <div class="admin-title">Chief<br>Dashboard</div>
+        <div class="logout" onclick="window.location.href='login.html'">
+          <img src="../Images/logout.png" alt="Logout" class="logout-icon">
+         </div>
+      </div>
+    </header>
+    <!-- Outer glass wrapper -->
+    <div class="outer-wrapper">
+         <section class="panel hero">
+            <div>
+                <p class="eyebrow">Kitchen command center</p>
+                <h1 class="page-title">Work Status</h1>
+                <p class="page-subtitle">You are currently in the kitchen. Track orders, manage recipes, and keep the shift moving from one shared interface.</p>
+            </div>
+            <button class="btn btn-primary" data-clock-out>Clock Out</button>
+        </section>
+      <!-- Navbar / Tabs -->
+      <nav class="navbar">
+        <div class="tab active" data-section="overview">
+          <i class="fas fa-chart-pie"></i>
+          <span>Overview</span>
+        </div>
+        <div class="tab" data-section="tables">
+          <i class="fas fa-chair"></i>
+          <span>Order</span>
+        </div>
+        <div class="tab" data-section="order">
+          <i class="fas fa-utensils"></i>
+          <span>Recipes</span>
+        </div>
+        <div class="tab" data-section="profile">
+          <i class="fas fa-file-chart-column"></i>
+          <span>Profile</span>
+        </div>
+      </nav>
+
+      <!-- Main Scrollable Content -->
+      <main class="main-content">
+
+        <!-- ===================== OVERVIEW ===================== -->
+        <div class="section-content active" id="overview">
+
+          <h1 class="page-title">Overview</h1>
+          <p class="page-subtitle">Your shift status at a glance</p>
+
+          <div class="stats waiter-stats">
+            <div class="card waiter-card waiter-stat--pending">
+              <div class="waiter-stat">
+                <div class="waiter-stat-icon" aria-hidden="true">
+                  <i class="fas fa-receipt"></i>
+                </div>
+                <div class="waiter-stat-body">
+                  <div class="waiter-stat-label">Pending Orders</div>
+                  <div class="waiter-stat-value">0</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card waiter-card waiter-stat--progress">
+              <div class="waiter-stat">
+                <div class="waiter-stat-icon" aria-hidden="true">
+                  <i class="fas fa-hourglass-half"></i>
+                </div>
+                <div class="waiter-stat-body">
+                  <div class="waiter-stat-label">In Progress</div>
+                  <div class="waiter-stat-value">2</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card waiter-card waiter-stat--completed">
+              <div class="waiter-stat">
+                <div class="waiter-stat-icon" aria-hidden="true">
+                  <i class="fas fa-circle-check"></i>
+                </div>
+                <div class="waiter-stat-body">
+                  <div class="waiter-stat-label">Completed Today</div>
+                  <div class="waiter-stat-value">16</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-grid">
+            <article class="card card-pad grid-6">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title">Shift Snapshot</h2>
+                  <p class="card-subtitle">A quick view of the kitchen rhythm for the current shift.</p>
+                </div>
+                <span class="status-badge">Stable</span>
+              </div>
+
+              <div class="metrics-list">
+                <div class="list-row">
+                  <div>
+                    <strong>Prep station</strong>
+                    <p>Running on schedule</p>
+                  </div>
+                  <span class="pill">100%</span>
+                </div>
+
+                <div class="list-row">
+                  <div>
+                    <strong>Pass</strong>
+                    <p>Two dishes ready to serve</p>
+                  </div>
+                  <span class="pill">2 ready</span>
+                </div>
+                <div class="list-row">
+                  <div>
+                    <strong>Hot line</strong>
+                    <p>Next ticket due in 8 min</p>
+                  </div>
+                  <span class="pill">8 min</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="card card-pad grid-6">
+              <div class="card-head">
+                <div>
+                  <h2 class="card-title">Immediate Focus</h2>
+                  <p class="card-subtitle">The next actions the chief should watch closely.</p>
+                </div>
+              </div>
+              <div class="metrics-list">
+                <div class="list-row">
+                  <div>
+                    <strong>Table 3</strong>
+                    <p>Margherita pizza and salad</p>
+                  </div>
+                  <span class="pill">In progress</span>
+                </div>
+
+                <div class="list-row">
+                  <div>
+                    <strong>Table 8</strong>
+                    <p>Ready for waiter pickup</p>
+                  </div>
+                  <span class="pill">Ready</span>
+                </div>
+
+                <div class="list-row">
+                  <div>
+                    <strong>Recipe board</strong>
+                    <p>New dish ideas waiting in Recipes</p>
+                  </div>
+                  <span class="pill">Updated</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+        <!-- ===================== ORDER (CARDS) ===================== -->
+        <div class="section-content" id="tables">
+          <h1 class="page-title">Table Orders</h1>
+          <p class="page-subtitle">Kitchen queue and handoff status</p>
+
+          <div class="section-grid">
+                <article class="card order-card grid-6">
+                    <img class="order-image" src="../Images/Table/Family%20Table.jpg" alt="Table 3">
+                    <div class="order-body">
+                        <div class="card-head">
+                            <div>
+                                <h3 class="card-title">Table 3</h3>
+                                <p class="card-subtitle">Prep time: 15 min</p>
+                            </div>
+                            <span class="status-badge">In progress</span>
+                        </div>
+                        <div class="order-meta">
+                            <span class="pill">2x Margherita Pizza</span>
+                            <span class="pill">1x Caesar Salad</span>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="actions">
+                            <button class="btn btn-secondary" data-clock-out>Mark Ready</button>
+                            <span class="pill">Kitchen queue</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card order-card grid-6">
+                    <img class="order-image" src="../Images/Table/Couple%20table.jpg" alt="Table 8">
+                    <div class="order-body">
+                        <div class="card-head">
+                            <div>
+                                <h3 class="card-title">Table 8</h3>
+                                <p class="card-subtitle">2 items ready for handoff</p>
+                            </div>
+                            <span class="status-badge">Ready</span>
+                        </div>
+                        <div class="order-meta">
+                            <span class="pill">Grilled chicken</span>
+                            <span class="pill">Lemon water</span>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="actions">
+                            <button class="btn btn-secondary" data-clock-out>Mark Ready</button>
+                            <span class="pill">Awaiting waiter</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card order-card grid-6">
+                    <img class="order-image" src="../Images/Table/Outdoor.jpg" alt="Table 11">
+                    <div class="order-body">
+                        <div class="card-head">
+                            <div>
+                                <h3 class="card-title">Table 11</h3>
+                                <p class="card-subtitle">Early prep order</p>
+                            </div>
+                            <span class="status-badge">Queued</span>
+                        </div>
+                        <div class="order-meta">
+                            <span class="pill">Burger</span>
+                            <span class="pill">Fries</span>
+                            <span class="pill">Sauce</span>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="actions">
+                            <button class="btn btn-secondary" data-clock-out>Mark Ready</button>
+                            <span class="pill">Next up</span>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="card order-card grid-6">
+                    <img class="order-image" src="../Images/Table/Family%20Round%20table.jpg" alt="Table 14">
+                    <div class="order-body">
+                        <div class="card-head">
+                            <div>
+                                <h3 class="card-title">Table 14</h3>
+                                <p class="card-subtitle">Large table, family service</p>
+                            </div>
+                            <span class="status-badge">Serving</span>
+                        </div>
+                        <div class="order-meta">
+                            <span class="pill">Dam biriani</span>
+                            <span class="pill">Khichuri</span>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="actions">
+                            <button class="btn btn-secondary" data-clock-out>Mark Ready</button>
+                            <span class="pill">High priority</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- ===================== RECIPES ===================== -->
+        <div class="section-content" id="order">
+          <div class="order-header">
+            <div>
+              <h1 class="page-title">Recipes</h1>
+              <p class="page-subtitle">Images, details, price, and approval status</p>
+            </div>
+            <button class="order-new-btn" type="button" data-add-recipe>+ Add Recipe</button>
+          </div>
+
+          <div class="section-grid" id="recipesGrid">
+            <article class="card order-card recipe-card grid-6">
+              <span class="status-badge corner-badge">Approved</span>
+              <img class="order-image" src="../Images/menu/saffronchicken.jpg" alt="Saffron Chicken" />
+              <div class="order-body">
+                <div class="card-head">
+                  <div>
+                    <h3 class="card-title">Saffron Chicken</h3>
+                    <p class="card-subtitle">Juicy chicken with saffron butter sauce</p>
+                  </div>
+                </div>
+                <div class="order-meta">
+                  <span class="pill">25 min</span>
+                  <span class="pill">Main</span>
+                  <span class="pill">Mild</span>
+                </div>
+                <p class="recipe-desc">Details: served with seasonal veggies and lemon rice.</p>
+                <div class="divider"></div>
+                <div class="actions recipe-actions">
+                  <span class="pill recipe-price">$18.99</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="card order-card recipe-card grid-6">
+              <span class="status-badge corner-badge">Pending</span>
+              <img class="order-image" src="../Images/menu/choclatelavacake.jpg" alt="Chocolate Lava Cake" />
+              <div class="order-body">
+                <div class="card-head">
+                  <div>
+                    <h3 class="card-title">Chocolate Lava Cake</h3>
+                    <p class="card-subtitle">Warm cake with molten chocolate center</p>
+                  </div>
+                </div>
+                <div class="order-meta">
+                  <span class="pill">12 min</span>
+                  <span class="pill">Dessert</span>
+                </div>
+                <p class="recipe-desc">Details: topped with vanilla cream and cocoa dust.</p>
+                <div class="divider"></div>
+                <div class="actions recipe-actions">
+                  <span class="pill recipe-price">$8.50</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="card order-card recipe-card grid-6">
+              <span class="status-badge corner-badge">Approved</span>
+              <img class="order-image" src="../Images/food/Dam%20biriani.jpg" alt="Dam Biriani" />
+              <div class="order-body">
+                <div class="card-head">
+                  <div>
+                    <h3 class="card-title">Dam Biriani</h3>
+                    <p class="card-subtitle">Traditional biryani cooked in sealed pot</p>
+                  </div>
+                </div>
+                <div class="order-meta">
+                  <span class="pill">35 min</span>
+                  <span class="pill">Spicy</span>
+                  <span class="pill">Main</span>
+                </div>
+                <p class="recipe-desc">Details: basmati rice, tender meat, aromatic spices.</p>
+                <div class="divider"></div>
+                <div class="actions recipe-actions">
+                  <span class="pill recipe-price">$14.99</span>
+                </div>
+              </div>
+            </article>
+            <article class="card order-card recipe-card grid-6">
+              <span class="status-badge corner-badge">Pending</span>
+              <img class="order-image" src="../Images/food/Burger.jpg" alt="Classic Burger" />
+              <div class="order-body">
+                <div class="card-head">
+                  <div>
+                    <h3 class="card-title">Classic Burger</h3>
+                    <p class="card-subtitle">Grilled beef patty with cheese and sauce</p>
+                  </div>
+                </div>
+                <div class="order-meta">
+                  <span class="pill">18 min</span>
+                  <span class="pill">Main</span>
+                </div>
+                <p class="recipe-desc">Details: served with fries and house pickles.</p>
+                <div class="divider"></div>
+                <div class="actions recipe-actions">
+                  <span class="pill recipe-price">$12.99</span>
+                </div>
+              </div>
+            </article>
+          </div>
+          <!-- Add Recipe Modal -->
+          <div class="order-modal" id="addRecipeModal" aria-hidden="true" inert>
+            <div class="order-modal-backdrop" data-recipe-close></div>
+            <div class="order-modal-content" role="dialog" aria-modal="true" aria-label="Add Recipe">
+              <div class="order-modal-header">
+                <div class="order-modal-title">Add Recipe</div>
+                <button class="order-modal-x" type="button" data-recipe-close aria-label="Close">&times;</button>
+              </div>
+
+              <form class="order-form recipe-form" id="addRecipeForm">
+                <label class="order-label" for="recipeName">Recipe Name</label>
+                <input class="order-select" id="recipeName" name="recipeName" type="text" placeholder="e.g., Seafood Trio" required />
+
+                <label class="order-label" for="recipeDetails">Details</label>
+                <textarea class="order-select" id="recipeDetails" name="recipeDetails" rows="3" placeholder="Ingredients / short description" required></textarea>
+
+                  <div>
+                    <label class="order-label" for="recipePrice">Price</label>
+                    <input class="order-select" id="recipePrice" name="recipePrice" type="number" step="0.01" min="0" placeholder="e.g., 12.99" required />
+                  </div>
+
+                <label class="order-label" for="recipeImageFile">Upload Image</label>
+                <input class="order-select" id="recipeImageFile" name="recipeImageFile" type="file" accept="image/*" />
+
+                <img class="recipe-preview" id="recipeImagePreview" alt="" hidden />
+
+                <div class="order-selected-footer recipe-footer">
+                  <div class="order-selected-actions">
+                    <button class="order-place-btn" type="submit">Add</button>
+                    <button class="order-cancel-btn" type="button" data-recipe-close>Cancel</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <!-- ===================== PROFILE ===================== -->
+        <div class="section-content" id="profile">
+          <h1 class="page-title">Profile</h1>
+          <p class="page-subtitle">Your account details and settings</p>
+
+          <div class="profile-card">
+            <div class="profile-left">
+              <div class="profile-avatar" aria-hidden="true">
+                <img src="../Images/Customer/pexels-emad-hussien-830139385-27856326.jpg" alt="Profile" />
+              </div>
+
+              <div class="profile-info">
+                <div class="profile-name">Richard Clark</div>
+                <div class="profile-sub">Member since Jan 2024</div>
+
+                <div class="profile-rows">
+                  <div class="profile-row">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span>my.rushnaosran@gmail.com</span>
+                  </div>
+                  <div class="profile-row">
+                    <i class="fa-solid fa-phone"></i>
+                    <span>+880 1XXX-XX-XX-XX</span>
+                  </div>
+                  <div class="profile-row">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>New York, NY</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-right">
+              <button class="profile-settings-btn" type="button" data-profile-settings>
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+              </button>
+
+              <div class="profile-settings-popover" id="profileSettingsPopover" aria-hidden="true" inert>
+                <div class="profile-settings-title">
+                  <i class="fa-solid fa-gear"></i>
+                  <span>Settings</span>
+                </div>
+                <div class="profile-settings-sub">Manage your account settings and update your profile information.</div>
+
+                <div class="profile-settings-actions">
+                  <button class="profile-settings-action" type="button" data-open-edit-profile>
+                    <i class="fa-solid fa-pen-to-square"></i>
+                    <span>Edit profile</span>
+                  </button>
+                  <button class="profile-settings-action" type="button" data-open-password>
+                    <i class="fa-solid fa-key"></i>
+                    <span>Password</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== REPORTS ===================== -->
+        <div class="section-content" id="reports">
+          <div class="reports-panel">
+            <div class="reports-header">
+              <div>
+                <h2>Financial Reports</h2>
+                <p class="sub">View Revenue And Sales Analytics</p>
+              </div>
+              <button type="button" class="download-report-btn">
+                <i class="fas fa-download"></i> Download Report
+              </button>
+            </div>
+
+            <div class="reports-filter">
+              <div class="date-field">
+                <label for="reportStart">Start Date</label>
+                <input type="date" id="reportStart" name="reportStart" value="2026-02-04">
+              </div>
+              <div class="date-field">
+                <label for="reportEnd">End Date</label>
+                <input type="date" id="reportEnd" name="reportEnd" value="2026-02-04">
+              </div>
+            </div>
+
+            <div class="reports-cards">
+              <div class="report-card">
+                <div class="report-icon green"><i class="fas fa-dollar-sign"></i></div>
+                <div>
+                  <p>Total Revenue</p>
+                  <h3>$122</h3>
+                </div>
+              </div>
+              <div class="report-card">
+                <div class="report-icon blue"><i class="fas fa-receipt"></i></div>
+                <div>
+                  <p>Total Orders</p>
+                  <h3>0</h3>
+                </div>
+              </div>
+              <div class="report-card">
+                <div class="report-icon purple"><i class="fas fa-chart-line"></i></div>
+                <div>
+                  <p>Avg Order Value</p>
+                  <h3>$0</h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+    <!-- /outer-wrapper -->
+
+  </div>
+  <!-- Add Employee Modal -->
+  <div class="modal" id="addEmployeeModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add New Employee</h3>
+        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="employeeForm" class="employee-form">
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" placeholder="Enter full name" required>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter email" required>
+          </div>
+        </div>
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="role">Role</label>
+            <select id="role" name="role" required>
+              <option value="">Select Role</option>
+              <option value="waiter">Waiter</option>
+              <option value="chef">Chef</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter password" required>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label for="certificate">Certificate (PDF)</label>
+          <input type="file" id="certificate" name="certificate" accept=".pdf" required>
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Add Employee</button>
+          <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Table Modal -->
+  <div class="modal" id="addTableModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add New Table</h3>
+        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="tableForm" class="employee-form">
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="tableNumber">Table Number</label>
+            <input type="number" id="tableNumber" name="tableNumber" min="1" step="1" required>
+          </div>
+          <div class="form-group">
+            <label for="tableCapacity">Capacity</label>
+            <input type="number" id="tableCapacity" name="tableCapacity" min="1" step="1" required>
+          </div>
+        </div>
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="tablePosition">Position</label>
+            <select id="tablePosition" name="tablePosition" required>
+              <option value="">Select Position</option>
+              <option value="window">Window</option>
+              <option value="center">Center</option>
+              <option value="corner">Corner</option>
+              <option value="outdoor">Outdoor</option>
+              <option value="entrance">Near Entrance</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label for="tableImageFile">Upload Table Image</label>
+          <input type="file" id="tableImageFile" name="tableImageFile" accept="image/*">
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Add Table</button>
+          <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Table Modal -->
+  <div class="modal" id="editTableModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Table</h3>
+        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="editTableForm" class="employee-form">
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="editTableNumber">Table Number</label>
+            <input type="text" id="editTableNumber" name="editTableNumber" disabled>
+          </div>
+          <div class="form-group">
+            <label for="editTableCapacity">Capacity</label>
+            <input type="number" id="editTableCapacity" name="editTableCapacity" min="1" step="1" required>
+          </div>
+        </div>
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="editTablePosition">Position</label>
+            <select id="editTablePosition" name="editTablePosition" required>
+              <option value="">Select Position</option>
+              <option value="window">Window</option>
+              <option value="center">Center</option>
+              <option value="corner">Corner</option>
+              <option value="outdoor">Outdoor</option>
+              <option value="entrance">Near Entrance</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label for="editTableImageFile">Update Table Image</label>
+          <input type="file" id="editTableImageFile" name="editTableImageFile" accept="image/*">
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Save Changes</button>
+          <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
+          <button type="button" class="btn-danger" id="deleteTableBtn">Delete Table</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Menu Modal -->
+  <div class="modal" id="editMenuModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Menu Item</h3>
+        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+      </div>
+      <form id="editMenuForm" class="employee-form">
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="editMenuName">Item Name</label>
+            <input type="text" id="editMenuName" name="editMenuName" required>
+          </div>
+          <div class="form-group">
+            <label for="editMenuPrice">Price</label>
+            <input type="text" id="editMenuPrice" name="editMenuPrice" placeholder="$12.99" required>
+          </div>
+        </div>
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="editMenuTag">Category</label>
+            <input type="text" id="editMenuTag" name="editMenuTag" required>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label for="editMenuDesc">Description</label>
+          <textarea id="editMenuDesc" name="editMenuDesc" rows="3" required></textarea>
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Save Changes</button>
+          <button type="button" class="btn-secondary modal-close-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal" id="editProfileModal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Profile</h3>
+        <button type="button" class="modal-close" data-profile-modal-close aria-label="Close">&times;</button>
+      </div>
+
+      <form class="employee-form" id="editProfileForm">
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="profileFullName">Full Name</label>
+            <input type="text" id="profileFullName" name="profileFullName" value="Richard Clark" required>
+          </div>
+          <div class="form-group">
+            <label for="profileEmail">Email</label>
+            <input type="email" id="profileEmail" name="profileEmail" value="my.rushnaosran@gmail.com" required>
+          </div>
+        </div>
+
+        <div class="form-row-flex">
+          <div class="form-group">
+            <label for="profilePhone">Phone</label>
+            <input type="text" id="profilePhone" name="profilePhone" value="+880 1XXX-XX-XX-XX" required>
+          </div>
+          <div class="form-group">
+            <label for="profileLocation">Location</label>
+            <input type="text" id="profileLocation" name="profileLocation" value="New York, NY" required>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Save</button>
+          <button type="button" class="btn-secondary modal-close-btn" data-profile-modal-close>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Change Password Modal -->
+  <div class="modal" id="changePasswordModal" aria-hidden="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Change Password</h3>
+        <button type="button" class="modal-close" data-profile-modal-close aria-label="Close">&times;</button>
+      </div>
+
+      <form class="employee-form" id="changePasswordForm">
+        <div class="form-group full-width">
+          <label for="currentPassword">Current Password</label>
+          <input type="password" id="currentPassword" name="currentPassword" required>
+        </div>
+        <div class="form-group full-width">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" name="newPassword" required>
+        </div>
+        <div class="form-group full-width">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Update</button>
+          <button type="button" class="btn-secondary modal-close-btn" data-profile-modal-close>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+   
+  <script src="../JavaScript/admin.js"></script>
+  <script src="../JavaScript/waiter.js"></script>
+</body>
+</html>

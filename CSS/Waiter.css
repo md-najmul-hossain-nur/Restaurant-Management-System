@@ -42,7 +42,7 @@ html, body {
 body {
   background:
     linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.55)),
-    url('../Images/admin-bg.jpg') center / cover no-repeat fixed;
+    url('../Images/Waiter-bd.jpg') center / cover no-repeat fixed;
 }
 
 /* ==========================================
@@ -640,6 +640,125 @@ body {
 }
 
 /* ==========================================
+   Order Card Grid (Chief-style)
+========================================== */
+.section-grid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 14px;
+}
+
+.grid-6 {
+  grid-column: span 6;
+}
+
+@media (max-width: 980px) {
+  .grid-6 {
+    grid-column: span 12;
+  }
+}
+
+.section-grid .order-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  min-height: 170px;
+}
+
+.order-image {
+  width: 180px;
+  flex-shrink: 0;
+  object-fit: cover;
+  display: block;
+}
+
+@media (max-width: 520px) {
+  .section-grid .order-card {
+    flex-direction: column;
+  }
+
+  .order-image {
+    width: 100%;
+    height: 140px;
+  }
+}
+
+.order-body {
+  flex: 1;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.card-subtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.status-badge {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(254,254,255,0.95);
+}
+
+.order-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(254,254,255,0.92);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+}
+
+.divider {
+  height: 1px;
+  width: 100%;
+  background: rgba(255,255,255,0.12);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.actions .btn-secondary {
+  min-width: 132px;
+}
+
+/* ==========================================
    Waiter Orders View
 ========================================== */
 .order-header {
@@ -664,6 +783,42 @@ body {
 .order-new-btn:hover {
   transform: translateY(-1px);
   background: rgba(143,183,200,0.92);
+}
+
+/* Clock out banner (in-page) */
+.clockout-banner {
+  display: none;
+  margin: 12px 0 0;
+  padding: 18px 18px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(254,254,255,0.95);
+  font-weight: 900;
+  text-align: center;
+  font-size: clamp(18px, 2.6vw, 34px);
+}
+
+body.is-clocked-out .clockout-banner {
+  display: block;
+}
+
+/* Clocked out state: keep layout, hide sections, disable tabs */
+body.is-clocked-out .main-content .section-content {
+  display: none;
+}
+
+body.is-clocked-out .navbar .tab {
+  pointer-events: none;
+}
+
+body.is-clocked-out .navbar {
+  opacity: 0.75;
+}
+
+/* Clock In button should look green */
+body.is-clocked-out .panel.hero .btn.btn-primary[data-clock-out] {
+  background: var(--green);
 }
 
 .order-list {
