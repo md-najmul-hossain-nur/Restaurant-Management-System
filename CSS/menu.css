@@ -348,6 +348,12 @@
     font-weight: 600;
     color: #333333;
     border-right: 1px solid #e5e5e5;
+    cursor: pointer;
+    user-select: none;
+    background: none;
+    border: none;
+    font: inherit;
+    appearance: none;
   }
 
   .menu-tab:last-child {
@@ -357,6 +363,11 @@
   .menu-tab.active {
     background: var(--gold);
     color: #ffffff;
+  }
+
+  .menu-tab:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: -2px;
   }
 
   .menu-grid {
