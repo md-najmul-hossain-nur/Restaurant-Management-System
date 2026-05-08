@@ -311,6 +311,7 @@
   </div>
   <div class="payment-overlay" id="paymentOverlay" aria-hidden="true">
     <div class="payment-modal" role="dialog" aria-modal="true" aria-label="Payment method">
+      <button class="payment-close">&times;</button>
       <div class="payment-title">Choose payment method</div>
       <div class="payment-total">Total: <span id="paymentTotal">$0.00</span></div>
       <div class="payment-options">
@@ -324,8 +325,7 @@
         </label>
       </div>
       <div class="payment-actions">
-        <button class="payment-btn payment-btn--primary" type="button" data-payment-confirm>Confirm</button>
-        <button class="payment-btn" type="button" data-payment-download>Download Bill</button>
+        <button class="payment-btn" type="button" data-payment-download style="display: none;">Download Bill</button>
         <button class="payment-btn" type="button" data-payment-cancel>Cancel</button>
       </div>
     </div>

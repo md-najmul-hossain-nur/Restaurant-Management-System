@@ -47,6 +47,7 @@ const paymentTotal = document.getElementById('paymentTotal');
 const paymentConfirmBtn = document.querySelector('[data-payment-confirm]');
 const paymentCancelBtn = document.querySelector('[data-payment-cancel]');
 const paymentDownloadBtn = document.querySelector('[data-payment-download]');
+const paymentCloseBtn = document.querySelector('.payment-close');
 
 const TAX_RATE = 0.10;
 const EXTRA_OPTION_PRICE = 0.50;
@@ -207,10 +208,19 @@ document.addEventListener('keydown', e => {
     pendingItem = null;
     closeCustomize();
   }
+  if (e.key === 'Escape' && paymentOverlay?.classList.contains('is-visible')) {
+    closePayment();
+  }
 });
 
 document.querySelectorAll('.customize-option input').forEach(input => {
   input.addEventListener('change', updateCustomizeExtras);
+});
+
+document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
+  input.addEventListener('change', () => {
+    if (paymentDownloadBtn) paymentDownloadBtn.style.display = 'block';
+  });
 });
 
 const openPayment = () => {
@@ -218,6 +228,9 @@ const openPayment = () => {
   if (paymentTotal && cartTotalEl) paymentTotal.textContent = cartTotalEl.textContent;
   paymentOverlay.classList.add('is-visible');
   paymentOverlay.setAttribute('aria-hidden', 'false');
+  // Show download button if payment method is selected
+  const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
+  if (selectedPayment && paymentDownloadBtn) paymentDownloadBtn.style.display = 'block';
 };
 
 const closePayment = () => {
@@ -276,14 +289,8 @@ if (paymentCancelBtn) {
   paymentCancelBtn.addEventListener('click', closePayment);
 }
 
-if (paymentConfirmBtn) {
-  paymentConfirmBtn.addEventListener('click', () => {
-    if (cart.size === 0) return;
-    closePayment();
-    cart.clear();
-    renderCart();
-    showOrderToast();
-  });
+if (paymentCloseBtn) {
+  paymentCloseBtn.addEventListener('click', closePayment);
 }
 
 if (paymentDownloadBtn) {
@@ -296,6 +303,10 @@ if (paymentDownloadBtn) {
     link.download = 'feliciano-bill.txt';
     link.click();
     URL.revokeObjectURL(url);
+    closePayment();
+    cart.clear();
+    renderCart();
+    showOrderToast();
   });
 }
 
