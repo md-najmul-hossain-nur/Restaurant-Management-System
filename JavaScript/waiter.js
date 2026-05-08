@@ -237,8 +237,15 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           return;
         }
-        // Order placed — close modal
+        // Order placed — close modal and show success
         closeModal();
+        const toast = document.getElementById('successToast');
+        if (toast) {
+          toast.classList.add('show');
+          setTimeout(() => {
+            toast.classList.remove('show');
+          }, 1800);
+        }
       });
     }
 

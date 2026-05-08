@@ -955,13 +955,12 @@ body.is-clocked-out .panel.hero .btn.btn-primary[data-clock-out] {
 
 .order-delivered-btn {
   width: 100%;
-  padding: 14px 18px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: var(--green);
-  color: var(--text-primary);
+  padding: 8px 14px;
+  background: rgba(74,222,128,0.22);
+  border: 1px solid rgba(74,222,128,0.45);
+  color: rgba(230,255,240,0.95);
   font-weight: 900;
-  font-size: 18px;
+  font-size: 12px;
   cursor: pointer;
 }
 .order-delivered-btn:hover {
@@ -1165,6 +1164,7 @@ body.is-clocked-out .panel.hero .btn.btn-primary[data-clock-out] {
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.18);
   background: var(--green);
+  filter: brightness(0.8);
   color: var(--text-primary);
   font-weight: 900;
   cursor: pointer;
@@ -1175,6 +1175,7 @@ body.is-clocked-out .panel.hero .btn.btn-primary[data-clock-out] {
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.18);
   background: var(--orange);
+  filter: brightness(0.8);
   color: var(--text-primary);
   font-weight: 900;
   cursor: pointer;
@@ -2593,10 +2594,10 @@ body.is-clocked-out .panel.hero .btn.btn-primary[data-clock-out] {
 
 .order-delivered-btn {
  padding: 8px 16px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.18);
-  background: var(--green);
-  color: var(--text-primary);
+  border-radius: 999px;
+  background: rgba(74,222,128,0.22);
+  border: 1px solid rgba(74,222,128,0.45);
+  color: rgba(230,255,240,0.95);
   font-weight: 900;
   cursor: pointer;
 }
