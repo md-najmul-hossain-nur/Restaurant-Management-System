@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
+      // When clocked out (Clock In mode), keep tabs visible but disabled.
+      if (document.body.classList.contains('is-clocked-out')) return;
       const target = tab.dataset.section;
 
       tabs.forEach(t => t.classList.remove('active'));
@@ -29,14 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================================
      2. CLOCK OUT BUTTON
   ============================================================ */
-  const clockOutBtn = document.querySelector('[data-clock-out]');
-  if (clockOutBtn) {
-    clockOutBtn.addEventListener('click', () => {
-      if (confirm('Are you sure you want to clock out?')) {
-        window.location.href = 'login.html';
-      }
-    });
-  }
+  // Clock Out / Clock In is handled in-page by admin.js.
 
 
   /* ============================================================
