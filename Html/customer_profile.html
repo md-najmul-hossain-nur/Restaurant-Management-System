@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Feliciano — Profile</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <link rel="stylesheet" href="../CSS/customer_profile.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../CSS/customer_profile.css" />
 </head>
+
 <body>
 
   <div class="dashboard">
@@ -17,9 +20,9 @@
       <div class="brand">Feliciano</div>
       <div class="top-right">
         <div class="dashboard-label">Customer<br>Dashboard</div>
-        <div class="logout" onclick="window.location.href='login.html'">
-          <img src="../Images/logout.png" alt="Logout" class="logout-icon">
-         </div>
+        <button class="logout-btn" onclick="window.location.href='login.html'" title="Logout" aria-label="Logout">
+          <i class="fas fa-right-from-bracket"></i>
+        </button>
       </div>
     </header>
 
@@ -29,18 +32,21 @@
       <!-- Navbar -->
       <nav class="navbar">
         <a href="Customer.html" class="nav-item">
-          <i class="fas fa-utensils"></i> Menu Items
+          <i class="fas fa-utensils"></i>
+          <span>Menu Items</span>
         </a>
         <a href="Customer_table.html" class="nav-item">
-          <i class="far fa-calendar-alt"></i> Booking
+          <i class="far fa-calendar-alt"></i>
+          <span>Booking</span>
         </a>
         <a href="Customer_orders.html" class="nav-item">
-          <i class="fas fa-shopping-cart"></i> Order List
+          <i class="fas fa-shopping-cart"></i>
+          <span>Order List</span>
         </a>
         <a href="Customer_profile.html" class="nav-item active">
-          <i class="far fa-user-circle"></i> Profile
+          <i class="far fa-user-circle"></i>
+          <span>Profile</span>
         </a>
-
       </nav>
 
       <!-- Main Content -->
@@ -49,28 +55,39 @@
         <!-- Profile Card -->
         <div class="profile-card">
           <div class="profile-left">
-            <img src="../Images/Customer/pexels-emad-hussien-830139385-27856326.jpg" alt="Avatar" class="avatar" />
+            <!-- Avatar with upload trigger -->
+            <div class="avatar-wrap">
+              <img src="../Images/Customer/pexels-emad-hussien-830139385-27856326.jpg" alt="Profile photo"
+                class="avatar" id="avatarImg" />
+              <label class="avatar-edit-btn" for="avatarUpload" title="Change photo" aria-label="Change profile photo">
+                <i class="fas fa-camera"></i>
+              </label>
+              <input type="file" id="avatarUpload" accept="image/*" class="avatar-upload-input" />
+            </div>
+
             <div class="profile-info">
-              <h2 class="profile-name">Richard Clark</h2>
+              <h2 class="profile-name" id="displayName">Richard Clark</h2>
               <p class="profile-since">Member since Jan 2024</p>
               <div class="profile-contacts">
                 <span class="contact-item">
                   <i class="far fa-envelope"></i>
-                  najmulhossainnur@gmail.com
+                  <span id="displayEmail">najmulhossainnur@gmail.com</span>
                 </span>
                 <span class="contact-item">
                   <i class="fas fa-phone"></i>
-                  +1 (555) 123-4567
+                  <span id="displayPhone">+1 (555) 123-4567</span>
                 </span>
                 <span class="contact-item">
                   <i class="fas fa-location-dot"></i>
-                  New York, NY
+                  <span id="displayAddress">New York, NY</span>
                 </span>
               </div>
             </div>
           </div>
-          <button class="settings-btn">
-            <i class="fas fa-gear"></i> Settings
+
+          <button class="settings-btn" id="openSettingsBtn" aria-label="Open settings">
+            <i class="fas fa-gear"></i>
+            <span>Settings</span>
           </button>
         </div>
 
@@ -99,10 +116,11 @@
           <div class="recent-list">
 
             <div class="recent-item">
-              <img src="../Images/food/1.png" alt="Order" class="recent-thumb" />
+              <img src="../Images/food/1.png" alt="Truffle Pasta" class="recent-thumb" />
               <div class="recent-info">
                 <div class="recent-top">
                   <span class="recent-id">Order #12847</span>
+                  <span class="order-status status-delivered">Delivered</span>
                   <span class="recent-price">$68.50</span>
                 </div>
                 <p class="recent-items">Truffle Pasta, Caesar Salad, Tiramisu</p>
@@ -113,28 +131,30 @@
             <div class="recent-divider"></div>
 
             <div class="recent-item">
-              <img src="../Images/food/2.png" alt="Order" class="recent-thumb" />
+              <img src="../Images/food/2.png" alt="Grilled Salmon" class="recent-thumb" />
               <div class="recent-info">
                 <div class="recent-top">
-                  <span class="recent-id">Order #12847</span>
-                  <span class="recent-price">$68.50</span>
+                  <span class="recent-id">Order #12791</span>
+                  <span class="order-status status-delivered">Delivered</span>
+                  <span class="recent-price">$54.00</span>
                 </div>
-                <p class="recent-items">Truffle Pasta, Caesar Salad, Tiramisu</p>
-                <p class="recent-date"><i class="far fa-clock"></i> Mar 8, 2026 at 7:30 PM</p>
+                <p class="recent-items">Grilled Salmon, Mushroom Risotto, Panna Cotta</p>
+                <p class="recent-date"><i class="far fa-clock"></i> Feb 22, 2026 at 8:00 PM</p>
               </div>
             </div>
 
             <div class="recent-divider"></div>
 
             <div class="recent-item">
-              <img src="../Images/food/3.png" alt="Order" class="recent-thumb" />
+              <img src="../Images/food/3.png" alt="Beef Tenderloin" class="recent-thumb" />
               <div class="recent-info">
                 <div class="recent-top">
-                  <span class="recent-id">Order #12847</span>
-                  <span class="recent-price">$68.50</span>
+                  <span class="recent-id">Order #12735</span>
+                  <span class="order-status status-pending">Pending</span>
+                  <span class="recent-price">$82.00</span>
                 </div>
-                <p class="recent-items">Truffle Pasta, Caesar Salad, Tiramisu</p>
-                <p class="recent-date"><i class="far fa-clock"></i> Mar 8, 2026 at 7:30 PM</p>
+                <p class="recent-items">Beef Tenderloin, Lobster Bisque, Crème Brûlée</p>
+                <p class="recent-date"><i class="far fa-clock"></i> Feb 10, 2026 at 6:45 PM</p>
               </div>
             </div>
 
@@ -145,8 +165,8 @@
     </div>
   </div>
 
-  <!-- ===== Settings Picker Modal ===== -->
-  <div class="modal-overlay" id="settingsOverlay">
+  <!--  Settings -->
+  <div class="modal-overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-label="Settings">
     <div class="settings-modal">
       <h3 class="settings-modal-title">Settings</h3>
       <p class="settings-modal-sub">What would you like to update?</p>
@@ -172,62 +192,93 @@
     </div>
   </div>
 
-  <!-- ===== Edit Profile Modal ===== -->
-  <div class="modal-overlay" id="editProfileOverlay">
+  <!-- Edit Profile -->
+  <div class="modal-overlay" id="editProfileOverlay" role="dialog" aria-modal="true" aria-label="Edit Profile">
     <div class="form-modal">
       <h3 class="form-modal-title"><i class="far fa-user-circle"></i> Update Profile</h3>
       <div class="form-grid">
         <div class="form-group">
-          <label class="form-label"><i class="far fa-id-card"></i> Full name:</label>
-          <input type="text" class="form-input" value="Richard Clark" />
+          <label class="form-label" for="inputName"><i class="far fa-id-card"></i> Full Name</label>
+          <input type="text" id="inputName" class="form-input" value="Richard Clark" placeholder="Your full name" />
+          <span class="field-error" id="nameError"></span>
         </div>
         <div class="form-group">
-          <label class="form-label"><i class="fas fa-location-dot"></i> Address:</label>
-          <input type="text" class="form-input" value="New York, NY" />
+          <label class="form-label" for="inputAddress"><i class="fas fa-location-dot"></i> Address</label>
+          <input type="text" id="inputAddress" class="form-input" value="New York, NY" placeholder="Your address" />
+          <span class="field-error" id="addressError"></span>
         </div>
         <div class="form-group">
-          <label class="form-label"><i class="far fa-user"></i> Phone Number:</label>
-          <input type="text" class="form-input" value="+1 (555) 123-4567" />
+          <label class="form-label" for="inputPhone"><i class="fas fa-phone"></i> Phone Number</label>
+          <input type="tel" id="inputPhone" class="form-input" value="+1 (555) 123-4567"
+            placeholder="+1 (555) 000-0000" />
+          <span class="field-error" id="phoneError"></span>
         </div>
         <div class="form-group">
-          <label class="form-label"><i class="far fa-envelope"></i> Email:</label>
-          <input type="email" class="form-input" value="najmulhossainnur@gmail.com" />
+          <label class="form-label" for="inputEmail"><i class="far fa-envelope"></i> Email</label>
+          <input type="email" id="inputEmail" class="form-input" value="najmulhossainnur@gmail.com"
+            placeholder="you@email.com" />
+          <span class="field-error" id="emailError"></span>
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn-update">Update</button>
+        <button class="btn-update" id="saveProfile">Update Profile</button>
         <button class="btn-cancel" id="closeEditProfile">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- ===== Change Password Modal ===== -->
-  <div class="modal-overlay" id="editPasswordOverlay">
+  <!--  Change Password  -->
+  <div class="modal-overlay" id="editPasswordOverlay" role="dialog" aria-modal="true" aria-label="Change Password">
     <div class="form-modal form-modal--narrow">
-      <h3 class="form-modal-title"><i class="fas fa-lock"></i> Password Change</h3>
-      <div class="form-grid">
+      <h3 class="form-modal-title"><i class="fas fa-lock"></i> Change Password</h3>
+      <div class="form-grid form-grid--single">
         <div class="form-group">
-          <label class="form-label"><i class="far fa-id-card"></i> Current Password:</label>
-          <input type="password" class="form-input" placeholder="••••••••••••••••" />
+          <label class="form-label" for="inputCurrentPwd"><i class="fas fa-key"></i> Current Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="inputCurrentPwd" class="form-input" placeholder="Enter current password" />
+            <button type="button" class="pw-toggle" data-target="inputCurrentPwd" aria-label="Toggle visibility"><i
+                class="far fa-eye"></i></button>
+          </div>
+          <span class="field-error" id="currentPwdError"></span>
         </div>
         <div class="form-group">
-          <label class="form-label"><i class="fas fa-clock"></i> New Password:</label>
-          <input type="password" class="form-input" placeholder="••••••••••••••••••••" />
+          <label class="form-label" for="inputNewPwd"><i class="fas fa-lock-open"></i> New Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="inputNewPwd" class="form-input" placeholder="At least 8 characters" />
+            <button type="button" class="pw-toggle" data-target="inputNewPwd" aria-label="Toggle visibility"><i
+                class="far fa-eye"></i></button>
+          </div>
+          <div class="strength-bar" id="strengthBar">
+            <div class="strength-fill" id="strengthFill"></div>
+          </div>
+          <span class="strength-label" id="strengthLabel"></span>
+          <span class="field-error" id="newPwdError"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="inputConfirmPwd"><i class="fas fa-check-double"></i> Confirm New
+            Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="inputConfirmPwd" class="form-input" placeholder="Re-enter new password" />
+            <button type="button" class="pw-toggle" data-target="inputConfirmPwd" aria-label="Toggle visibility"><i
+                class="far fa-eye"></i></button>
+          </div>
+          <span class="field-error" id="confirmPwdError"></span>
         </div>
       </div>
       <div class="form-actions">
-        <button class="btn-update">Update</button>
+        <button class="btn-update" id="savePassword">Update Password</button>
         <button class="btn-cancel" id="closeEditPassword">Cancel</button>
       </div>
     </div>
   </div>
 
-  <!-- Success Toast -->
-  <div class="success-toast" id="successToast">
+  <!-- Toast -->
+  <div class="success-toast" id="successToast" role="status" aria-live="polite">
     <span class="toast-icon"><i class="fas fa-check"></i></span>
     <span class="toast-msg">Updated successfully!</span>
   </div>
 
   <script src="../JavaScript/customer_profile.js"></script>
 </body>
+
 </html>

@@ -14,32 +14,12 @@
   --glass-shadow:   0 12px 40px rgba(0,0,0,0.35);
   --card-bg:        rgba(40,42,38,0.52);
   --radius-card:    10px;
+  --danger:         #e05555;
+  --warning:        #e0a040;
+  --success:        #4caf50;
 }
 
-    .logout {
-    width: 32px;
-    height: 32px;
-    border: 1px solid rgba(224,194,143,.6);
-    border-radius: 6px;
-    display: grid;
-    place-items: center;
-    color: #e0c28f;
-    font-size: 18px;
-  }
 
-  .logout::before {
-    content: "";
-    width: 18px;
-    height: 18px;
-    background-color: #e0c28f;
-    -webkit-mask: url('../Images/logout.png') no-repeat center / contain;
-    mask: url('../Images/logout.png') no-repeat center / contain;
-    display: block;
-  }
-
-  .logout img {
-    display: none;
-  }
 /* ==========================================
    Reset & Base
 ========================================== */
@@ -235,14 +215,49 @@ body {
   gap: 20px;
 }
 
+.avatar-wrap {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+}
+
 .avatar {
   width: 90px;
   height: 90px;
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid rgba(254,254,255,0.20);
-  flex-shrink: 0;
-  
+  display: block;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid rgba(20,22,18,0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.avatar-edit-btn i {
+  font-size: 14px;
+  color: #1a1a16;
+}
+
+.avatar-edit-btn:hover {
+  background: var(--accent-light);
+}
+
+.avatar-upload-input {
+  display: none;
 }
 
 .profile-info {
@@ -333,7 +348,7 @@ body {
   align-items: flex-start;
   gap: 14px;
   min-width: 270px;
-  min-height: 100px;;
+  min-height: 100px;
 }
 
 .stat-icon {
@@ -412,7 +427,7 @@ body {
   padding: 10px 4px;
   border: 1px solid transparent;
   backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: blur(3px);
 }
 
 .recent-thumb {
@@ -631,7 +646,80 @@ transition: transform 0.25s ease;
 }
 
 .form-modal--narrow {
-width: 640px;
+width: 440px;
+}
+
+/* ==========================================
+ Password Input Wrapper
+========================================== */
+.pw-wrap {
+position: relative;
+display: flex;
+align-items: center;
+}
+
+.pw-wrap .form-input {
+width: 100%;
+padding-right: 42px;
+}
+
+.pw-toggle {
+position: absolute;
+right: 12px;
+background: transparent;
+border: none;
+color: var(--text-muted);
+font-size: 14px;
+cursor: pointer;
+padding: 0;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: color 0.2s;
+}
+
+.pw-toggle:hover {
+color: var(--accent);
+}
+
+/* ==========================================
+ Password Strength Bar
+========================================== */
+.strength-bar {
+width: 100%;
+height: 4px;
+background: rgba(255,255,255,0.10);
+border-radius: 4px;
+overflow: hidden;
+margin-top: 2px;
+}
+
+.strength-fill {
+height: 100%;
+width: 0%;
+border-radius: 4px;
+transition: width 0.3s ease, background 0.3s ease;
+}
+
+.strength-label {
+font-size: 11px;
+font-weight: 600;
+margin-top: 2px;
+}
+
+/* ==========================================
+ Field Error & Input Error State
+========================================== */
+.field-error {
+font-size: 11px;
+font-weight: 500;
+color: var(--danger);
+min-height: 14px;
+}
+
+.input-error {
+border-color: var(--danger) !important;
+background: rgba(224,85,85,0.07) !important;
 }
 
 .form-modal-title {
@@ -655,7 +743,7 @@ gap: 14px 20px;
 }
 
 .form-modal--narrow .form-grid {
-grid-template-columns: 1fr 1fr;
+grid-template-columns: 1fr;
 }
 
 .form-group {
