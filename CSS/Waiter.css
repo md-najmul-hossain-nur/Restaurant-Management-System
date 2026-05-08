@@ -2426,3 +2426,168 @@ body {
   color: #ff8c42;
   transform: translateY(-2px);
 }
+
+.waiter-stat-value {
+  font-size: 38px;
+}
+
+.waiter-stat-icon {
+  font-size: 22px;
+  width: 48px;
+  height: 48px;
+}
+
+.order-delivered-btn {
+  font-size: 13px;
+  padding: 10px 14px;
+  width: auto;
+  align-self: flex-end;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.order-right {
+  gap: 8px;
+  min-width: 130px;
+}
+
+.profile-settings-popover {
+  z-index: 200;
+}
+
+.modal {
+  cursor: default;
+}
+
+.modal-content {
+  cursor: auto;
+}
+
+.order-modal-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.order-modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.order-modal-content::-webkit-scrollbar-thumb {
+  background: rgba(200,169,106,0.55);
+  border-radius: 999px;
+}
+
+.order-modal-content {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,169,106,0.55) transparent;
+}
+
+.order-selected-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 12px;
+}
+
+.order-selected-item-price {
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.order-selected-remove {
+  background: none;
+  border: none;
+  color: rgba(224,115,59,0.85);
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.order-selected-remove:hover {
+  color: #e0733b;
+}
+
+.order-status {
+  min-width: 96px;
+  font-size: 11px;
+  padding: 6px 12px;
+}
+
+.waiter-table-media {
+  margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    padding: 0 20px;
+  }
+
+  .brand {
+    font-size: 18px;
+    padding: 5px 12px;
+    letter-spacing: 2px;
+  }
+
+  .admin-title {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 600px) {
+  .order-card-top {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .order-right {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .order-delivered-btn {
+    width: 100%;
+    margin-top: 4px;
+  }
+}
+
+.tab i {
+  font-size: 15px;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 24px;
+  }
+
+  .waiter-stat-value {
+    font-size: 30px;
+  }
+}
+
+.modal.active {
+  display: flex;
+}
+
+.order-new-btn {
+  height: 38px;
+  padding: 0 16px;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.waiter-card {
+  min-height: 96px;
+}
+
+.profile-avatar {
+  border: 2px solid rgba(200,169,106,0.55);
+}

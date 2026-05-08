@@ -1,126 +1,259 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const modal = document.getElementById('newOrderModal');
-  const openBtn = document.querySelector('[data-new-order]');
 
-  // Order delivery logic (only deliver Ready orders)
+  /* ============================================================
+     1. TAB / SECTION NAVIGATION  (was completely missing)
+  ============================================================ */
+  const tabs = document.querySelectorAll('.tab[data-section]');
+  const sections = document.querySelectorAll('.section-content');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = tab.dataset.section;
+
+      tabs.forEach(t => t.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
+
+      tab.classList.add('active');
+      const targetSection = document.getElementById(target);
+      if (targetSection) targetSection.classList.add('active');
+    });
+  });
+
+
+  /* ============================================================
+     2. CLOCK OUT BUTTON
+  ============================================================ */
+  const clockOutBtn = document.querySelector('[data-clock-out]');
+  if (clockOutBtn) {
+    clockOutBtn.addEventListener('click', () => {
+      if (confirm('Are you sure you want to clock out?')) {
+        window.location.href = 'login.html';
+      }
+    });
+  }
+
+
+  /* ============================================================
+     3. TABLES — Take / Release logic
+  ============================================================ */
+  const myTablesGrid   = document.getElementById('myTablesGrid');
+  const availTablesGrid = document.getElementById('availTablesGrid');
+  const myTableCount   = document.getElementById('myTableCount');
+  const availTableCount = document.getElementById('availTableCount');
+
+  const updateTableCounts = () => {
+    if (myTableCount)   myTableCount.textContent   = myTablesGrid   ? myTablesGrid.querySelectorAll('.waiter-table-card').length   : 0;
+    if (availTableCount) availTableCount.textContent = availTablesGrid ? availTablesGrid.querySelectorAll('.waiter-table-card').length : 0;
+  };
+
+  if (myTablesGrid) {
+    myTablesGrid.addEventListener('click', e => {
+      const releaseBtn = e.target.closest('[data-release]');
+      if (!releaseBtn || !availTablesGrid) return;
+
+      const card = releaseBtn.closest('.waiter-table-card');
+      if (!card) return;
+
+      // Swap button to "Take Table"
+      releaseBtn.classList.remove('waiter-table-action--release');
+      releaseBtn.classList.add('waiter-table-action--take');
+      releaseBtn.textContent = 'Take Table';
+      const tableId = releaseBtn.dataset.release;
+      releaseBtn.removeAttribute('data-release');
+      releaseBtn.setAttribute('data-take', tableId);
+
+      availTablesGrid.appendChild(card);
+      updateTableCounts();
+    });
+  }
+
+  if (availTablesGrid) {
+    availTablesGrid.addEventListener('click', e => {
+      const takeBtn = e.target.closest('[data-take]');
+      if (!takeBtn || !myTablesGrid) return;
+
+      const card = takeBtn.closest('.waiter-table-card');
+      if (!card) return;
+
+      // Swap button to "Release Table"
+      takeBtn.classList.remove('waiter-table-action--take');
+      takeBtn.classList.add('waiter-table-action--release');
+      takeBtn.textContent = 'Release Table';
+      const tableId = takeBtn.dataset.take;
+      takeBtn.removeAttribute('data-take');
+      takeBtn.setAttribute('data-release', tableId);
+
+      myTablesGrid.appendChild(card);
+      updateTableCounts();
+    });
+  }
+
+
+  /* ============================================================
+     4. ORDERS — Deliver logic + stat counters
+  ============================================================ */
   const orderSection = document.getElementById('order');
-  const orderList = orderSection ? orderSection.querySelector('.order-list') : null;
+  const orderList    = orderSection ? orderSection.querySelector('.order-list') : null;
+  const orderCountEl = document.getElementById('orderCount');
+
+  const statPending   = document.getElementById('statPending');
+  const statProgress  = document.getElementById('statProgress');
+  const statCompleted = document.getElementById('statCompleted');
+
+  const updateOrderStats = () => {
+    if (!orderList) return;
+    const cards     = orderList.querySelectorAll('.order-card');
+    const pending   = orderList.querySelectorAll('.order-status--ready').length;
+    const inKitchen = orderList.querySelectorAll('.order-status--kitchen').length;
+
+    if (orderCountEl)  orderCountEl.textContent  = cards.length;
+    if (statPending)   statPending.textContent    = pending;
+    if (statProgress)  statProgress.textContent   = inKitchen;
+  };
+
+  // Run once on load
+  updateOrderStats();
 
   if (orderList) {
-    orderList.addEventListener('click', (e) => {
+    orderList.addEventListener('click', e => {
       const deliverBtn = e.target.closest('[data-deliver-order]');
       if (!deliverBtn) return;
 
-      const card = deliverBtn.closest('.order-card');
+      const card     = deliverBtn.closest('.order-card');
       const statusEl = card ? card.querySelector('.order-status') : null;
       if (!statusEl) return;
 
       const isReady = statusEl.classList.contains('order-status--ready');
-      if (!isReady) return;
+      if (!isReady) {
+        // Visual feedback — shake the status badge
+        statusEl.style.outline = '2px solid rgba(224,115,59,0.8)';
+        setTimeout(() => statusEl.style.outline = '', 1000);
+        return;
+      }
 
       statusEl.classList.remove('order-status--ready', 'order-status--kitchen');
       statusEl.classList.add('order-status--delivered');
       statusEl.textContent = 'Delivered';
-
       deliverBtn.remove();
+
+      // Increment completed stat
+      if (statCompleted) statCompleted.textContent = (parseInt(statCompleted.textContent) || 0) + 1;
+      updateOrderStats();
     });
   }
 
-  // New Order modal logic
+
+  /* ============================================================
+     5. NEW ORDER MODAL
+  ============================================================ */
+  const modal   = document.getElementById('newOrderModal');
+  const openBtn = document.querySelector('[data-new-order]');
+
   if (modal && openBtn) {
-    const closeEls = modal.querySelectorAll('[data-order-close]');
-    const placeBtn = modal.querySelector('[data-order-place]');
-    const itemButtons = modal.querySelectorAll('[data-menu-item]');
+    const closeEls          = modal.querySelectorAll('[data-order-close]');
+    const placeBtn          = modal.querySelector('[data-order-place]');
+    const itemButtons       = modal.querySelectorAll('[data-menu-item]');
     const selectedItemsList = document.getElementById('selectedItemsList');
     const selectedItemsTotal = document.getElementById('selectedItemsTotal');
 
     const selectedItems = new Map();
 
-    const formatMoney = (amount) => {
-      const safe = Number.isFinite(amount) ? amount : 0;
-      return `$${safe.toFixed(2)}`;
-    };
+    const EMPTY_PLACEHOLDER = '<span style="color:rgba(254,254,255,0.45);font-style:italic">No items selected</span>';
+
+    const formatMoney = amount => `$${(Number.isFinite(amount) ? amount : 0).toFixed(2)}`;
 
     const updateSelectedUI = () => {
-      if (selectedItemsList) selectedItemsList.innerHTML = '';
+      if (!selectedItemsList) return;
 
+      if (selectedItems.size === 0) {
+        selectedItemsList.innerHTML = EMPTY_PLACEHOLDER;   // ← restored placeholder
+        if (selectedItemsTotal) selectedItemsTotal.textContent = formatMoney(0);
+        return;
+      }
+
+      selectedItemsList.innerHTML = '';
       let total = 0;
 
       for (const [name, { qty, price }] of selectedItems.entries()) {
         total += qty * price;
+        const row = document.createElement('div');
+        row.className = 'order-selected-row';
 
-        if (selectedItemsList) {
-          const row = document.createElement('div');
-          row.className = 'order-selected-row';
-          row.textContent = `${qty} x ${name}`;
-          selectedItemsList.appendChild(row);
-        }
+        // Remove button per item
+        row.innerHTML = `
+          <span>${qty} × ${name}</span>
+          <span class="order-selected-item-price">${formatMoney(qty * price)}</span>
+          <button class="order-selected-remove" data-remove="${name}" aria-label="Remove ${name}">×</button>
+        `;
+        selectedItemsList.appendChild(row);
       }
 
       if (selectedItemsTotal) selectedItemsTotal.textContent = formatMoney(total);
     };
 
+    // Remove individual items
+    selectedItemsList && selectedItemsList.addEventListener('click', e => {
+      const removeBtn = e.target.closest('[data-remove]');
+      if (!removeBtn) return;
+      selectedItems.delete(removeBtn.dataset.remove);
+      updateSelectedUI();
+    });
+
     const openModal = () => {
       modal.removeAttribute('inert');
       modal.classList.add('active');
       modal.setAttribute('aria-hidden', 'false');
-
       const select = document.getElementById('orderTableSelect');
-      if (select) {
-        setTimeout(() => {
-          try {
-            select.focus();
-          } catch {
-            // ignore
-          }
-        }, 0);
-      }
+      if (select) setTimeout(() => { try { select.focus(); } catch {} }, 50);
     };
 
     const closeModal = () => {
       modal.classList.remove('active');
-      if (modal.contains(document.activeElement)) {
-        try {
-          openBtn.focus();
-        } catch {
-          // ignore
-        }
-      }
       modal.setAttribute('aria-hidden', 'true');
       modal.setAttribute('inert', '');
+      if (modal.contains(document.activeElement)) {
+        try { openBtn.focus(); } catch {}
+      }
       selectedItems.clear();
       updateSelectedUI();
     };
 
     openBtn.addEventListener('click', openModal);
-
-    closeEls.forEach((el) => {
-      el.addEventListener('click', closeModal);
-    });
+    closeEls.forEach(el => el.addEventListener('click', closeModal));
 
     if (placeBtn) {
-      placeBtn.addEventListener('click', closeModal);
+      placeBtn.addEventListener('click', () => {
+        const select = document.getElementById('orderTableSelect');
+        if (!select || !select.value) {
+          select && (select.style.outline = '2px solid rgba(224,115,59,0.8)');
+          setTimeout(() => select && (select.style.outline = ''), 1200);
+          return;
+        }
+        if (selectedItems.size === 0) {
+          if (selectedItemsTotal) {
+            selectedItemsTotal.style.color = 'rgba(224,115,59,0.9)';
+            setTimeout(() => selectedItemsTotal.style.color = '', 1200);
+          }
+          return;
+        }
+        // Order placed — close modal
+        closeModal();
+      });
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && modal.classList.contains('active')) {
-        closeModal();
-      }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
     });
 
-    itemButtons.forEach((btn) => {
+    itemButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        const name = btn.getAttribute('data-name') || 'Item';
-        const priceRaw = btn.getAttribute('data-price') || '0';
-        const price = Number(priceRaw);
-
+        const name  = btn.getAttribute('data-name')  || 'Item';
+        const price = parseFloat(btn.getAttribute('data-price')) || 0;
         const existing = selectedItems.get(name);
-        if (existing) {
-          selectedItems.set(name, { qty: existing.qty + 1, price: existing.price });
-        } else {
-          selectedItems.set(name, { qty: 1, price: Number.isFinite(price) ? price : 0 });
-        }
-
+        selectedItems.set(name, existing
+          ? { qty: existing.qty + 1, price: existing.price }
+          : { qty: 1, price: Number.isFinite(price) ? price : 0 }
+        );
         updateSelectedUI();
       });
     });
@@ -128,95 +261,74 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSelectedUI();
   }
 
-  // Profile settings popover + modals
-  const settingsBtn = document.querySelector('[data-profile-settings]');
-  const popover = document.getElementById('profileSettingsPopover');
-  const editProfileBtn = document.querySelector('[data-open-edit-profile]');
-  const passwordBtn = document.querySelector('[data-open-password]');
-  const editProfileModal = document.getElementById('editProfileModal');
+
+  /* ============================================================
+     6. PROFILE SETTINGS POPOVER
+  ============================================================ */
+  const settingsBtn   = document.querySelector('[data-profile-settings]');
+  const popover       = document.getElementById('profileSettingsPopover');
+  const editProfileBtn    = document.querySelector('[data-open-edit-profile]');
+  const passwordBtn       = document.querySelector('[data-open-password]');
+  const editProfileModal    = document.getElementById('editProfileModal');
   const changePasswordModal = document.getElementById('changePasswordModal');
-  const profileModalCloseBtns = document.querySelectorAll('[data-profile-modal-close]');
 
   const openPopover = () => {
     if (!popover) return;
     popover.removeAttribute('inert');
     popover.classList.add('active');
     popover.setAttribute('aria-hidden', 'false');
-    const firstAction = popover.querySelector('button');
-    if (firstAction) {
-      setTimeout(() => {
-        try {
-          firstAction.focus();
-        } catch {
-          // ignore
-        }
-      }, 0);
-    }
+    const first = popover.querySelector('button');
+    if (first) setTimeout(() => { try { first.focus(); } catch {} }, 50);
   };
 
   const closePopover = () => {
     if (!popover) return;
     popover.classList.remove('active');
-    if (popover.contains(document.activeElement) && settingsBtn) {
-      try {
-        settingsBtn.focus();
-      } catch {
-        // ignore
-      }
-    }
     popover.setAttribute('aria-hidden', 'true');
     popover.setAttribute('inert', '');
-  };
-
-  const openProfileModal = (targetModal, focusId) => {
-    if (!targetModal) return;
-    closePopover();
-    targetModal.classList.add('active');
-    targetModal.setAttribute('aria-hidden', 'false');
-    const focusEl = focusId ? document.getElementById(focusId) : null;
-    if (focusEl) {
-      setTimeout(() => {
-        try {
-          focusEl.focus();
-        } catch {
-          // ignore
-        }
-      }, 0);
-    }
-  };
-
-  const closeProfileModal = (targetModal) => {
-    if (!targetModal) return;
-    targetModal.classList.remove('active');
-    targetModal.setAttribute('aria-hidden', 'true');
-    if (settingsBtn) {
-      try {
-        settingsBtn.focus();
-      } catch {
-        // ignore
-      }
+    if (popover.contains(document.activeElement) && settingsBtn) {
+      try { settingsBtn.focus(); } catch {}
     }
   };
 
   if (settingsBtn && popover) {
     settingsBtn.addEventListener('click', () => {
-      const isOpen = popover.classList.contains('active');
-      if (isOpen) closePopover();
-      else openPopover();
+      popover.classList.contains('active') ? closePopover() : openPopover();
     });
 
-    document.addEventListener('click', (e) => {
+    document.addEventListener('click', e => {
       if (!popover.classList.contains('active')) return;
-      const clickedInside = popover.contains(e.target) || settingsBtn.contains(e.target);
-      if (!clickedInside) closePopover();
+      if (!popover.contains(e.target) && !settingsBtn.contains(e.target)) closePopover();
     });
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && popover.classList.contains('active')) {
-        closePopover();
-      }
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && popover.classList.contains('active')) closePopover();
     });
   }
+
+
+  /* ============================================================
+     7. PROFILE MODALS — open / close
+  ============================================================ */
+  const openProfileModal = (targetModal, focusId) => {
+    if (!targetModal) return;
+    closePopover();
+    targetModal.removeAttribute('inert');          // ← was missing
+    targetModal.classList.add('active');
+    targetModal.setAttribute('aria-hidden', 'false');
+    if (focusId) {
+      const el = document.getElementById(focusId);
+      if (el) setTimeout(() => { try { el.focus(); } catch {} }, 50);
+    }
+  };
+
+  const closeProfileModal = targetModal => {
+    if (!targetModal) return;
+    targetModal.classList.remove('active');
+    targetModal.setAttribute('aria-hidden', 'true');
+    targetModal.setAttribute('inert', '');         // ← lock it back
+    try { settingsBtn && settingsBtn.focus(); } catch {}
+  };
 
   if (editProfileBtn) {
     editProfileBtn.addEventListener('click', () => openProfileModal(editProfileModal, 'profileFullName'));
@@ -226,26 +338,77 @@ document.addEventListener('DOMContentLoaded', () => {
     passwordBtn.addEventListener('click', () => openProfileModal(changePasswordModal, 'currentPassword'));
   }
 
-  profileModalCloseBtns.forEach((btn) => {
+  // Close buttons — unified selector covering both button types in modals
+  document.querySelectorAll('.modal-close, .modal-close-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       closeProfileModal(editProfileModal);
       closeProfileModal(changePasswordModal);
     });
   });
 
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (editProfileModal    && editProfileModal.classList.contains('active'))    closeProfileModal(editProfileModal);
+      if (changePasswordModal && changePasswordModal.classList.contains('active')) closeProfileModal(changePasswordModal);
+    }
+  });
+
+  // Close on backdrop click
+  [editProfileModal, changePasswordModal].forEach(m => {
+    if (!m) return;
+    m.addEventListener('click', e => {
+      if (e.target === m) closeProfileModal(m);
+    });
+  });
+
+
+  /* ============================================================
+     8. EDIT PROFILE — save & reflect changes in the card
+  ============================================================ */
   const editProfileForm = document.getElementById('editProfileForm');
   if (editProfileForm) {
-    editProfileForm.addEventListener('submit', (e) => {
+    editProfileForm.addEventListener('submit', e => {
       e.preventDefault();
+      const name     = document.getElementById('profileFullName')?.value.trim();
+      const email    = document.getElementById('profileEmail')?.value.trim();
+      const phone    = document.getElementById('profilePhone')?.value.trim();
+      const location = document.getElementById('profileLocation')?.value.trim();
+
+      // Reflect in profile card
+      if (name)     { const el = document.getElementById('displayName');     if (el) el.textContent = name; }
+      if (email)    { const el = document.getElementById('displayEmail');    if (el) el.textContent = email; }
+      if (phone)    { const el = document.getElementById('displayPhone');    if (el) el.textContent = phone; }
+      if (location) { const el = document.getElementById('displayLocation'); if (el) el.textContent = location; }
+
       closeProfileModal(editProfileModal);
     });
   }
 
+
+  /* ============================================================
+     9. CHANGE PASSWORD — basic validation
+  ============================================================ */
   const changePasswordForm = document.getElementById('changePasswordForm');
   if (changePasswordForm) {
-    changePasswordForm.addEventListener('submit', (e) => {
+    changePasswordForm.addEventListener('submit', e => {
       e.preventDefault();
+      const newPw     = document.getElementById('newPassword')?.value;
+      const confirmPw = document.getElementById('confirmPassword')?.value;
+
+      if (newPw !== confirmPw) {
+        const confirmEl = document.getElementById('confirmPassword');
+        if (confirmEl) {
+          confirmEl.style.outline = '2px solid rgba(224,115,59,0.9)';
+          confirmEl.setAttribute('placeholder', 'Passwords do not match');
+          setTimeout(() => {
+            confirmEl.style.outline = '';
+            confirmEl.setAttribute('placeholder', '');
+          }, 2000);
+        }
+        return;
+      }
       closeProfileModal(changePasswordModal);
     });
   }
+
 });
