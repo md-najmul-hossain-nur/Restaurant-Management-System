@@ -1,13 +1,11 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-<<<<<<< HEAD
   // Add Recipe (Chief dashboard)
   const recipeModal = document.getElementById('addRecipeModal');
   const recipeOpenBtn = document.querySelector('[data-add-recipe]');
   const recipesGrid = document.getElementById('recipesGrid');
 
   // Order delivery logic (only deliver Ready orders)
-=======
   /* ============================================================
      1. TAB / SECTION NAVIGATION  (was completely missing)
   ============================================================ */
@@ -100,7 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================================
      4. ORDERS — Deliver logic + stat counters
   ============================================================ */
->>>>>>> 833b18fca34a46da87a3205ed597318b1823ed86
   const orderSection = document.getElementById('order');
   const orderList    = orderSection ? orderSection.querySelector('.order-list') : null;
   const orderCountEl = document.getElementById('orderCount');
@@ -270,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateSelectedUI();
   }
 
-<<<<<<< HEAD
   // Add Recipe modal logic
   if (recipeModal && recipeOpenBtn && recipesGrid) {
     const closeEls = recipeModal.querySelectorAll('[data-recipe-close]');
@@ -480,17 +476,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const editProfileBtn = document.querySelector('[data-open-edit-profile]');
   const passwordBtn = document.querySelector('[data-open-password]');
   const editProfileModal = document.getElementById('editProfileModal');
-=======
-
-  /* ============================================================
-     6. PROFILE SETTINGS POPOVER
-  ============================================================ */
-  const settingsBtn   = document.querySelector('[data-profile-settings]');
-  const popover       = document.getElementById('profileSettingsPopover');
-  const editProfileBtn    = document.querySelector('[data-open-edit-profile]');
-  const passwordBtn       = document.querySelector('[data-open-password]');
-  const editProfileModal    = document.getElementById('editProfileModal');
->>>>>>> 833b18fca34a46da87a3205ed597318b1823ed86
   const changePasswordModal = document.getElementById('changePasswordModal');
 
   const openPopover = () => {

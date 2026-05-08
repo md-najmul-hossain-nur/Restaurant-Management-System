@@ -49,6 +49,102 @@ tabs.forEach(tab => {
   });
 })();
 
+// -----------
+// Orders: make "Mark Ready" logical based on status
+(() => {
+  const cards = document.querySelectorAll('.order-card');
+  if (!cards.length) return;
+
+  const normalize = (value) => (value || '').trim().toLowerCase();
+
+  const getStatus = (card) => {
+    const statusEl = card.querySelector('.status-badge');
+    return {
+      el: statusEl,
+      value: normalize(statusEl ? statusEl.textContent : '')
+    };
+  };
+
+  const getActionButton = (card) => {
+    return (
+      card.querySelector('.actions [data-mark-ready]') ||
+      card.querySelector('.actions button') ||
+      null
+    );
+  };
+
+  const setActionPill = (card, text) => {
+    const pill = card.querySelector('.actions .pill');
+    if (pill && text) pill.textContent = text;
+  };
+
+  const configureCard = (card) => {
+    const { el: statusEl, value: status } = getStatus(card);
+    const actionBtn = getActionButton(card);
+    if (!actionBtn || !statusEl) return;
+
+    const isQueued = status.includes('queued');
+    const isInProgress = status.includes('in progress') || status.includes('in-progress');
+    const isReady = status.includes('ready');
+    const isServing = status.includes('serving');
+    const isServed = status.includes('served') || status.includes('completed') || status.includes('done');
+
+    // Only Queued / In progress can be marked ready.
+    if (isQueued || isInProgress) {
+      actionBtn.hidden = false;
+      actionBtn.disabled = false;
+      actionBtn.textContent = 'Mark Ready';
+      actionBtn.style.opacity = '';
+
+      actionBtn.onclick = () => {
+        statusEl.textContent = 'Ready';
+        setActionPill(card, 'Awaiting waiter');
+        actionBtn.textContent = '✓ Ready';
+        actionBtn.disabled = true;
+        actionBtn.style.opacity = '0.6';
+        // Once it's ready, don't keep showing an action button.
+        setTimeout(() => {
+          actionBtn.hidden = true;
+        }, 400);
+      };
+
+      return;
+    }
+
+    // Already ready / serving / served: do not show Mark Ready.
+    if (isReady) {
+      actionBtn.hidden = true;
+      actionBtn.disabled = true;
+      actionBtn.onclick = null;
+      return;
+    }
+
+    if (isServing) {
+      // Serving should not show "Mark Ready"; allow marking served instead.
+      actionBtn.hidden = false;
+      actionBtn.disabled = false;
+      actionBtn.textContent = 'Mark Served';
+      actionBtn.style.opacity = '';
+      actionBtn.onclick = () => {
+        statusEl.textContent = 'Served';
+        setActionPill(card, 'Completed');
+        actionBtn.disabled = true;
+        actionBtn.hidden = true;
+      };
+      return;
+    }
+
+    if (isServed) {
+      actionBtn.hidden = true;
+      actionBtn.disabled = true;
+      actionBtn.onclick = null;
+      return;
+    }
+  };
+
+  cards.forEach(configureCard);
+})();
+
 //-----------
 
 const modal = document.getElementById('addEmployeeModal');
