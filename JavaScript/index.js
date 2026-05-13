@@ -63,6 +63,66 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Start rotation
   setInterval(updateHero, rotationInterval);
+
+  // ── Testimony carousel ──────────────────────────────────────────
+  const dots        = document.querySelectorAll('.testimony-dots span');
+  const grid        = document.querySelector('.testimony-grid');
+  const cards       = document.querySelectorAll('.testimony-card');
+  let   activeIndex = 0;
+  let   autoSlide;
+
+  function goTo(index) {
+    // Update active dot
+    dots[activeIndex].classList.remove('active');
+    dots[activeIndex].setAttribute('aria-selected', 'false');
+    activeIndex = index;
+    dots[activeIndex].classList.add('active');
+    dots[activeIndex].setAttribute('aria-selected', 'true');
+
+    // On mobile (≤980px) the grid is a flex row — translate by card widths
+    // On desktop the grid shows all 3 cards, but we still visually highlight
+    if (window.innerWidth <= 980) {
+      grid.style.transform = `translateX(-${(100 / cards.length) * activeIndex}%)`;
+    } else {
+      // Desktop: fade the non-active cards slightly
+      cards.forEach((card, i) => {
+        card.style.transition = 'opacity 0.4s ease';
+        card.style.opacity    = i === activeIndex ? '1' : '0.35';
+      });
+    }
+  }
+
+  function resetAutoSlide() {
+    clearInterval(autoSlide);
+    autoSlide = setInterval(() => {
+      goTo((activeIndex + 1) % dots.length);
+    }, 4000);
+  }
+
+  // Wire up dot clicks and keyboard
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => { goTo(i); resetAutoSlide(); });
+    dot.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goTo(i); resetAutoSlide(); }
+    });
+  });
+
+  // Touch/swipe support for mobile
+  let touchStartX = 0;
+  grid.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  grid.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) goTo(Math.min(activeIndex + 1, dots.length - 1));
+      else          goTo(Math.max(activeIndex - 1, 0));
+      resetAutoSlide();
+    }
+  });
+
+  // Re-apply correct layout on resize
+  window.addEventListener('resize', () => goTo(activeIndex));
+
+  // Kick off auto-rotation
+  goTo(0);
+  resetAutoSlide();
 });
-
-
