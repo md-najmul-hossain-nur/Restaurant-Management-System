@@ -180,6 +180,60 @@ if (modalCancelBtn) {
   });
 }
 
+// --- Employee form: conditional certificate requirement ---
+const employeeForm = document.getElementById('employeeForm');
+if (employeeForm) {
+  const roleSelect = employeeForm.querySelector('#employeeRole') || employeeForm.querySelector('select[name="role"]');
+  const certificateInput = document.getElementById('certificate');
+
+  const certificateError = document.createElement('div');
+  certificateError.className = 'field-error';
+  certificateError.id = 'certificateError';
+  if (certificateInput && certificateInput.parentNode) {
+    certificateInput.parentNode.appendChild(certificateError);
+  }
+
+  const needsCertificate = (role) => {
+    if (!role) return false;
+    const r = String(role).trim().toLowerCase();
+    return r === 'chef' || r === 'chief';
+  };
+
+  const updateCertificateRequirement = () => {
+    const role = roleSelect ? roleSelect.value : '';
+    if (!certificateInput) return;
+    if (needsCertificate(role)) {
+      certificateInput.required = true;
+      certificateError.textContent = '';
+    } else {
+      certificateInput.required = false;
+      certificateError.textContent = '';
+    }
+  };
+
+  // initialize and wire change
+  updateCertificateRequirement();
+  if (roleSelect) roleSelect.addEventListener('change', updateCertificateRequirement);
+
+  // validate on submit (if the project later adds a server endpoint)
+  employeeForm.addEventListener('submit', (e) => {
+    const role = roleSelect ? roleSelect.value : '';
+    if (needsCertificate(role)) {
+      if (!certificateInput || !certificateInput.files || certificateInput.files.length === 0) {
+        e.preventDefault();
+        certificateError.textContent = 'Certificate is required for chef role.';
+        if (certificateInput) {
+          certificateInput.style.outline = '2px solid rgba(224,115,59,0.9)';
+          setTimeout(() => { certificateInput.style.outline = ''; }, 1800);
+          try { certificateInput.focus(); } catch {}
+        }
+        return false;
+      }
+    }
+    // allow submit otherwise
+  });
+}
+
 //-----
 document.querySelectorAll('.table-edit-btn').forEach(btn => {
   btn.addEventListener('click', () => {

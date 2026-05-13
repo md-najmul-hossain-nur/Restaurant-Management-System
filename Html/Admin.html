@@ -576,7 +576,7 @@
         <h3>Add New Employee</h3>
         <button type="button" class="modal-close" aria-label="Close">&times;</button>
       </div>
-      <form id="employeeForm" class="employee-form">
+          <form id="employeeForm" class="employee-form">
         <div class="form-row-flex">
           <div class="form-group">
             <label for="fullName">Full Name</label>
@@ -587,13 +587,13 @@
             <input type="email" id="email" name="email" placeholder="Enter email" required>
           </div>
         </div>
-        <div class="form-row-flex">
+          <div class="form-row-flex">
           <div class="form-group">
-            <label for="role">Role</label>
-            <select id="role" name="role" required>
+            <label for="employeeRole">Role</label>
+            <select id="employeeRole" name="role" required>
               <option value="">Select Role</option>
               <option value="waiter">Waiter</option>
-              <option value="chef">Chef</option>
+                <option value="chief">Chef</option>
             </select>
           </div>
           <div class="form-group">
@@ -603,7 +603,7 @@
         </div>
         <div class="form-group full-width">
           <label for="certificate">Certificate (PDF)</label>
-          <input type="file" id="certificate" name="certificate" accept=".pdf" required>
+          <input type="file" id="certificate" name="certificate" accept=".pdf">
         </div>
         <div class="btn-row">
           <button type="submit" class="btn-primary">Add Employee</button>
