@@ -59,26 +59,5 @@
     }
   };
 
-  // Show/hide certificate input on signup form depending on selected role
-  document.addEventListener('DOMContentLoaded', () => {
-    const roleSelect = document.getElementById('role');
-    const certGroup = document.getElementById('certificateGroup');
-    const certInput = document.getElementById('certificate');
-    if (!roleSelect || !certGroup) return;
-
-    const update = () => {
-      const r = String(roleSelect.value || '').trim().toLowerCase();
-      if (r === 'chief' || r === 'chef') {
-        certGroup.style.display = 'block';
-        if (certInput) certInput.required = true;
-      } else {
-        certGroup.style.display = 'none';
-        if (certInput) { certInput.required = false; certInput.value = ''; }
-      }
-    };
-
-    // Listen to multiple events to catch user interactions reliably
-    ['change', 'input', 'click', 'keyup'].forEach(ev => roleSelect.addEventListener(ev, update));
-    update();
-  });
+  // No certificate logic — signup is customer-only now
 })();
