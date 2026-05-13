@@ -772,6 +772,18 @@ body {
   cursor: pointer;
 }
 
+.customize-option span:first-of-type {
+  flex: 1;
+}
+
+.option-price {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+  flex: 0 0 auto !important;
+}
+
 .customize-option input {
   width: 16px;
   height: 16px;
@@ -779,9 +791,30 @@ body {
 }
 
 .customize-extra {
-  font-size: 12px;
-  color: var(--text-secondary);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
   margin-bottom: 12px;
+  gap: 8px;
+}
+
+.customize-extras-line {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.customize-extras-line strong {
+  color: #fefeff;
+}
+
+.customize-total-line {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent);
 }
 
 .customize-actions {

@@ -39,8 +39,14 @@ const getSelectedOptions = () => {
 
 const updateCustomizeExtras = () => {
   const count = getSelectedOptions().length;
-  const cost = count * EXTRA_PRICE;
-  if (customizeExtraPrice) customizeExtraPrice.textContent = `Extras: ${formatMoney(cost)}`;
+  const extrasCost = count * EXTRA_PRICE;
+  const basePrice = pendingItem ? pendingItem.basePrice : 0;
+  const total = basePrice + extrasCost;
+  if (customizeExtraPrice) {
+    customizeExtraPrice.innerHTML =
+      `<span class="customize-extras-line">Extras: <strong>${formatMoney(extrasCost)}</strong></span>` +
+      `<span class="customize-total-line">Total: <strong>${formatMoney(total)}</strong></span>`;
+  }
 };
 
 const showToast = (message) => {
