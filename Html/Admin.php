@@ -594,12 +594,11 @@ require_once __DIR__ . '/../Php/db.php';
         <h3>Add New Employee</h3>
         <button type="button" class="modal-close" aria-label="Close">&times;</button>
       </div>
-      <p class="form-note">Fields marked <span class="required-mark">*</span> are required. Certificate is required for Chef only.</p>
           <form id="employeeForm" class="employee-form" action="../api/add_employee.php" method="post" enctype="multipart/form-data">
         <div class="form-row-flex">
           <div class="form-group">
-            <label for="fullName">Full Name <span class="required-mark">*</span></label>
-            <input type="text" id="fullName" name="fullName" placeholder="Enter full name" required>
+            <label for="fullName">Full Name</label>
+            <input type="text" id="fullName" name="fullName" placeholder="Enter full name">
           </div>
           <div class="form-group">
             <label for="email">Email <span class="required-mark">*</span></label>
@@ -608,20 +607,20 @@ require_once __DIR__ . '/../Php/db.php';
         </div>
           <div class="form-row-flex">
           <div class="form-group">
-            <label for="employeeRole">Role <span class="required-mark">*</span></label>
-            <select id="employeeRole" name="role" required>
+            <label for="employeeRole">Role</label>
+            <select id="employeeRole" name="role">
               <option value="">Select Role</option>
               <option value="waiter">Waiter</option>
                 <option value="chief">Chef</option>
             </select>
           </div>
           <div class="form-group">
-            <label for="password">Password <span class="required-mark">*</span></label>
-            <input type="password" id="password" name="password" placeholder="Enter password" required minlength="8">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter password">
           </div>
         </div>
         <div class="form-group full-width" id="certificateGroup">
-          <label for="certificate">Certificate (PDF) <span class="required-mark">*</span></label>
+          <label for="certificate">Certificate (PDF)</label>
           <input type="file" id="certificate" name="certificate" accept="application/pdf,.pdf">
         </div>
         <div class="btn-row">

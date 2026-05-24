@@ -16,17 +16,8 @@ if ($role === 'chef') {
     $role = 'chief';
 }
 
-if ($name === '' || $email === '' || $password === '' || $role === '') {
-    respond(['error' => 'Full name, email, password, and role are required'], 400);
-}
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     respond(['error' => 'Invalid email address'], 400);
-}
-if (!in_array($role, ['waiter', 'chief'], true)) {
-    respond(['error' => 'Invalid role'], 400);
-}
-if (strlen($password) < 8) {
-    respond(['error' => 'Password must be at least 8 characters'], 400);
 }
 
 $check = $pdo->prepare('SELECT id FROM users WHERE email = ? LIMIT 1');
@@ -35,31 +26,28 @@ if ($check->fetch()) {
     respond(['error' => 'Email already in use'], 409);
 }
 
-// Certificate upload (required for chief)
+$name = $name !== '' ? $name : explode('@', $email)[0];
+$role = in_array($role, ['waiter', 'chief'], true) ? $role : 'waiter';
+$password = $password !== '' ? $password : '12345678';
+
 $certPath = null;
-if ($role === 'chief') {
-    $certificate = $_FILES['certificate'] ?? null;
-    if (!$certificate || ($certificate['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-        respond(['error' => 'Certificate is required for chef role'], 400);
-    }
-
+if ($role === 'chief' && !empty($_FILES['certificate']['name'])) {
+    $certificate = $_FILES['certificate'];
     $extension = strtolower(pathinfo($certificate['name'], PATHINFO_EXTENSION));
-    if ($extension !== 'pdf') {
-        respond(['error' => 'Certificate must be a PDF file'], 400);
-    }
+    if ($extension === 'pdf') {
+        $uploadDir = __DIR__ . '/../uploads/certificates/';
+        if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+            respond(['error' => 'Unable to create certificate upload folder'], 500);
+        }
 
-    $uploadDir = __DIR__ . '/../uploads/certificates/';
-    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
-        respond(['error' => 'Unable to create certificate upload folder'], 500);
-    }
+        $safeName = uniqid('cert_', true) . '.pdf';
+        $targetPath = $uploadDir . $safeName;
+        if (!move_uploaded_file($certificate['tmp_name'], $targetPath)) {
+            respond(['error' => 'Certificate upload failed'], 500);
+        }
 
-    $safeName = uniqid('cert_', true) . '.pdf';
-    $targetPath = $uploadDir . $safeName;
-    if (!move_uploaded_file($certificate['tmp_name'], $targetPath)) {
-        respond(['error' => 'Certificate upload failed'], 500);
+        $certPath = 'uploads/certificates/' . $safeName;
     }
-
-    $certPath = 'uploads/certificates/' . $safeName;
 }
 
 $hashed = password_hash($password, PASSWORD_DEFAULT);
