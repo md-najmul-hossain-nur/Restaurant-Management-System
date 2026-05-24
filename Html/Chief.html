@@ -76,7 +76,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
                 </div>
                 <div class="waiter-stat-body">
                   <div class="waiter-stat-label">Pending Orders</div>
-                  <div class="waiter-stat-value">0</div>
+                  <div class="waiter-stat-value" id="statPending">0</div>
                 </div>
               </div>
             </div>
@@ -88,7 +88,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
                 </div>
                 <div class="waiter-stat-body">
                   <div class="waiter-stat-label">In Progress</div>
-                  <div class="waiter-stat-value">2</div>
+                  <div class="waiter-stat-value" id="statProgress">0d="statProgress">0</div>
                 </div>
               </div>
             </div>
@@ -152,8 +152,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
               <div class="metrics-list">
                 <div class="list-row">
                   <div>
-                    <strong>Table 3</strong>
-                    <p>Margherita pizza and salad</p>
+                    <strong>No live order summary</strong>
+                    <p>Connect this section to the kitchen orders API.</p>
                   </div>
                   <span class="pill">In progress</span>
                 </div>

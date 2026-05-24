@@ -1,9 +1,12 @@
 <?php
 session_start();
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: login.html');
-    exit;
+  header('Location: login.html');
+  exit;
 }
+
+// Load DB for server-side rendering of employees
+require_once __DIR__ . '/../Php/db.php';
 ?>
 
 <!DOCTYPE html>
@@ -142,41 +145,59 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
           </div>
 
           <div class="employees-grid">
-            <div class="employee-card">
-              <div class="employee-info">
-                <h4>Marco Rossi</h4>
-                <p>marco.rossi@feliciano.com</p>
-                <div class="status-badges">
-                  <span class="badge clocked-out"><i class="fas fa-clock"></i> Clocked Out</span>
-                  <span class="badge approved"><i class="fas fa-check"></i> Approved</span>
-                </div>
-              </div>
-              <span class="role-badge waiter">Waiter</span>
-            </div>
+            <?php
+            // Fetch employees (chiefs and waiters) from DB
+            $stmt = $pdo->prepare(
+                "SELECT u.id, u.name, u.email, u.role, COALESCE(u.created_at, NOW()) AS created_at,
+                        c.certificate_path, w.shift
+                 FROM users u
+                 LEFT JOIN chiefs c ON c.user_id = u.id
+                 LEFT JOIN waiters w ON w.user_id = u.id
+                 WHERE u.role IN ('chief','waiter')
+                 ORDER BY u.created_at DESC"
+            );
+            $stmt->execute();
+            $employees = $stmt->fetchAll();
 
-            <div class="employee-card">
-              <div class="employee-info">
-                <h4>Antonio Guido</h4>
-                <p>antonio.guido@feliciano.com</p>
-                <div class="status-badges">
-                  <span class="badge clocked-out"><i class="fas fa-clock"></i> Clocked Out</span>
-                  <span class="badge approved"><i class="fas fa-check"></i> Approved</span>
-                </div>
-              </div>
-              <span class="role-badge chef">Chef</span>
-            </div>
+            if (!$employees) {
+                echo '<div class="employee-empty">No employees yet.</div>';
+            } else {
+                foreach ($employees as $emp) {
+                  $addedTs = $emp['created_at'] ? strtotime($emp['created_at']) : time();
+                  $added = htmlspecialchars(date('c', $addedTs));
+                  $name  = htmlspecialchars($emp['name']);
+                  $email = htmlspecialchars($emp['email']);
+                  $role  = htmlspecialchars($emp['role']);
+                  $roleLabel = $role === 'chief' ? 'Chef' : 'Waiter';
+                  $isClocked = 0;
+                  $lastClock = null;
+                  if (!empty($emp['is_clocked_in'])) $isClocked = (int)$emp['is_clocked_in'];
+                  if (!empty($emp['last_clock_in'])) $lastClock = htmlspecialchars(date('c', strtotime($emp['last_clock_in'])));
 
-            <div class="employee-card">
-              <div class="employee-info">
-                <h4>Isabella Romano</h4>
-                <p>isabella.romano@feliciano.com</p>
-                <div class="status-badges">
-                  <span class="badge clocked-out"><i class="fas fa-clock"></i> Clocked Out</span>
-                  <span class="badge approved"><i class="fas fa-check"></i> Approved</span>
-                </div>
-              </div>
-              <span class="role-badge waiter">Waiter</span>
-            </div>
+                  $dataAttrs = "data-added=\"{$added}\"";
+                  if ($isClocked && $lastClock) $dataAttrs .= " data-clock-in=\"{$lastClock}\" data-clocked=\"1\"";
+
+                  echo "<div class=\"employee-card\" {$dataAttrs}>";
+                  echo "  <div class=\"employee-info\">";
+                  echo "    <h4>{$name}</h4>";
+                  echo "    <p>{$email}</p>";
+                  echo "    <div class=\"status-badges\">";
+                  if ($isClocked) {
+                    echo "      <span class=\"badge clocked-in\"><i class=\"fas fa-check-circle\"></i> Working</span>";
+                  } else {
+                    echo "      <span class=\"badge clocked-out\"><i class=\"fas fa-clock\"></i> Clocked Out</span>";
+                  }
+                  echo "      <span class=\"badge approved\"><i class=\"fas fa-check\"></i> Approved</span>";
+                  echo "    </div>";
+                  echo "    <div class=\"employee-time\"><span class=\"time-label\"></span> <span class=\"time-value\"></span></div>";
+                  echo "  </div>";
+                  echo "  <div class=\"employee-actions\">";
+                  echo "    <span class=\"role-badge {$role}\">{$roleLabel}</span>";
+                  echo "  </div>";
+                  echo "</div>";
+                }
+            }
+            ?>
           </div>
         </div>
 
@@ -519,7 +540,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 <h2>Financial Reports</h2>
                 <p class="sub">View Revenue And Sales Analytics</p>
               </div>
-              <button type="button" class="download-report-btn">
+              <button type="button" class="download-report-btn" id="downloadReportBtn">
                 <i class="fas fa-download"></i> Download Report
               </button>
             </div>
@@ -527,11 +548,11 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             <div class="reports-filter">
               <div class="date-field">
                 <label for="reportStart">Start Date</label>
-                <input type="date" id="reportStart" name="reportStart" value="2026-02-04">
+                <input type="date" id="reportStart" name="reportStart" value="<?php echo date('Y-m-01'); ?>">
               </div>
               <div class="date-field">
                 <label for="reportEnd">End Date</label>
-                <input type="date" id="reportEnd" name="reportEnd" value="2026-02-04">
+                <input type="date" id="reportEnd" name="reportEnd" value="<?php echo date('Y-m-d'); ?>">
               </div>
             </div>
 
@@ -540,21 +561,21 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
                 <div class="report-icon green"><i class="fas fa-dollar-sign"></i></div>
                 <div>
                   <p>Total Revenue</p>
-                  <h3>$122</h3>
+                  <h3 id="reportTotalRevenue">$0</h3>
                 </div>
               </div>
               <div class="report-card">
                 <div class="report-icon blue"><i class="fas fa-receipt"></i></div>
                 <div>
                   <p>Total Orders</p>
-                  <h3>0</h3>
+                  <h3 id="reportTotalOrders">0</h3>
                 </div>
               </div>
               <div class="report-card">
                 <div class="report-icon purple"><i class="fas fa-chart-line"></i></div>
                 <div>
                   <p>Avg Order Value</p>
-                  <h3>$0</h3>
+                  <h3 id="reportAvgOrderValue">$0</h3>
                 </div>
               </div>
             </div>
@@ -573,7 +594,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         <h3>Add New Employee</h3>
         <button type="button" class="modal-close" aria-label="Close">&times;</button>
       </div>
-          <form id="employeeForm" class="employee-form">
+          <form id="employeeForm" class="employee-form" enctype="multipart/form-data">
         <div class="form-row-flex">
           <div class="form-group">
             <label for="fullName">Full Name</label>
@@ -595,7 +616,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
           </div>
           <div class="form-group">
             <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Enter password" required>
+            <input type="password" id="password" name="password" placeholder="Enter password" required minlength="8">
           </div>
         </div>
         <div class="form-group full-width">

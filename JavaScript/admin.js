@@ -575,6 +575,58 @@ document.addEventListener('DOMContentLoaded', () => {
     loadCustomers();
   }
 
+  // ── Financial Reports ───────────────────────────────────
+  const reportStart = document.getElementById('reportStart');
+  const reportEnd = document.getElementById('reportEnd');
+  const reportTotalRevenue = document.getElementById('reportTotalRevenue');
+  const reportTotalOrders = document.getElementById('reportTotalOrders');
+  const reportAvgOrderValue = document.getElementById('reportAvgOrderValue');
+  const downloadReportBtn = document.getElementById('downloadReportBtn');
+
+  function getReportRange() {
+    const start = reportStart?.value || '';
+    const end = reportEnd?.value || '';
+    return { start, end };
+  }
+
+  function setReportSummary(summary) {
+    const revenue = Number(summary?.total_revenue || 0);
+    const orders = Number(summary?.total_orders || 0);
+    const avg = Number(summary?.avg_order_value || 0);
+
+    if (reportTotalRevenue) reportTotalRevenue.textContent = `$${revenue.toFixed(2)}`;
+    if (reportTotalOrders) reportTotalOrders.textContent = String(orders);
+    if (reportAvgOrderValue) reportAvgOrderValue.textContent = `$${avg.toFixed(2)}`;
+  }
+
+  async function loadFinancialReport() {
+    if (!reportStart || !reportEnd) return;
+
+    try {
+      const { start, end } = getReportRange();
+      const url = `../api/get_financial_report.php?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setReportSummary(data.summary);
+    } catch (err) {
+      console.error(err);
+      setReportSummary({ total_revenue: 0, total_orders: 0, avg_order_value: 0 });
+      showAdminToast('Could not load financial report', true);
+    }
+  }
+
+  if (reportStart) reportStart.addEventListener('change', loadFinancialReport);
+  if (reportEnd) reportEnd.addEventListener('change', loadFinancialReport);
+  if (downloadReportBtn) {
+    downloadReportBtn.addEventListener('click', () => {
+      const { start, end } = getReportRange();
+      const url = `../api/get_financial_report.php?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&format=csv`;
+      window.location.href = url;
+    });
+  }
+
+  loadFinancialReport();
+
   // ── Toast ─────────────────────────────────────────────────
   function showAdminToast(msg, isError = false) {
     let toast = document.getElementById('adminToast');

@@ -1,6 +1,7 @@
 <?php
 
 require_once '../PHP/db.php';
+require_once '../PHP/bootstrap.php';
 header('Content-Type: application/json');
 
 requireLogin('admin');
