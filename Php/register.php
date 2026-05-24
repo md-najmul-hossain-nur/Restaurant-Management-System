@@ -44,17 +44,19 @@ try {
     // Hash password
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
 
-    // Insert user (WITHOUT phone column)
+    // Insert user as pending until admin approves the account
     $insertUser = $pdo->prepare(
-        'INSERT INTO users (name, email, password, role) 
-         VALUES (?, ?, ?, ?)'
+        'INSERT INTO users (name, email, password, role, approval_status, approval_decided_at) 
+         VALUES (?, ?, ?, ?, ?, ?)'
     );
 
     $insertUser->execute([
         $fullname,
         $email,
         $passwordHash,
-        $role
+        $role,
+        'pending',
+        null
     ]);
 
     // Success message on signup page

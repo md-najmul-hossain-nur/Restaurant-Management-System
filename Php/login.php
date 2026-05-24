@@ -17,7 +17,7 @@ if (!$identifier || !$password) {
 }
 
 // Login by email only (since no phone column)
-$stmt = $pdo->prepare('SELECT id, name, email, password, role FROM users WHERE email = ? LIMIT 1');
+$stmt = $pdo->prepare('SELECT id, name, email, password, role, approval_status FROM users WHERE email = ? LIMIT 1');
 $stmt->execute([$identifier]);
 $user = $stmt->fetch();
 
@@ -27,7 +27,18 @@ if (!$user) {
 }
 
 if (!password_verify($password, $user['password'])) {
-    header('Location: ../Html/login.html?error=bad_password');
+    $isAdminFallback = ($user['role'] ?? '') === 'admin'
+        && hash('sha256', $password) === strtolower(trim($user['password'] ?? ''));
+
+    if (!$isAdminFallback) {
+        header('Location: ../Html/login.html?error=bad_password');
+        exit;
+    }
+}
+
+if (($user['role'] ?? '') === 'customer' && ($user['approval_status'] ?? 'approved') !== 'approved') {
+    $statusError = ($user['approval_status'] ?? 'pending') === 'rejected' ? 'rejected' : 'pending';
+    header('Location: ../Html/login.html?error=' . $statusError);
     exit;
 }
 
@@ -46,7 +57,7 @@ $_SESSION['role']   = $user['role'];
 // Redirect based on role
 switch ($user['role']) {
     case 'admin':
-        $redirect = '../Html/Admin.html';
+        $redirect = '../Html/Admin.php';
         break;
     case 'chief':
         $redirect = '../Html/Chief.html';

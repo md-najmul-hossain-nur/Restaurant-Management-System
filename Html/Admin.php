@@ -189,38 +189,19 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
             </div>
 
             <div class="customer-block">
-              <h3>Pending Approvals (<span id="pendingCount">1</span>)</h3>
+              <h3>Pending Approvals (<span id="pendingCount">0</span>)</h3>
               <div class="customer-requests" id="pendingCustomers">
-                <div class="customer-request" data-customer-id="pending-1">
-                  <div class="customer-request-info">
-                    <h4>Bob Brown</h4>
-                    <p>bob@email.com</p>
-                    <small>Member since 3/10/2026</small>
-                  </div>
-                  <div class="customer-request-actions">
-                    <button type="button" class="customer-action-btn approve" data-action="approve">
-                      <i class="fas fa-check"></i> Approve
-                    </button>
-                    <button type="button" class="customer-action-btn reject" data-action="reject">
-                      <i class="fas fa-times"></i> Reject
-                    </button>
-                  </div>
+                <div class="customer-request empty-state">
+                  <p>Loading pending customers...</p>
                 </div>
               </div>
             </div>
 
             <div class="customer-block">
-              <h3>Approved Customers (<span id="approvedCount">1</span>)</h3>
+              <h3>Approved Customers (<span id="approvedCount">0</span>)</h3>
               <div class="approved-customers" id="approvedCustomers">
-                <div class="customer-request approved" data-customer-id="approved-1">
-                  <div class="customer-request-info">
-                    <h4>Alice Johnson</h4>
-                    <p>alice.johnson@email.com</p>
-                    <small>Approved on 2/28/2026</small>
-                  </div>
-                  <div class="customer-request-status">
-                    <span class="status-badge approved-badge"><i class="fas fa-check-circle"></i> Approved</span>
-                  </div>
+                <div class="customer-request approved empty-state">
+                  <p>No approved customers yet.</p>
                 </div>
               </div>
             </div>

@@ -465,34 +465,114 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Customer Approval ─────────────────────────────────────
   const pendingCustomers = document.getElementById('pendingCustomers');
-  if (pendingCustomers) {
-    pendingCustomers.addEventListener('click', async (e) => {
-      const btn = e.target.closest('.customer-action-btn[data-action]');
-      if (!btn) return;
-      const card     = btn.closest('[data-customer-id]');
-      if (!card) return;
-      const action   = btn.dataset.action;
-      const custId   = card.dataset.customerId;
+  const approvedCustomers = document.getElementById('approvedCustomers');
 
-      // For now update DOM only — wire to DB when you have a customer approval API
-      if (action === 'approve') {
-        card.remove();
-        const approvedList = document.getElementById('approvedCustomers');
-        if (approvedList) {
-          const clone = card.cloneNode(true);
-          clone.classList.add('approved');
-          clone.querySelector('.customer-request-actions')?.remove();
-          approvedList.appendChild(clone);
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function formatDate(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString();
+  }
+
+  function renderCustomerLists(data) {
+    if (!pendingCustomers || !approvedCustomers) return;
+
+    const pending = Array.isArray(data?.pending) ? data.pending : [];
+    const approved = Array.isArray(data?.approved) ? data.approved : [];
+
+    pendingCustomers.innerHTML = pending.length ? pending.map(customer => `
+      <div class="customer-request" data-customer-id="${escapeHtml(customer.id)}">
+        <div class="customer-request-info">
+          <h4>${escapeHtml(customer.name)}</h4>
+          <p>${escapeHtml(customer.email)}</p>
+          <small>Member since ${escapeHtml(formatDate(customer.created_at))}</small>
+        </div>
+        <div class="customer-request-actions">
+          <button type="button" class="customer-action-btn approve" data-customer-action="approved">
+            <i class="fas fa-check"></i> Approve
+          </button>
+          <button type="button" class="customer-action-btn reject" data-customer-action="rejected">
+            <i class="fas fa-times"></i> Reject
+          </button>
+        </div>
+      </div>
+    `).join('') : '<div class="customer-request empty-state"><p>No pending customer approvals.</p></div>';
+
+    approvedCustomers.innerHTML = approved.length ? approved.map(customer => `
+      <div class="customer-request approved" data-customer-id="${escapeHtml(customer.id)}">
+        <div class="customer-request-info">
+          <h4>${escapeHtml(customer.name)}</h4>
+          <p>${escapeHtml(customer.email)}</p>
+          <small>Approved on ${escapeHtml(formatDate(customer.approval_decided_at || customer.created_at))}</small>
+        </div>
+        <div class="customer-request-status">
+          <span class="status-badge approved-badge"><i class="fas fa-check-circle"></i> Approved</span>
+        </div>
+      </div>
+    `).join('') : '<div class="customer-request approved empty-state"><p>No approved customers yet.</p></div>';
+
+    const pendingCount = document.getElementById('pendingCount');
+    const approvedCount = document.getElementById('approvedCount');
+    if (pendingCount) pendingCount.textContent = String(pending.length);
+    if (approvedCount) approvedCount.textContent = String(approved.length);
+  }
+
+  async function loadCustomers() {
+    if (!pendingCustomers || !approvedCustomers) return;
+
+    try {
+      const res = await fetch('../api/get_customers.php');
+      const data = await res.json();
+      renderCustomerLists(data);
+    } catch {
+      pendingCustomers.innerHTML = '<div class="customer-request empty-state"><p>Could not load pending customers.</p></div>';
+      approvedCustomers.innerHTML = '<div class="customer-request approved empty-state"><p>Could not load approved customers.</p></div>';
+    }
+  }
+
+  if (pendingCustomers) {
+    const customerApprovalShell = document.querySelector('.customer-approval');
+    if (customerApprovalShell) {
+      customerApprovalShell.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.customer-action-btn[data-customer-action]');
+        if (!btn) return;
+
+        const card = btn.closest('[data-customer-id]');
+        if (!card) return;
+
+        const customerId = card.dataset.customerId;
+        const status = btn.dataset.customerAction;
+
+        try {
+          const res = await fetch('../api/update_customer_status.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customer_id: customerId, status }),
+          });
+          const result = await res.json();
+
+          if (result.success) {
+            await loadCustomers();
+            showAdminToast(`Customer ${status}`);
+          } else {
+            showAdminToast(result.error || 'Failed to update customer', true);
+          }
+        } catch {
+          showAdminToast('Network error.', true);
         }
-      } else {
-        card.remove();
-      }
-      // Update count
-      const countEl = document.getElementById('pendingCount');
-      if (countEl) countEl.textContent =
-        pendingCustomers.querySelectorAll('[data-customer-id]').length;
-      showAdminToast(`Customer ${action}d`);
-    });
+      });
+    }
+
+    loadCustomers();
   }
 
   // ── Toast ─────────────────────────────────────────────────
