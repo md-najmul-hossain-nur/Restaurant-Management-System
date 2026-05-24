@@ -120,6 +120,29 @@ function ensureOrderGuestColumns($pdo) {
     }
 }
 
+function ensureOrderCustomerColumn($pdo) {
+    static $initialized = false;
+    if ($initialized) {
+        return;
+    }
+    $initialized = true;
+
+    $stmt = $pdo->prepare(
+        "SELECT COLUMN_NAME
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'orders'
+           AND COLUMN_NAME = 'customer_id'"
+    );
+    $stmt->execute();
+    $hasCustomerId = (bool) $stmt->fetchColumn();
+
+    if (!$hasCustomerId) {
+        $pdo->exec("ALTER TABLE orders ADD COLUMN customer_id INT DEFAULT NULL AFTER id");
+    }
+}
+
 ensureCustomerApprovalSchema($pdo);
 ensureDefaultAdminAccount($pdo);
 ensureOrderGuestColumns($pdo);
+ensureOrderCustomerColumn($pdo);
