@@ -7,7 +7,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-
 $identifier = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 $role = $_POST['role'] ?? '';
@@ -17,9 +16,9 @@ if (!$identifier || !$password) {
     exit;
 }
 
-// allow login by email OR phone
-$stmt = $pdo->prepare('SELECT id, name, email, password, role FROM users WHERE email = ? OR phone = ? LIMIT 1');
-$stmt->execute([$identifier, $identifier]);
+// Login by email only (since no phone column)
+$stmt = $pdo->prepare('SELECT id, name, email, password, role FROM users WHERE email = ? LIMIT 1');
+$stmt->execute([$identifier]);
 $user = $stmt->fetch();
 
 if (!$user) {
@@ -32,17 +31,17 @@ if (!password_verify($password, $user['password'])) {
     exit;
 }
 
-// Optional: check role matches selected role
+// Role check (optional)
 if ($role && $role !== $user['role']) {
     header('Location: ../Html/login.html?error=role_mismatch');
     exit;
 }
 
-// Set session
+// Set session variables
 $_SESSION['user_id'] = $user['id'];
-$_SESSION['name'] = $user['name'];
-$_SESSION['email'] = $user['email'];
-$_SESSION['role'] = $user['role'];
+$_SESSION['name']   = $user['name'];
+$_SESSION['email']  = $user['email'];
+$_SESSION['role']   = $user['role'];
 
 // Redirect based on role
 switch ($user['role']) {
@@ -61,5 +60,4 @@ switch ($user['role']) {
 
 header('Location: ' . $redirect);
 exit;
-
 ?>

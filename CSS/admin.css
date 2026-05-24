@@ -1569,3 +1569,58 @@ body {
   color: #ff8c42;
   transform: translateY(-2px);
 }
+
+.reservation-approval-panel {
+  margin: 22px 0;
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.035);
+}
+
+.reservation-approval-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.reservation-approval-header h3 {
+  color: #f5ede0;
+  font-size: 18px;
+}
+
+.reservation-requests {
+  display: grid;
+  gap: 12px;
+}
+
+.reservation-request {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 8px;
+  background: rgba(0,0,0,0.16);
+}
+
+.reservation-request h4 {
+  color: #fff;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.reservation-request p {
+  color: rgba(255,255,255,0.72);
+  font-size: 13px;
+  margin: 2px 0;
+}
+
+.reservation-request-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}

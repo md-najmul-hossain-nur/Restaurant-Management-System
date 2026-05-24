@@ -5,26 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Food - Feliciano</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="../CSS/order.css">
 </head>
 <body>
+
   <section class="order-hero">
     <div class="order-hero-overlay"></div>
     <nav class="order-nav">
       <a href="Index.html" class="nav-logo" aria-label="Go to Home">Feliciano</a>
-
       <ul class="nav-links">
         <li><a href="Index.html">Home</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="menu.html">Menu</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
-
       <a href="login.html" class="btn-profile" aria-label="Go to Login">
         <img src="../Images/profile.png" alt="Profile" class="nav-profile-img">
       </a>
     </nav>
-
     <div class="order-hero-text">
       <h1>Order</h1>
       <p>Home &gt; Order</p>
@@ -34,39 +33,72 @@
   <main class="order-page">
     <header class="order-header">
       <h1>Order Food</h1>
-      <p>Fill in your details and confirm the order.</p>
+      <p>Select your items and place your order below.</p>
     </header>
 
     <section class="order-card">
-      <form class="order-form" action="#">
-        <div class="order-grid">
-          <div class="order-field">
-            <label for="orderName">Full Name</label>
-            <input type="text" id="orderName" name="orderName" required>
-          </div>
-          <div class="order-field">
-            <label for="orderPhone">Phone</label>
-            <input type="tel" id="orderPhone" name="orderPhone" required>
-          </div>
-          <div class="order-field">
-            <label for="orderItem">Item</label>
-            <input type="text" id="orderItem" name="orderItem" required>
-          </div>
-          <div class="order-field">
-            <label for="orderQty">Quantity</label>
-            <input type="number" id="orderQty" name="orderQty" min="1" value="1" required>
+      <form class="order-form" id="orderForm">
+
+        <!-- Shown if logged in -->
+        <p class="logged-in-note hidden" id="loggedInNote"></p>
+
+        <!-- Guest fields — hidden if logged in -->
+        <div id="guestFields" class="hidden">
+          <div class="order-grid">
+            <div class="order-field">
+              <label for="orderName">Full Name <span class="required">*</span></label>
+              <input type="text" id="orderName" placeholder="Your full name">
+            </div>
+            <div class="order-field">
+              <label for="orderPhone">Phone <span class="required">*</span></label>
+              <input type="tel" id="orderPhone" placeholder="+1 (555) 000-0000">
+            </div>
           </div>
         </div>
 
+        <!-- Table (optional) -->
+        <div class="order-field">
+          <label for="orderTable">Table Number <span class="optional">(optional)</span></label>
+          <select id="orderTable" class="order-select">
+            <option value="">— No table / Takeaway —</option>
+            <option value="1">Table 1 (2 seats)</option>
+            <option value="2">Table 2 (2 seats)</option>
+            <option value="3">Table 3 (4 seats)</option>
+            <option value="4">Table 4 (4 seats)</option>
+            <option value="5">Table 5 (4 seats)</option>
+            <option value="6">Table 6 (6 seats)</option>
+            <option value="7">Table 7 (6 seats)</option>
+            <option value="8">Table 8 (8 seats)</option>
+          </select>
+        </div>
+
+        <!-- Item picker -->
+        <div class="order-field">
+          <label>Menu Items <span class="required">*</span></label>
+          <div class="item-picker-row">
+            <select id="orderItem" class="order-select">
+              <option value="">Loading menu…</option>
+            </select>
+            <button type="button" class="add-item-btn" id="addItemBtn">
+              <i class="fas fa-plus"></i> Add
+            </button>
+          </div>
+          <div id="itemsList"></div>
+        </div>
+
+        <!-- Notes -->
         <div class="order-field full">
-          <label for="orderNotes">Notes</label>
-          <textarea id="orderNotes" name="orderNotes" rows="4" placeholder="Any special request?"></textarea>
+          <label for="orderNotes">Special Requests <span class="optional">(optional)</span></label>
+          <textarea id="orderNotes" rows="3" placeholder="Allergies, preferences, special requests…"></textarea>
         </div>
 
         <div class="order-actions">
-          <button type="submit" class="order-btn primary">Confirm Order</button>
+          <button type="submit" class="order-btn primary" id="submitOrderBtn">
+            <i class="fas fa-check"></i> Confirm Order
+          </button>
           <a class="order-btn ghost" href="Index.html">Cancel</a>
         </div>
+
       </form>
     </section>
   </main>
@@ -82,7 +114,6 @@
           <a href="" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
         </div>
       </div>
-
       <div class="footer-col">
         <h5>Open Hours</h5>
         <table>
@@ -95,7 +126,6 @@
           <tr><td>Sunday</td><td>9:00 – 02:00</td></tr>
         </table>
       </div>
-
       <div class="footer-col">
         <h5>Instagram</h5>
         <div class="instagram-grid">
@@ -107,25 +137,26 @@
           <img src="../Images/food/main%20cross/pexels-vince-17568011.jpg" alt="Instagram post 6">
         </div>
       </div>
-
       <div class="footer-col">
         <h5>Newsletter</h5>
         <form class="newsletter-form">
           <p>Far Far Away, Behind The Word Mountains, Far From The Countries.</p>
-          <input
-            type="email"
-            placeholder="Enter Email Address"
-            aria-label="Email address"
-            required
-          >
+          <input type="email" placeholder="Enter Email Address" aria-label="Email address" required>
           <button type="submit">Subscribe</button>
         </form>
       </div>
     </div>
-
     <div class="footer-bottom">
       &copy; 2024 Feliciano Restaurant. All Rights Reserved.
     </div>
   </footer>
+
+  <!-- Toast -->
+  <div class="order-toast" id="orderToast">
+    <i class="fas fa-check-circle"></i>
+    <span id="toastMsg"></span>
+  </div>
+
+  <script src="../JavaScript/Customer orders.js"></script>
 </body>
 </html>

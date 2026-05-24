@@ -433,3 +433,385 @@ body {
     color: rgba(255, 255, 255, 0.3);
     letter-spacing: 1px;
   }
+/* ============================================================
+   VISUAL POLISH FIX
+   ============================================================ */
+
+/* Card — more contrast and definition */
+.order-card {
+  width: min(560px, 94vw);
+  background: #ffffff;
+  padding: 36px 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.10);
+  border: 1px solid #e8e2d9;
+}
+
+/* Inputs — clearer borders and focus */
+.order-field input,
+.order-field textarea {
+  border: 1.5px solid #d0c9be;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.92rem;
+  font-family: 'Poppins', sans-serif;
+  background: #faf8f5;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.order-field input:focus,
+.order-field textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(200,169,106,0.15);
+  background: #fff;
+}
+
+/* Select — match input style */
+.order-select {
+  border: 1.5px solid #d0c9be;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.92rem;
+  font-family: 'Poppins', sans-serif;
+  background: #faf8f5;
+  color: var(--dark);
+  width: 100%;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23888' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-color: #faf8f5;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.order-select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(200,169,106,0.15);
+}
+
+/* Labels */
+.order-field label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #3a3228;
+  margin-bottom: 4px;
+}
+
+/* Add button — gold, styled */
+.add-item-btn {
+  background: var(--gold);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.add-item-btn:hover  { background: #b8945a; }
+.add-item-btn:active { transform: scale(0.97); }
+
+/* Item picker row */
+.item-picker-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.item-picker-row .order-select { flex: 1; }
+
+/* Selected items list container */
+#itemsList {
+  margin-top: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Each selected item row */
+.selected-item-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #faf8f5;
+  border: 1px solid #ede8e0;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+.sel-name {
+  color: #2a2218;
+  font-weight: 500;
+}
+
+.sel-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid #e0d8cc;
+  border-radius: 20px;
+  padding: 2px 6px;
+}
+
+.qty-btn {
+  background: none;
+  border: none;
+  color: #8a6e2f;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.qty-btn:hover { background: rgba(200,169,106,0.15); }
+
+.sel-qty {
+  min-width: 18px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--dark);
+}
+
+.sel-price {
+  color: #8a6e2f;
+  font-weight: 600;
+  font-size: 0.9rem;
+  min-width: 56px;
+  text-align: right;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px 4px;
+  border-radius: 50%;
+  transition: color 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.remove-btn:hover {
+  color: #c0392b;
+  background: rgba(192,57,43,0.08);
+}
+
+/* Subtotal row */
+.items-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(200,169,106,0.08);
+  border: 1px solid rgba(200,169,106,0.25);
+  border-radius: 8px;
+  margin-top: 4px;
+  font-weight: 700;
+  color: #7a5f20;
+  font-size: 0.92rem;
+}
+
+/* No items message */
+.no-items {
+  color: #bbb;
+  font-size: 0.85rem;
+  padding: 8px 0 4px;
+  font-style: italic;
+}
+
+/* Confirm + Cancel buttons */
+.order-btn.primary {
+  background: var(--gold);
+  color: #fff;
+  border: none;
+  padding: 11px 24px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.order-btn.primary:hover  { background: #b8945a; }
+.order-btn.primary:active { transform: scale(0.97); }
+.order-btn.primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.order-btn.ghost {
+  background: #f1ece6;
+  color: #5a4a35;
+  border: 1.5px solid #ddd5c8;
+  padding: 11px 24px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.order-btn.ghost:hover { background: #e8e0d5; }
+
+.order-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding-top: 4px;
+}
+
+/* Section divider for guest fields */
+#guestFields {
+  border-bottom: 1.5px solid #ede8e0;
+  padding-bottom: 16px;
+  margin-bottom: 4px;
+}
+
+/* Logged in note */
+.logged-in-note {
+  background: rgba(200,169,106,0.10);
+  border: 1.5px solid rgba(200,169,106,0.30);
+  color: #7a5f20;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+/* ── Final layout fixes ── */
+
+/* Fix page bottom padding so card never overlaps footer */
+.order-page {
+  padding: 36px 20px 80px;
+}
+
+/* Fix card height — let it grow naturally, no overlap */
+.order-card {
+  width: min(560px, 94vw);
+  margin-bottom: 40px;
+}
+
+/* Hide logged-in-note when empty (has no text) */
+.logged-in-note:empty {
+  display: none;
+}
+
+/* Also hide it when the hidden class is applied */
+.logged-in-note.hidden {
+  display: none !important;
+}
+
+/* ── Prevent footer overlap when items are added ── */
+body {
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+.order-page {
+  min-height: auto;
+  padding: 36px 20px 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.order-card {
+  width: min(560px, 94vw);
+  margin-bottom: 0;
+  /* Let card grow naturally — page scrolls, footer stays below */
+}
+
+footer {
+  position: relative;
+  z-index: 1;
+  margin-top: 0 !important;
+}
+
+/* ── Toast — centered, beautiful ── */
+.order-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.85);
+  background: #ffffff;
+  border: none;
+  border-radius: 16px;
+  padding: 28px 40px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 9999;
+  min-width: 280px;
+  max-width: 360px;
+}
+
+.order-toast.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.order-toast i {
+  font-size: 2.4rem;
+  color: #c8a96a;
+}
+
+.order-toast #toastMsg {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2a2218;
+  line-height: 1.5;
+}
+
+/* Dim background overlay when toast shows */
+.toast-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 9998;
+}
+
+.toast-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}

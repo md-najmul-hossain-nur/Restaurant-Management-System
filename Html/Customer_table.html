@@ -1,3 +1,10 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'customer') {
+    header('Location: login.html');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -64,7 +71,7 @@
         <!-- Upcoming Reservations -->
         <h2 class="section-title">Upcoming Reservations</h2>
 
-        <div class="reservations-list">
+        <div class="reservations-list" id="reservationsList">
 
           <!-- Reservation Card 1 — Confirmed -->
           <div class="reservation-card">
@@ -245,7 +252,7 @@
 
         <div>
           <div class="table-picker-label">Selected Table</div>
-          <div class="table-grid">
+          <div class="table-grid" id="tableChipGrid">
             <div class="table-chip" onclick="selectTable(this)" data-table="1">
               <i class="fas fa-chair"></i>
               <span>Table 1</span>

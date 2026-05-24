@@ -336,10 +336,35 @@ body {
   border: 1px solid rgba(129,199,132,0.35);
 }
 
+.status-badge.approved {
+  background-color: rgba(46,125,50,0.20);
+  color: #81c784;
+  border: 1px solid rgba(129,199,132,0.35);
+}
+
 .status-badge.pending {
   background-color: rgba(154,117,0,0.20);
   color: #ffd54f;
   border: 1px solid rgba(255,213,79,0.35);
+}
+
+.status-badge.rejected,
+.status-badge.cancelled {
+  background-color: rgba(127,29,29,0.20);
+  color: #fca5a5;
+  border: 1px solid rgba(252,165,165,0.35);
+}
+
+.reservations-empty {
+  background: var(--card-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .card-meta {
@@ -524,6 +549,16 @@ body {
   transform: translateY(-3px);
 }
 
+.browser-card.blocked {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.browser-card.blocked:hover {
+  transform: none;
+  border-color: rgba(255,255,255,0.09);
+}
+
 .browser-card-img-wrap {
   position: relative;
   width: 100%;
@@ -574,6 +609,27 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+.browser-card-status-badge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: rgba(154,117,0,0.82);
+  border: 1px solid rgba(255,213,79,0.45);
+  backdrop-filter: blur(4px);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffe08a;
+  text-transform: capitalize;
+}
+
+.browser-card-status-badge.occupied {
+  background: rgba(127,29,29,0.82);
+  border-color: rgba(252,165,165,0.45);
+  color: #fecaca;
 }
 
 .browser-card-body {

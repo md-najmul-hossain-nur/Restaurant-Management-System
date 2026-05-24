@@ -203,6 +203,35 @@
     flex-direction: column;
     gap: 8px;
   }
+
+  .signup-message {
+    display: none;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 9px 12px;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: center;
+  }
+
+  .signup-message.is-success,
+  .signup-message.is-error {
+    display: block;
+  }
+
+  .signup-message.is-success {
+    color: #14532d;
+    background: rgba(220, 252, 231, 0.92);
+    border: 1px solid rgba(34, 197, 94, 0.45);
+  }
+
+  .signup-message.is-error {
+    color: #7f1d1d;
+    background: rgba(254, 226, 226, 0.92);
+    border: 1px solid rgba(239, 68, 68, 0.45);
+  }
   
   .form-group {
     display: flex;

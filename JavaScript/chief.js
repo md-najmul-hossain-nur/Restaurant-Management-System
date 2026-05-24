@@ -1,345 +1,377 @@
-// Chief Dashboard JavaScript - Modal and Form Management
+// chief.js — Feliciano Chief Dashboard
+// Covers: tab nav, clock out, recipe CRUD (DB-connected),
+//         order mark-ready (DB-connected), profile modals
 
-// Get the current page from data attribute
-const currentPage = document.body.getAttribute('data-page');
-
-// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  initializeModals();
-  initializeEventListeners();
-  loadRecipes();
-  loadProfile();
-});
 
-// ============================================
-// MODAL MANAGEMENT
-// ============================================
+  // ── Tab Navigation ────────────────────────────────────────
+  const tabs     = document.querySelectorAll('.tab[data-section]');
+  const sections = document.querySelectorAll('.section-content');
 
-function initializeModals() {
-  // Close modal buttons
-  document.querySelectorAll('[data-close-modal]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      if (document.body.classList.contains('is-clocked-out')) return;
+      const target = tab.dataset.section;
+      tabs.forEach(t => t.classList.remove('active'));
+      sections.forEach(s => s.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(target)?.classList.add('active');
+    });
+  });
+
+  // ── Clock Out ─────────────────────────────────────────────
+  const clockBtn = document.querySelector('[data-clock-out]');
+  if (clockBtn) {
+    const applyState = (out) => {
+      document.body.classList.toggle('is-clocked-out', out);
+      clockBtn.textContent = out ? 'Clock In' : 'Clock Out';
+    };
+    applyState(false);
+    clockBtn.addEventListener('click', () =>
+      applyState(!document.body.classList.contains('is-clocked-out'))
+    );
+  }
+
+  // ── Toast ─────────────────────────────────────────────────
+  function showToast(msg, isError = false) {
+    const toast   = document.getElementById('successToast');
+    const msgSpan = toast?.querySelector('.toast-msg');
+    if (!toast) return;
+    if (msgSpan) msgSpan.textContent = msg;
+    toast.style.borderColor = isError ? 'rgba(224,85,85,.45)' : 'rgba(200,169,106,.45)';
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // ── Recipe Modal ──────────────────────────────────────────
+  const recipeModal    = document.getElementById('addRecipeModal');
+  const recipeOpenBtn  = document.querySelector('[data-add-recipe]');
+  const recipesGrid    = document.getElementById('recipesGrid');
+  const addRecipeForm  = document.getElementById('addRecipeForm');
+  const previewImg     = document.getElementById('recipeImagePreview');
+  const imageFileInput = document.getElementById('recipeImageFile');
+
+  let editingCard = null;
+
+  function openRecipeModal() {
+    if (!recipeModal) return;
+    recipeModal.removeAttribute('inert');
+    recipeModal.classList.add('open');
+    recipeModal.setAttribute('aria-hidden', 'false');
+    setTimeout(() => document.getElementById('recipeName')?.focus(), 50);
+  }
+
+  function closeRecipeModal() {
+    if (!recipeModal) return;
+    recipeModal.classList.remove('open');
+    recipeModal.setAttribute('aria-hidden', 'true');
+    recipeModal.setAttribute('inert', '');
+    editingCard = null;
+    addRecipeForm?.reset();
+    if (previewImg) { previewImg.src = ''; previewImg.hidden = true; }
+    const heading = recipeModal.querySelector('.recipe-modal-heading');
+    if (heading) heading.innerHTML = '<i class="fas fa-bowl-food"></i> Add Recipe';
+    const submitBtn = recipeModal.querySelector('[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Add Recipe';
+  }
+
+  recipeOpenBtn?.addEventListener('click', openRecipeModal);
+
+  recipeModal?.querySelectorAll('[data-recipe-close]').forEach(el =>
+    el.addEventListener('click', closeRecipeModal)
+  );
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && recipeModal?.classList.contains('open')) closeRecipeModal();
+  });
+
+  // Image preview
+  imageFileInput?.addEventListener('change', () => {
+    const file = imageFileInput.files[0];
+    if (!file || !previewImg) return;
+    previewImg.src    = URL.createObjectURL(file);
+    previewImg.hidden = false;
+  });
+
+  // ★ Edit button on existing recipe cards
+  recipesGrid?.addEventListener('click', e => {
+    const editBtn = e.target.closest('[data-edit-recipe]');
+    if (!editBtn) return;
+    const card = editBtn.closest('.recipe-card');
+    if (!card) return;
+    editingCard = card;
+
+    const titleEl = card.querySelector('.card-title');
+    const descEl  = card.querySelector('.recipe-desc');
+    const priceEl = card.querySelector('.recipe-price');
+
+    document.getElementById('recipeName').value    = titleEl?.textContent || '';
+    document.getElementById('recipeDetails').value = (descEl?.textContent || '').replace('Details: ', '');
+    document.getElementById('recipePrice').value   = parseFloat(priceEl?.textContent) || '';
+
+    const heading = recipeModal.querySelector('.recipe-modal-heading');
+    if (heading) heading.innerHTML = '<i class="fas fa-bowl-food"></i> Edit Recipe';
+    const submitBtn = recipeModal.querySelector('[type="submit"]');
+    if (submitBtn) submitBtn.textContent = 'Update Recipe';
+
+    openRecipeModal();
+  });
+
+  // ★ Form submit → save to DB (new) or update DOM (edit)
+  if (addRecipeForm) {
+    addRecipeForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const modal = btn.closest('.modal');
-      if (modal) closeModal(modal);
-    });
-  });
 
-  // Close modal on background click
-  document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeModal(modal);
-    });
-  });
-}
+      const submitBtn = addRecipeForm.querySelector('[type="submit"]');
+      submitBtn.disabled    = true;
+      submitBtn.textContent = 'Saving…';
 
-function openModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal) {
-    modal.classList.add('open');
-    modal.setAttribute('aria-hidden', 'false');
-  }
-}
+      if (editingCard) {
+        // Edit: update DOM only (no dedicated update API yet — add one if needed)
+        const name  = document.getElementById('recipeName').value.trim();
+        const desc  = document.getElementById('recipeDetails').value.trim();
+        const price = document.getElementById('recipePrice').value;
 
-function closeModal(modal) {
-  modal.classList.remove('open');
-  modal.setAttribute('aria-hidden', 'true');
-  // Reset form if it exists
-  const form = modal.querySelector('form');
-  if (form) form.reset();
-}
+        editingCard.querySelector('.card-title').textContent      = name;
+        editingCard.querySelector('.recipe-desc').textContent     = 'Details: ' + desc;
+        editingCard.querySelector('.recipe-price').textContent    = '$' + parseFloat(price).toFixed(2);
+        closeRecipeModal();
+        showToast('Recipe updated!');
+        submitBtn.disabled    = false;
+        submitBtn.textContent = 'Update Recipe';
+        return;
+      }
 
-// ============================================
-// RECIPES PAGE
-// ============================================
+      // New recipe → send to DB
+      try {
+        const formData = new FormData(addRecipeForm);
+        const res      = await fetch('../api/add_recipe.php', { method: 'POST', body: formData });
+        const result   = await res.json();
 
-function initializeEventListeners() {
-  if (currentPage === 'recipes') {
-    const addRecipeBtn = document.getElementById('addRecipeBtn');
-    const recipeForm = document.getElementById('recipeForm');
-    const recipeImageFile = document.getElementById('recipeImageFile');
-    const recipeImageUrl = document.getElementById('recipeImageUrl');
-    const previewImage = document.querySelector('[data-image-preview]');
+        if (result.success) {
+          // Add new card to grid
+          const name    = document.getElementById('recipeName').value.trim();
+          const desc    = document.getElementById('recipeDetails').value.trim();
+          const price   = parseFloat(document.getElementById('recipePrice').value).toFixed(2);
+          const imgSrc  = previewImg && !previewImg.hidden ? previewImg.src : '../Images/food/default.png';
 
-    if (addRecipeBtn) {
-      addRecipeBtn.addEventListener('click', () => openModal('recipeModal'));
-    }
-
-    if (recipeForm) {
-      recipeForm.addEventListener('submit', handleRecipeSubmit);
-    }
-
-    // Image preview handling
-    if (recipeImageFile) {
-      recipeImageFile.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            if (previewImage) previewImage.src = event.target.result;
-          };
-          reader.readAsDataURL(file);
+          const article = document.createElement('article');
+          article.className = 'card order-card recipe-card grid-6';
+          article.dataset.recipeId = result.recipe_id;
+          article.innerHTML = `
+            <span class="status-badge corner-badge">Pending</span>
+            <img class="order-image" src="${imgSrc}" alt="${name}" />
+            <div class="order-body">
+              <div class="card-head">
+                <div>
+                  <h3 class="card-title">${name}</h3>
+                  <p class="card-subtitle">Newly added</p>
+                </div>
+              </div>
+              <p class="recipe-desc">Details: ${desc}</p>
+              <div class="divider"></div>
+              <div class="actions recipe-actions">
+                <span class="pill recipe-price">$${price}</span>
+                <button class="order-edit-btn" data-edit-recipe>Edit</button>
+              </div>
+            </div>`;
+          recipesGrid.appendChild(article);
+          closeRecipeModal();
+          showToast('Recipe submitted for approval!');
+        } else {
+          showToast(result.error || 'Failed to add recipe', true);
         }
-      });
-    }
-
-    if (recipeImageUrl) {
-      recipeImageUrl.addEventListener('change', (e) => {
-        if (previewImage && e.target.value) {
-          previewImage.src = e.target.value;
-        }
-      });
-    }
-  }
-
-  // Profile page
-  if (currentPage === 'profile') {
-    const editProfileBtn = document.getElementById('editProfileBtn');
-    const profileForm = document.getElementById('profileForm');
-    const profileImageFile = document.getElementById('profileImageFile');
-    const profileImageUrl = document.getElementById('profileImageUrl');
-    const previewImage = document.querySelector('[data-profile-preview]');
-
-    if (editProfileBtn) {
-      editProfileBtn.addEventListener('click', () => {
-        loadProfileFormData();
-        openModal('profileModal');
-      });
-    }
-
-    if (profileForm) {
-      profileForm.addEventListener('submit', handleProfileSubmit);
-    }
-
-    // Image preview handling
-    if (profileImageFile) {
-      profileImageFile.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            if (previewImage) previewImage.src = event.target.result;
-          };
-          reader.readAsDataURL(file);
-        }
-      });
-    }
-
-    if (profileImageUrl) {
-      profileImageUrl.addEventListener('change', (e) => {
-        if (previewImage && e.target.value) {
-          previewImage.src = e.target.value;
-        }
-      });
-    }
-  }
-
-  // Clock out button
-  document.querySelectorAll('[data-clock-out]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (confirm('Are you sure you want to clock out?')) {
-        window.location.href = 'login.html';
+      } catch (err) {
+        console.error(err);
+        showToast('Network error. Try again.', true);
+      } finally {
+        submitBtn.disabled    = false;
+        submitBtn.textContent = 'Add Recipe';
       }
     });
+  }
+
+  // ── Load recipes from DB on page load ─────────────────────
+  async function loadRecipes() {
+    if (!recipesGrid) return;
+    try {
+      const res     = await fetch('../api/get_chef_recipes.php');
+      if (!res.ok) return; // silently fall back to hardcoded HTML cards
+      const recipes = await res.json();
+      if (!recipes.length) return;
+
+      recipesGrid.innerHTML = '';
+      recipes.forEach(r => {
+        const article = document.createElement('article');
+        article.className    = 'card order-card recipe-card grid-6';
+        article.dataset.recipeId = r.id;
+        article.innerHTML = `
+          <span class="status-badge corner-badge">${capitalize(r.status)}</span>
+          <img class="order-image" src="${r.image_path || '../Images/food/default.png'}" alt="${r.name}" />
+          <div class="order-body">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">${r.name}</h3>
+                <p class="card-subtitle">${r.status === 'approved' ? 'Live on menu' : 'Awaiting approval'}</p>
+              </div>
+            </div>
+            <p class="recipe-desc">Details: ${r.description || ''}</p>
+            <div class="divider"></div>
+            <div class="actions recipe-actions">
+              <span class="pill recipe-price">$${parseFloat(r.price).toFixed(2)}</span>
+              <button class="order-edit-btn" data-edit-recipe>Edit</button>
+            </div>
+          </div>`;
+        recipesGrid.appendChild(article);
+      });
+    } catch {}
+  }
+
+  function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+
+  loadRecipes();
+
+  // ── Order Mark Ready ─────────────────────────────────────
+  document.querySelectorAll('.order-card').forEach(card => {
+    const statusEl  = card.querySelector('.status-badge');
+    const actionBtn = card.querySelector('[data-mark-ready]');
+    if (!actionBtn || !statusEl) return;
+
+    const status = (statusEl.textContent || '').trim().toLowerCase();
+    if (status === 'ready' || status === 'served') {
+      actionBtn.hidden   = true;
+      actionBtn.disabled = true;
+      return;
+    }
+
+    actionBtn.addEventListener('click', async () => {
+      const orderId = card.dataset.orderId;
+      if (orderId) {
+        try {
+          await fetch('../api/update_order_status.php', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ order_id: parseInt(orderId), status: 'ready' }),
+          });
+        } catch {}
+      }
+      statusEl.textContent  = 'Ready';
+      actionBtn.textContent = '✓ Ready';
+      actionBtn.disabled    = true;
+      setTimeout(() => { actionBtn.hidden = true; }, 400);
+      showToast('Order marked as ready!');
+    });
   });
-}
 
-function handleRecipeSubmit(e) {
-  e.preventDefault();
-
-  const recipeName = document.getElementById('recipeName').value;
-  const recipeTime = document.getElementById('recipeTime').value;
-  const recipeIngredients = document.getElementById('recipeIngredients').value;
-  const recipeNote = document.getElementById('recipeNote').value;
-  const recipeImageUrl = document.getElementById('recipeImageUrl').value;
-  const previewImage = document.querySelector('[data-image-preview]');
-
-  // Get image from preview or use default
-  let imageUrl = recipeImageUrl || previewImage.src;
-  if (!imageUrl || imageUrl.includes('bowl.png')) {
-    imageUrl = '../Images/food/bowl.png';
-  }
-
-  // Create recipe object
-  const recipe = {
-    id: Date.now(),
-    name: recipeName,
-    time: recipeTime,
-    ingredients: recipeIngredients.split('\n').filter(i => i.trim()),
-    note: recipeNote,
-    image: imageUrl,
-    createdAt: new Date().toLocaleDateString()
+  // ── Profile Modals (identical to waiter) ─────────────────
+  const overlays = {
+    settings:    document.getElementById('settingsOverlay'),
+    editProfile: document.getElementById('editProfileOverlay'),
+    editPassword: document.getElementById('editPasswordOverlay'),
   };
 
-  // Save to localStorage
-  saveRecipe(recipe);
+  function openOverlay(key)  { overlays[key]?.classList.add('active');    }
+  function closeOverlay(key) { overlays[key]?.classList.remove('active'); }
 
-  // Close modal
-  const modal = document.getElementById('recipeModal');
-  closeModal(modal);
+  document.getElementById('openSettingsBtn')?.addEventListener('click', () => openOverlay('settings'));
+  document.getElementById('closeSettings')?.addEventListener('click',   () => closeOverlay('settings'));
+  document.getElementById('closeEditProfile')?.addEventListener('click', () => closeOverlay('editProfile'));
+  document.getElementById('closeEditPassword')?.addEventListener('click',() => closeOverlay('editPassword'));
 
-  // Reload recipes
-  loadRecipes();
+  document.getElementById('openEditProfile')?.addEventListener('click', () => {
+    closeOverlay('settings'); openOverlay('editProfile');
+  });
+  document.getElementById('openEditPassword')?.addEventListener('click', () => {
+    closeOverlay('settings'); openOverlay('editPassword');
+  });
 
-  // Show success message
-  alert('Recipe added successfully!');
-}
+  Object.values(overlays).forEach(overlay => {
+    overlay?.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+  });
 
-function saveRecipe(recipe) {
-  const recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
-  recipes.push(recipe);
-  localStorage.setItem('recipes', JSON.stringify(recipes));
-}
-
-function loadRecipes() {
-  if (currentPage !== 'recipes') return;
-
-  const recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
-  const recipeList = document.getElementById('recipeList');
-
-  if (!recipeList) return;
-
-  if (recipes.length === 0) {
-    recipeList.innerHTML = `
-      <div class="empty-state" style="grid-column: 1 / -1;">
-        <p>No recipes yet. Click "+ Add Recipe" to get started!</p>
-      </div>
-    `;
-    return;
+  // Load profile from DB
+  async function loadProfile() {
+    try {
+      const res  = await fetch('../api/profile.php');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.user) return;
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      set('displayName',  data.user.name);
+      set('displayEmail', data.user.email);
+      // Pre-fill form
+      const nameInp  = document.getElementById('inputName');
+      const emailInp = document.getElementById('inputEmail');
+      if (nameInp)  nameInp.value  = data.user.name;
+      if (emailInp) emailInp.value = data.user.email;
+    } catch {}
   }
-
-  recipeList.innerHTML = recipes.map(recipe => `
-    <article class="card recipe-card">
-      <img class="recipe-image" src="${recipe.image}" alt="${recipe.name}" onerror="this.src='../Images/food/bowl.png'">
-      <div class="recipe-body">
-        <div>
-          <h3 class="card-title">${recipe.name}</h3>
-          <p class="card-subtitle">Prep time: ${recipe.time}</p>
-        </div>
-        <div class="recipe-meta">
-          <span class="pill">${recipe.time}</span>
-          <span class="pill">${recipe.ingredients.length} ingredients</span>
-        </div>
-        <div class="chip-group">
-          ${recipe.ingredients.slice(0, 2).map(ing => `<span class="chip">${ing.substring(0, 20)}${ing.length > 20 ? '...' : ''}</span>`).join('')}
-        </div>
-        ${recipe.note ? `<p class="card-subtitle">${recipe.note}</p>` : ''}
-        <div class="actions" style="margin-top: 12px; gap: 8px;">
-          <button class="btn btn-secondary" onclick="deleteRecipe(${recipe.id})">Delete</button>
-        </div>
-      </div>
-    </article>
-  `).join('');
-}
-
-function deleteRecipe(recipeId) {
-  if (!confirm('Are you sure you want to delete this recipe?')) return;
-
-  const recipes = JSON.parse(localStorage.getItem('recipes') || '[]');
-  const filtered = recipes.filter(r => r.id !== recipeId);
-  localStorage.setItem('recipes', JSON.stringify(filtered));
-  loadRecipes();
-}
-
-// ============================================
-// PROFILE PAGE
-// ============================================
-
-function handleProfileSubmit(e) {
-  e.preventDefault();
-
-  const profileData = {
-    name: document.getElementById('profileName').value,
-    role: document.getElementById('profileRole').value,
-    email: document.getElementById('profileEmail').value,
-    phone: document.getElementById('profilePhone').value,
-    location: document.getElementById('profileLocation').value,
-    since: document.getElementById('profileSince').value,
-    note: document.getElementById('profileNote').value,
-    image: document.getElementById('profileImageUrl').value || document.querySelector('[data-profile-preview]').src
-  };
-
-  // Save to localStorage
-  localStorage.setItem('profileData', JSON.stringify(profileData));
-
-  // Close modal
-  const modal = document.getElementById('profileModal');
-  closeModal(modal);
-
-  // Reload profile
   loadProfile();
 
-  alert('Profile updated successfully!');
-}
+  // Save profile
+  document.getElementById('saveProfile')?.addEventListener('click', async () => {
+    const name  = document.getElementById('inputName')?.value.trim();
+    const email = document.getElementById('inputEmail')?.value.trim();
+    if (!name || !email) return;
 
-function loadProfileFormData() {
-  const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-
-  if (Object.keys(profileData).length > 0) {
-    document.getElementById('profileName').value = profileData.name || '';
-    document.getElementById('profileRole').value = profileData.role || '';
-    document.getElementById('profileEmail').value = profileData.email || '';
-    document.getElementById('profilePhone').value = profileData.phone || '';
-    document.getElementById('profileLocation').value = profileData.location || '';
-    document.getElementById('profileSince').value = profileData.since || '';
-    document.getElementById('profileNote').value = profileData.note || '';
-    document.getElementById('profileImageUrl').value = profileData.image || '';
-    
-    const previewImage = document.querySelector('[data-profile-preview]');
-    if (previewImage && profileData.image) {
-      previewImage.src = profileData.image;
-    }
-  }
-}
-
-function loadProfile() {
-  if (currentPage !== 'profile') return;
-
-  const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-  const profileCard = document.getElementById('profileCard');
-
-  if (!profileCard) return;
-
-  // Update profile card with saved data
-  const profileName = profileCard.querySelector('[data-profile-name]');
-  const profileRole = profileCard.querySelector('[data-profile-role]');
-  const profileNote = profileCard.querySelector('[data-profile-note]');
-  const profileEmail = profileCard.querySelector('[data-profile-email]');
-  const profilePhone = profileCard.querySelector('[data-profile-phone]');
-  const profileLocation = profileCard.querySelector('[data-profile-location]');
-  const profileSince = profileCard.querySelector('[data-profile-since]');
-  const profileImage = profileCard.querySelector('[data-profile-image]');
-
-  if (Object.keys(profileData).length > 0) {
-    if (profileName) profileName.textContent = profileData.name || 'Richard Clark';
-    if (profileRole) profileRole.textContent = profileData.role || 'Chief Chef';
-    if (profileNote) profileNote.textContent = profileData.note || 'Member of the kitchen team';
-    if (profileEmail) profileEmail.textContent = profileData.email || 'sadique21.hossain@email.com';
-    if (profilePhone) profilePhone.textContent = profileData.phone || '01787967661';
-    if (profileLocation) profileLocation.textContent = profileData.location || 'Motijheel, Dhaka';
-    if (profileSince) profileSince.textContent = profileData.since || 'Member since Jan 2024';
-    if (profileImage && profileData.image) profileImage.src = profileData.image;
-  }
-}
-
-// ============================================
-// ORDERS PAGE
-// ============================================
-
-// Mark order as ready
-document.addEventListener('DOMContentLoaded', () => {
-  if (currentPage === 'orders') {
-    document.querySelectorAll('.order-card .btn').forEach(btn => {
-      if (btn.textContent.includes('Mark Ready')) {
-        btn.addEventListener('click', (e) => {
-          e.target.textContent = '✓ Marked Ready';
-          e.target.style.opacity = '0.6';
-          e.target.disabled = true;
-          setTimeout(() => {
-            e.target.closest('.order-card').style.opacity = '0.5';
-          }, 500);
-        });
+    try {
+      const res    = await fetch('../api/profile.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ action: 'update_profile', name, email }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        document.getElementById('displayName').textContent  = name;
+        document.getElementById('displayEmail').textContent = email;
+        closeOverlay('editProfile');
+        showToast('Profile updated!');
+      } else {
+        showToast(result.error || 'Failed', true);
       }
+    } catch { showToast('Network error.', true); }
+  });
+
+  // Change password
+  document.getElementById('savePassword')?.addEventListener('click', async () => {
+    const cur  = document.getElementById('inputCurrentPwd')?.value;
+    const newP = document.getElementById('inputNewPwd')?.value;
+    const conf = document.getElementById('inputConfirmPwd')?.value;
+    if (!cur || !newP || !conf) return;
+    if (newP.length < 8)   { showToast('Password must be at least 8 characters', true); return; }
+    if (newP !== conf)      { showToast('Passwords do not match', true); return; }
+
+    try {
+      const res    = await fetch('../api/profile.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ action: 'change_password', current_password: cur, new_password: newP }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        document.getElementById('inputCurrentPwd').value = '';
+        document.getElementById('inputNewPwd').value     = '';
+        document.getElementById('inputConfirmPwd').value = '';
+        closeOverlay('editPassword');
+        showToast('Password changed!');
+      } else {
+        showToast(result.error || 'Failed', true);
+      }
+    } catch { showToast('Network error.', true); }
+  });
+
+  // Password toggles
+  document.querySelectorAll('.pw-toggle-cp').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const inp  = document.getElementById(btn.dataset.target);
+      const icon = btn.querySelector('i');
+      if (!inp) return;
+      inp.type       = inp.type === 'password' ? 'text' : 'password';
+      icon.className = inp.type === 'password' ? 'far fa-eye' : 'far fa-eye-slash';
     });
-  }
-});
+  });
+
+}); // end DOMContentLoaded

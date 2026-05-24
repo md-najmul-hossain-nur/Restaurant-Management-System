@@ -182,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <span>${item.price}</span>
           </div>
           <p>${item.desc}</p>
-          <a href="order.html" class="menu-order-btn">Order now</a>
+          <a href="order.html?item=${encodeURIComponent(item.title)}&price=${encodeURIComponent(item.price.replace('$', ''))}" class="menu-order-btn">Order now</a>
         </div>
       `;
     }).join('');

@@ -1,932 +1,388 @@
+// waiter.js — Feliciano Waiter Dashboard
+// Covers: tab nav, clock out, table take/release (DB),
+//         new order modal (DB), deliver order (DB), profile modals
+
 document.addEventListener('DOMContentLoaded', () => {
 
-  // Add Recipe (Chief dashboard)
-  const recipeModal = document.getElementById('addRecipeModal');
-  const recipeOpenBtn = document.querySelector('[data-add-recipe]');
-  const recipesGrid = document.getElementById('recipesGrid');
-
-  // Order delivery logic (only deliver Ready orders)
-  /* ============================================================
-     1. TAB / SECTION NAVIGATION  (was completely missing)
-  ============================================================ */
-  const tabs = document.querySelectorAll('.tab[data-section]');
+  // ── Tab Navigation ────────────────────────────────────────
+  const tabs     = document.querySelectorAll('.tab[data-section]');
   const sections = document.querySelectorAll('.section-content');
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      // When clocked out (Clock In mode), keep tabs visible but disabled.
       if (document.body.classList.contains('is-clocked-out')) return;
       const target = tab.dataset.section;
-
       tabs.forEach(t => t.classList.remove('active'));
       sections.forEach(s => s.classList.remove('active'));
-
       tab.classList.add('active');
-      const targetSection = document.getElementById(target);
-      if (targetSection) targetSection.classList.add('active');
+      document.getElementById(target)?.classList.add('active');
     });
   });
 
+  // ── Clock Out ─────────────────────────────────────────────
+  const clockBtn = document.querySelector('[data-clock-out]');
+  if (clockBtn) {
+    const applyState = (out) => {
+      document.body.classList.toggle('is-clocked-out', out);
+      clockBtn.textContent = out ? 'Clock In' : 'Clock Out';
+    };
+    applyState(false);
+    clockBtn.addEventListener('click', () =>
+      applyState(!document.body.classList.contains('is-clocked-out'))
+    );
+  }
 
-  /* ============================================================
-     2. CLOCK OUT BUTTON
-  ============================================================ */
-  // Clock Out / Clock In is handled in-page by admin.js.
+  // ── Toast ─────────────────────────────────────────────────
+  function showToast(msg) {
+    const toast   = document.getElementById('successToast');
+    const msgSpan = toast?.querySelector('.toast-msg');
+    if (!toast) return;
+    if (msgSpan) msgSpan.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toast.classList.remove('show'), 2500);
+  }
 
-
-  /* ============================================================
-     3. TABLES — Take / Release logic
-  ============================================================ */
-  const myTablesGrid   = document.getElementById('myTablesGrid');
+  // ── Table Take / Release (DB-connected) ──────────────────
+  const myTablesGrid    = document.getElementById('myTablesGrid');
   const availTablesGrid = document.getElementById('availTablesGrid');
-  const myTableCount   = document.getElementById('myTableCount');
+  const myTableCount    = document.getElementById('myTableCount');
   const availTableCount = document.getElementById('availTableCount');
 
-  const updateTableCounts = () => {
-    if (myTableCount)   myTableCount.textContent   = myTablesGrid   ? myTablesGrid.querySelectorAll('.waiter-table-card').length   : 0;
-    if (availTableCount) availTableCount.textContent = availTablesGrid ? availTablesGrid.querySelectorAll('.waiter-table-card').length : 0;
-  };
-
-  if (myTablesGrid) {
-    myTablesGrid.addEventListener('click', e => {
-      const releaseBtn = e.target.closest('[data-release]');
-      if (!releaseBtn || !availTablesGrid) return;
-
-      const card = releaseBtn.closest('.waiter-table-card');
-      if (!card) return;
-
-      // Swap button to "Take Table"
-      releaseBtn.classList.remove('waiter-table-action--release');
-      releaseBtn.classList.add('waiter-table-action--take');
-      releaseBtn.textContent = 'Take Table';
-      const tableId = releaseBtn.dataset.release;
-      releaseBtn.removeAttribute('data-release');
-      releaseBtn.setAttribute('data-take', tableId);
-
-      availTablesGrid.appendChild(card);
-      updateTableCounts();
-    });
+  function updateTableCounts() {
+    if (myTableCount)    myTableCount.textContent    = myTablesGrid?.querySelectorAll('.waiter-table-card').length   || 0;
+    if (availTableCount) availTableCount.textContent = availTablesGrid?.querySelectorAll('.waiter-table-card').length || 0;
   }
 
-  if (availTablesGrid) {
-    availTablesGrid.addEventListener('click', e => {
-      const takeBtn = e.target.closest('[data-take]');
-      if (!takeBtn || !myTablesGrid) return;
-
-      const card = takeBtn.closest('.waiter-table-card');
-      if (!card) return;
-
-      // Swap button to "Release Table"
-      takeBtn.classList.remove('waiter-table-action--take');
-      takeBtn.classList.add('waiter-table-action--release');
-      takeBtn.textContent = 'Release Table';
-      const tableId = takeBtn.dataset.take;
-      takeBtn.removeAttribute('data-take');
-      takeBtn.setAttribute('data-release', tableId);
-
-      myTablesGrid.appendChild(card);
-      updateTableCounts();
-    });
+  async function updateTableStatusDB(tableId, status) {
+    try {
+      await fetch('../api/update_table_status.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ table_id: tableId, status }),
+      });
+    } catch {}
   }
 
+  myTablesGrid?.addEventListener('click', e => {
+    const releaseBtn = e.target.closest('[data-release]');
+    if (!releaseBtn || !availTablesGrid) return;
+    const card    = releaseBtn.closest('.waiter-table-card');
+    const tableId = releaseBtn.dataset.release;
 
-  /* ============================================================
-     4. ORDERS — Deliver logic + stat counters
-  ============================================================ */
-  const orderSection = document.getElementById('order');
-  const orderList    = orderSection ? orderSection.querySelector('.order-list') : null;
-  const orderCountEl = document.getElementById('orderCount');
+    releaseBtn.classList.replace('waiter-table-action--release', 'waiter-table-action--take');
+    releaseBtn.textContent = 'Take Table';
+    releaseBtn.removeAttribute('data-release');
+    releaseBtn.setAttribute('data-take', tableId);
 
-  const statPending   = document.getElementById('statPending');
-  const statProgress  = document.getElementById('statProgress');
-  const statCompleted = document.getElementById('statCompleted');
+    availTablesGrid.appendChild(card);
+    updateTableCounts();
+    updateTableStatusDB(tableId, 'available');
+  });
 
-  const updateOrderStats = () => {
+  availTablesGrid?.addEventListener('click', e => {
+    const takeBtn = e.target.closest('[data-take]');
+    if (!takeBtn || !myTablesGrid) return;
+    const card    = takeBtn.closest('.waiter-table-card');
+    const tableId = takeBtn.dataset.take;
+
+    takeBtn.classList.replace('waiter-table-action--take', 'waiter-table-action--release');
+    takeBtn.textContent = 'Release Table';
+    takeBtn.removeAttribute('data-take');
+    takeBtn.setAttribute('data-release', tableId);
+
+    myTablesGrid.appendChild(card);
+    updateTableCounts();
+    updateTableStatusDB(tableId, 'occupied');
+  });
+
+  updateTableCounts();
+
+  // ── Order Stats ───────────────────────────────────────────
+  const orderList       = document.querySelector('#order .order-list') ||
+                          document.querySelector('#order');
+  const statPending     = document.getElementById('statPending');
+  const statProgress    = document.getElementById('statProgress');
+  const statCompleted   = document.getElementById('statCompleted');
+  const orderCountEl    = document.getElementById('orderCount');
+
+  function updateOrderStats() {
     if (!orderList) return;
-    const cards     = orderList.querySelectorAll('.order-card');
-    const pending   = orderList.querySelectorAll('.order-status--ready').length;
-    const inKitchen = orderList.querySelectorAll('.order-status--kitchen').length;
-
-    if (orderCountEl)  orderCountEl.textContent  = cards.length;
-    if (statPending)   statPending.textContent    = pending;
-    if (statProgress)  statProgress.textContent   = inKitchen;
-  };
-
-  // Run once on load
+    const cards    = orderList.querySelectorAll('.order-card');
+    const ready    = orderList.querySelectorAll('.order-status--ready').length;
+    const kitchen  = orderList.querySelectorAll('.order-status--kitchen').length;
+    if (orderCountEl) orderCountEl.textContent  = cards.length;
+    if (statPending)  statPending.textContent   = ready;
+    if (statProgress) statProgress.textContent  = kitchen;
+  }
   updateOrderStats();
 
-  if (orderList) {
-    orderList.addEventListener('click', e => {
-      const deliverBtn = e.target.closest('[data-deliver-order]');
-      if (!deliverBtn) return;
+  // Deliver button
+  orderList?.addEventListener('click', async e => {
+    const deliverBtn = e.target.closest('[data-deliver-order]');
+    if (!deliverBtn) return;
+    const card     = deliverBtn.closest('.order-card');
+    const statusEl = card?.querySelector('.order-status');
+    if (!statusEl) return;
 
-      const card     = deliverBtn.closest('.order-card');
-      const statusEl = card ? card.querySelector('.order-status') : null;
-      if (!statusEl) return;
+    if (!statusEl.classList.contains('order-status--ready')) {
+      statusEl.style.outline = '2px solid rgba(224,115,59,.8)';
+      setTimeout(() => statusEl.style.outline = '', 1000);
+      return;
+    }
 
-      const isReady = statusEl.classList.contains('order-status--ready');
-      if (!isReady) {
-        // Visual feedback — shake the status badge
-        statusEl.style.outline = '2px solid rgba(224,115,59,0.8)';
-        setTimeout(() => statusEl.style.outline = '', 1000);
-        return;
-      }
+    const orderId = card.dataset.orderId;
+    if (orderId) {
+      try {
+        await fetch('../api/update_order_status.php', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ order_id: parseInt(orderId), status: 'served' }),
+        });
+      } catch {}
+    }
 
-      statusEl.classList.remove('order-status--ready', 'order-status--kitchen');
-      statusEl.classList.add('order-status--delivered');
-      statusEl.textContent = 'Delivered';
-      deliverBtn.remove();
+    statusEl.classList.remove('order-status--ready', 'order-status--kitchen');
+    statusEl.classList.add('order-status--delivered');
+    statusEl.textContent = 'Delivered';
+    deliverBtn.remove();
 
-      // Increment completed stat
-      if (statCompleted) statCompleted.textContent = (parseInt(statCompleted.textContent) || 0) + 1;
-      updateOrderStats();
-    });
-  }
+    if (statCompleted)
+      statCompleted.textContent = (parseInt(statCompleted.textContent) || 0) + 1;
+    updateOrderStats();
+  });
 
-
-  /* ============================================================
-     5. NEW ORDER MODAL
-  ============================================================ */
+  // ── New Order Modal (DB-connected) ────────────────────────
   const modal   = document.getElementById('newOrderModal');
   const openBtn = document.querySelector('[data-new-order]');
 
   if (modal && openBtn) {
-    const closeEls          = modal.querySelectorAll('[data-order-close]');
-    const placeBtn          = modal.querySelector('[data-order-place]');
-    const itemButtons       = modal.querySelectorAll('[data-menu-item]');
-    const selectedItemsList = document.getElementById('selectedItemsList');
+    const closeEls           = modal.querySelectorAll('[data-order-close]');
+    const placeBtn           = modal.querySelector('[data-order-place]');
+    const itemButtons        = modal.querySelectorAll('[data-menu-item]');
+    const selectedItemsList  = document.getElementById('selectedItemsList');
     const selectedItemsTotal = document.getElementById('selectedItemsTotal');
+    const EMPTY              = '<span style="color:rgba(254,254,255,.45);font-style:italic">No items selected</span>';
 
     const selectedItems = new Map();
+    const formatMoney   = n => `$${(+n || 0).toFixed(2)}`;
 
-    const EMPTY_PLACEHOLDER = '<span style="color:rgba(254,254,255,0.45);font-style:italic">No items selected</span>';
-
-    const formatMoney = amount => `$${(Number.isFinite(amount) ? amount : 0).toFixed(2)}`;
-
-    const updateSelectedUI = () => {
+    function updateSelectedUI() {
       if (!selectedItemsList) return;
-
-      if (selectedItems.size === 0) {
-        selectedItemsList.innerHTML = EMPTY_PLACEHOLDER;   // ← restored placeholder
+      if (!selectedItems.size) {
+        selectedItemsList.innerHTML = EMPTY;
         if (selectedItemsTotal) selectedItemsTotal.textContent = formatMoney(0);
         return;
       }
-
       selectedItemsList.innerHTML = '';
       let total = 0;
-
-      for (const [name, { qty, price }] of selectedItems.entries()) {
+      selectedItems.forEach(({ qty, price }, name) => {
         total += qty * price;
         const row = document.createElement('div');
         row.className = 'order-selected-row';
-
-        // Remove button per item
         row.innerHTML = `
           <span>${qty} × ${name}</span>
           <span class="order-selected-item-price">${formatMoney(qty * price)}</span>
-          <button class="order-selected-remove" data-remove="${name}" aria-label="Remove ${name}">×</button>
-        `;
+          <button class="order-selected-remove" data-remove="${name}" aria-label="Remove">×</button>`;
         selectedItemsList.appendChild(row);
-      }
-
+      });
       if (selectedItemsTotal) selectedItemsTotal.textContent = formatMoney(total);
-    };
+    }
 
-    // Remove individual items
-    selectedItemsList && selectedItemsList.addEventListener('click', e => {
-      const removeBtn = e.target.closest('[data-remove]');
-      if (!removeBtn) return;
-      selectedItems.delete(removeBtn.dataset.remove);
+    selectedItemsList?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-remove]');
+      if (!btn) return;
+      selectedItems.delete(btn.dataset.remove);
       updateSelectedUI();
     });
 
-    const openModal = () => {
+    function openModal() {
       modal.removeAttribute('inert');
       modal.classList.add('active');
       modal.setAttribute('aria-hidden', 'false');
-      const select = document.getElementById('orderTableSelect');
-      if (select) setTimeout(() => { try { select.focus(); } catch {} }, 50);
-    };
+      document.getElementById('orderTableSelect')?.focus();
+    }
 
-    const closeModal = () => {
+    function closeModal() {
       modal.classList.remove('active');
       modal.setAttribute('aria-hidden', 'true');
       modal.setAttribute('inert', '');
-      if (modal.contains(document.activeElement)) {
-        try { openBtn.focus(); } catch {}
-      }
       selectedItems.clear();
       updateSelectedUI();
-    };
+    }
 
     openBtn.addEventListener('click', openModal);
     closeEls.forEach(el => el.addEventListener('click', closeModal));
-
-    if (placeBtn) {
-      placeBtn.addEventListener('click', () => {
-        const select = document.getElementById('orderTableSelect');
-        if (!select || !select.value) {
-          select && (select.style.outline = '2px solid rgba(224,115,59,0.8)');
-          setTimeout(() => select && (select.style.outline = ''), 1200);
-          return;
-        }
-        if (selectedItems.size === 0) {
-          if (selectedItemsTotal) {
-            selectedItemsTotal.style.color = 'rgba(224,115,59,0.9)';
-            setTimeout(() => selectedItemsTotal.style.color = '', 1200);
-          }
-          return;
-        }
-        // Order placed — close modal and show success
-        closeModal();
-        const toast = document.getElementById('successToast');
-        if (toast) {
-          toast.classList.add('show');
-          setTimeout(() => {
-            toast.classList.remove('show');
-          }, 1800);
-        }
-      });
-    }
-
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
     });
 
     itemButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        const name  = btn.getAttribute('data-name')  || 'Item';
-        const price = parseFloat(btn.getAttribute('data-price')) || 0;
+        const name  = btn.dataset.name  || 'Item';
+        const price = parseFloat(btn.dataset.price) || 0;
         const existing = selectedItems.get(name);
         selectedItems.set(name, existing
-          ? { qty: existing.qty + 1, price: existing.price }
-          : { qty: 1, price: Number.isFinite(price) ? price : 0 }
+          ? { qty: existing.qty + 1, price }
+          : { qty: 1, price }
         );
         updateSelectedUI();
       });
     });
 
+    // ★ Place Order → saves to DB
+    placeBtn?.addEventListener('click', async () => {
+      const select  = document.getElementById('orderTableSelect');
+      if (!select?.value) {
+        if (select) { select.style.outline = '2px solid rgba(224,115,59,.8)'; setTimeout(() => select.style.outline = '', 1200); }
+        return;
+      }
+      if (!selectedItems.size) {
+        if (selectedItemsTotal) { selectedItemsTotal.style.color = 'rgba(224,115,59,.9)'; setTimeout(() => selectedItemsTotal.style.color = '', 1200); }
+        return;
+      }
+
+      placeBtn.disabled    = true;
+      placeBtn.textContent = 'Placing…';
+
+      const items = [];
+      selectedItems.forEach(({ qty, price }, name) => {
+        items.push({ name, price, quantity: qty });
+      });
+
+      try {
+        const res    = await fetch('../api/waiter_place_order.php', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ table_id: parseInt(select.value), items }),
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          closeModal();
+          showToast('Order placed successfully!');
+          if (statPending)
+            statPending.textContent = (parseInt(statPending.textContent) || 0) + 1;
+        } else {
+          showToast(result.error || 'Failed to place order');
+        }
+      } catch {
+        showToast('Network error. Try again.');
+      } finally {
+        placeBtn.disabled    = false;
+        placeBtn.textContent = 'Place Order';
+      }
+    });
+
     updateSelectedUI();
   }
 
-  // Add Recipe modal logic
-  if (recipeModal && recipeOpenBtn && recipesGrid) {
-    const closeEls = recipeModal.querySelectorAll('[data-recipe-close]');
-    const form = document.getElementById('addRecipeForm');
-    const nameInput = document.getElementById('recipeName');
-    const detailsInput = document.getElementById('recipeDetails');
-    const priceInput = document.getElementById('recipePrice');
-    const imagePathSelect = document.getElementById('recipeImagePath');
-    const imageFileInput = document.getElementById('recipeImageFile');
-    const preview = document.getElementById('recipeImagePreview');
-
-    let previewObjectUrl = null;
-    let editingCard = null;
-
-    const setPreview = (src) => {
-      if (!preview) return;
-
-      if (!src) {
-        preview.hidden = true;
-        preview.removeAttribute('src');
-        return;
-      }
-
-      preview.src = src;
-      preview.hidden = false;
-    };
-
-    const clearPreviewObjectUrl = () => {
-      if (previewObjectUrl) {
-        try {
-          URL.revokeObjectURL(previewObjectUrl);
-        } catch {
-          // ignore
-        }
-        previewObjectUrl = null;
-      }
-    };
-
-    const openRecipeModal = () => {
-      recipeModal.removeAttribute('inert');
-      recipeModal.classList.add('open');
-      recipeModal.setAttribute('aria-hidden', 'false');
-
-      setTimeout(() => {
-        try {
-          if (nameInput) nameInput.focus();
-        } catch {
-          // ignore
-        }
-      }, 0);
-    };
-
-    const closeRecipeModal = () => {
-      recipeModal.classList.remove('open');
-      recipeModal.setAttribute('aria-hidden', 'true');
-      recipeModal.setAttribute('inert', '');
-
-      editingCard = null;
-
-      const modalTitle = recipeModal.querySelector('.recipe-modal-heading');
-      if (modalTitle) modalTitle.textContent = 'Add Recipe';
-      const submitBtn = recipeModal.querySelector('[type="submit"]');
-      if (submitBtn) submitBtn.textContent = 'Add Recipe';
-
-      clearPreviewObjectUrl();
-      setPreview('');
-
-      if (form) {
-        try {
-          form.reset();
-        } catch {
-          // ignore
-        }
-      }
-
-      if (recipeModal.contains(document.activeElement)) {
-        try {
-          recipeOpenBtn.focus();
-        } catch {
-          // ignore
-        }
-      }
-    };
-
-    recipeOpenBtn.addEventListener('click', openRecipeModal);
-
-    closeEls.forEach((el) => {
-      el.addEventListener('click', closeRecipeModal);
-    });
-
-    recipesGrid.addEventListener('click', e => {
-      const editBtn = e.target.closest('[data-edit-recipe]');
-      if (!editBtn) return;
-      const card = editBtn.closest('.recipe-card');
-      if (!card) return;
-      editingCard = card;
-      // Populate form
-      const title = card.querySelector('.card-title').textContent;
-      const desc = card.querySelector('.recipe-desc').textContent.replace('Details: ', '');
-      const priceText = card.querySelector('.recipe-price').textContent.replace('$', '');
-      const price = parseFloat(priceText);
-      const status = card.querySelector('.status-badge').textContent;
-      if (nameInput) nameInput.value = title;
-      if (detailsInput) detailsInput.value = desc;
-      if (priceInput) priceInput.value = price;
-      editingCard.dataset.status = status;
-      // Image
-      const img = card.querySelector('.order-image');
-      if (img && preview) {
-        preview.src = img.src;
-        preview.hidden = false;
-      }
-      // Change modal title and button
-      const modalTitle = recipeModal.querySelector('.recipe-modal-heading');
-      if (modalTitle) modalTitle.textContent = 'Edit Recipe';
-      const submitBtn = recipeModal.querySelector('[type="submit"]');
-      if (submitBtn) submitBtn.textContent = 'Update';
-      openRecipeModal();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && recipeModal.classList.contains('open')) {
-        closeRecipeModal();
-      }
-    });
-
-    if (imageFileInput) {
-      imageFileInput.addEventListener('change', () => {
-        clearPreviewObjectUrl();
-        const file = imageFileInput.files && imageFileInput.files[0] ? imageFileInput.files[0] : null;
-        if (file) {
-          previewObjectUrl = URL.createObjectURL(file);
-          setPreview(previewObjectUrl);
-        } else if (imagePathSelect && imagePathSelect.value) {
-          setPreview(imagePathSelect.value);
-        } else {
-          setPreview('');
-        }
-      });
-    }
-
-    if (imagePathSelect) {
-      imagePathSelect.addEventListener('change', () => {
-        const hasFile = imageFileInput && imageFileInput.files && imageFileInput.files.length > 0;
-        if (hasFile) return;
-        setPreview(imagePathSelect.value || '');
-      });
-    }
-
-    const formatMoney = (amount) => {
-      const safe = Number.isFinite(amount) ? amount : 0;
-      return `$${safe.toFixed(2)}`;
-    };
-
-    if (form) {
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-
-        // Validation helpers
-        const setError = (inp, errEl, msg) => {
-          inp.classList.add('input-error');
-          if (errEl) errEl.textContent = msg;
-        };
-        const clearError = (inp, errEl) => {
-          inp.classList.remove('input-error');
-          if (errEl) errEl.textContent = '';
-        };
-
-        const name = (nameInput && nameInput.value ? nameInput.value : '').trim();
-        if (!name) {
-          setError(nameInput, document.getElementById('recipeNameError'), 'Recipe name is required.');
-          return;
-        } else {
-          clearError(nameInput, document.getElementById('recipeNameError'));
-        }
-
-        const detailsRaw = (detailsInput && detailsInput.value ? detailsInput.value : '').trim();
-        if (!detailsRaw) {
-          setError(detailsInput, document.getElementById('recipeDetailsError'), 'Details are required.');
-          return;
-        } else {
-          clearError(detailsInput, document.getElementById('recipeDetailsError'));
-        }
-
-        const price = Number(priceInput && priceInput.value ? priceInput.value : 0);
-        if (isNaN(price) || price <= 0) {
-          setError(priceInput, document.getElementById('recipePriceError'), 'Enter a valid price greater than 0.');
-          return;
-        } else {
-          clearError(priceInput, document.getElementById('recipePriceError'));
-        }
-
-        const details = detailsRaw.replace(/^details:\s*/i, '');
-        const status = editingCard
-          ? editingCard.dataset.status || 'Pending'
-          : 'Pending';
-
-        if (editingCard) {
-          // Update existing card
-          const titleEl = editingCard.querySelector('.card-title');
-          if (titleEl) titleEl.textContent = name;
-          const descEl = editingCard.querySelector('.recipe-desc');
-          if (descEl) descEl.textContent = `Details: ${details}`;
-          const priceEl = editingCard.querySelector('.recipe-price');
-          if (priceEl) priceEl.textContent = formatMoney(price);
-          const badge = editingCard.querySelector('.status-badge');
-          if (badge) badge.textContent = status;
-          // Image
-          const file = imageFileInput && imageFileInput.files && imageFileInput.files[0] ? imageFileInput.files[0] : null;
-          if (file) {
-            clearPreviewObjectUrl();
-            previewObjectUrl = URL.createObjectURL(file);
-            const img = editingCard.querySelector('.order-image');
-            if (img) img.src = previewObjectUrl;
-          }
-          editingCard = null;
-          closeRecipeModal();
-          // Show success toast
-          const toast = document.getElementById('successToast');
-          if (toast) {
-            toast.querySelector('.toast-msg').textContent = 'Recipe updated successfully!';
-            toast.classList.add('show');
-            setTimeout(() => {
-              toast.classList.remove('show');
-            }, 1800);
-          }
-        } else {
-          // Add new recipe (just show success)
-          clearPreviewObjectUrl();
-          closeRecipeModal();
-
-          // Show success toast
-          const toast = document.getElementById('successToast');
-          if (toast) {
-            toast.classList.add('show');
-            setTimeout(() => {
-              toast.classList.remove('show');
-            }, 1800);
-          }
-        }
-      });
-    }
-  }
-
-  // Profile settings popover + modals
-  const settingsBtn = document.querySelector('[data-profile-settings]');
-  const popover = document.getElementById('profileSettingsPopover');
-  const editProfileBtn = document.querySelector('[data-open-edit-profile]');
-  const passwordBtn = document.querySelector('[data-open-password]');
-  const editProfileModal = document.getElementById('editProfileModal');
-  const changePasswordModal = document.getElementById('changePasswordModal');
-
-  const openPopover = () => {
-    if (!popover) return;
-    popover.removeAttribute('inert');
-    popover.classList.add('active');
-    popover.setAttribute('aria-hidden', 'false');
-    const first = popover.querySelector('button');
-    if (first) setTimeout(() => { try { first.focus(); } catch {} }, 50);
-  };
-
-  const closePopover = () => {
-    if (!popover) return;
-    popover.classList.remove('active');
-    popover.setAttribute('aria-hidden', 'true');
-    popover.setAttribute('inert', '');
-    if (popover.contains(document.activeElement) && settingsBtn) {
-      try { settingsBtn.focus(); } catch {}
-    }
-  };
-
-  if (settingsBtn && popover) {
-    settingsBtn.addEventListener('click', () => {
-      popover.classList.contains('active') ? closePopover() : openPopover();
-    });
-
-    document.addEventListener('click', e => {
-      if (!popover.classList.contains('active')) return;
-      if (!popover.contains(e.target) && !settingsBtn.contains(e.target)) closePopover();
-    });
-
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && popover.classList.contains('active')) closePopover();
-    });
-  }
-
-
-  /* ============================================================
-     7. PROFILE MODALS — open / close
-  ============================================================ */
-  const openProfileModal = (targetModal, focusId) => {
-    if (!targetModal) return;
-    closePopover();
-    targetModal.removeAttribute('inert');          // ← was missing
-    targetModal.classList.add('active');
-    targetModal.setAttribute('aria-hidden', 'false');
-    if (focusId) {
-      const el = document.getElementById(focusId);
-      if (el) setTimeout(() => { try { el.focus(); } catch {} }, 50);
-    }
-  };
-
-  const closeProfileModal = targetModal => {
-    if (!targetModal) return;
-    targetModal.classList.remove('active');
-    targetModal.setAttribute('aria-hidden', 'true');
-    targetModal.setAttribute('inert', '');         // ← lock it back
-    try { settingsBtn && settingsBtn.focus(); } catch {}
-  };
-
-  if (editProfileBtn) {
-    editProfileBtn.addEventListener('click', () => openProfileModal(editProfileModal, 'profileFullName'));
-  }
-
-  if (passwordBtn) {
-    passwordBtn.addEventListener('click', () => openProfileModal(changePasswordModal, 'currentPassword'));
-  }
-
-  // Close buttons — unified selector covering both button types in modals
-  document.querySelectorAll('.modal-close, .modal-close-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      closeProfileModal(editProfileModal);
-      closeProfileModal(changePasswordModal);
-    });
-  });
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      if (editProfileModal    && editProfileModal.classList.contains('active'))    closeProfileModal(editProfileModal);
-      if (changePasswordModal && changePasswordModal.classList.contains('active')) closeProfileModal(changePasswordModal);
-    }
-  });
-
-  // Close on backdrop click
-  [editProfileModal, changePasswordModal].forEach(m => {
-    if (!m) return;
-    m.addEventListener('click', e => {
-      if (e.target === m) closeProfileModal(m);
-    });
-  });
-
-
-  /* ============================================================
-     8. EDIT PROFILE — save & reflect changes in the card
-  ============================================================ */
-  const editProfileForm = document.getElementById('editProfileForm');
-  if (editProfileForm) {
-    editProfileForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const name     = document.getElementById('profileFullName')?.value.trim();
-      const email    = document.getElementById('profileEmail')?.value.trim();
-      const phone    = document.getElementById('profilePhone')?.value.trim();
-      const location = document.getElementById('profileLocation')?.value.trim();
-
-      // Reflect in profile card
-      if (name)     { const el = document.getElementById('displayName');     if (el) el.textContent = name; }
-      if (email)    { const el = document.getElementById('displayEmail');    if (el) el.textContent = email; }
-      if (phone)    { const el = document.getElementById('displayPhone');    if (el) el.textContent = phone; }
-      if (location) { const el = document.getElementById('displayLocation'); if (el) el.textContent = location; }
-
-      closeProfileModal(editProfileModal);
-    });
-  }
-
-
-  /* ============================================================
-     9. CHANGE PASSWORD — basic validation
-  ============================================================ */
-  const changePasswordForm = document.getElementById('changePasswordForm');
-  if (changePasswordForm) {
-    changePasswordForm.addEventListener('submit', e => {
-      e.preventDefault();
-      const newPw     = document.getElementById('newPassword')?.value;
-      const confirmPw = document.getElementById('confirmPassword')?.value;
-
-      if (newPw !== confirmPw) {
-        const confirmEl = document.getElementById('confirmPassword');
-        if (confirmEl) {
-          confirmEl.style.outline = '2px solid rgba(224,115,59,0.9)';
-          confirmEl.setAttribute('placeholder', 'Passwords do not match');
-          setTimeout(() => {
-            confirmEl.style.outline = '';
-            confirmEl.setAttribute('placeholder', '');
-          }, 2000);
-        }
-        return;
-      }
-      closeProfileModal(changePasswordModal);
-    });
-  }
-
-});
-/* =============================================
-   Profile Settings Modal System
-   (Customer Profile style — Waiter/Chief)
-============================================= */
-(function () {
-
+  // ── Profile Modals ────────────────────────────────────────
   const overlays = {
-    settings:      document.getElementById('settingsOverlay'),
-    editProfile:   document.getElementById('editProfileOverlay'),
-    editPassword:  document.getElementById('editPasswordOverlay'),
+    settings:     document.getElementById('settingsOverlay'),
+    editProfile:  document.getElementById('editProfileOverlay'),
+    editPassword: document.getElementById('editPasswordOverlay'),
   };
 
-  const toast = document.getElementById('successToast');
-  let toastTimer = null;
+  function openOverlay(key)  { overlays[key]?.classList.add('active');    }
+  function closeOverlay(key) { overlays[key]?.classList.remove('active'); }
 
-  /* --- Modal Helpers --- */
-  function openModal(key) {
-    const el = overlays[key];
-    if (el) el.classList.add('active');
-  }
-  function closeModal(key) {
-    const el = overlays[key];
-    if (el) el.classList.remove('active');
-  }
+  document.getElementById('openSettingsBtn')?.addEventListener('click',  () => openOverlay('settings'));
+  document.getElementById('closeSettings')?.addEventListener('click',    () => closeOverlay('settings'));
+  document.getElementById('closeEditProfile')?.addEventListener('click', () => closeOverlay('editProfile'));
+  document.getElementById('closeEditPassword')?.addEventListener('click',() => closeOverlay('editPassword'));
 
-  /* --- Toast --- */
-  function showToast(msg, isError = false) {
-    if (!toast) return;
-    const msgSpan = toast.querySelector('.toast-msg');
-    const iconEl  = toast.querySelector('.toast-icon i');
-    if (msgSpan) msgSpan.textContent = msg;
-    if (iconEl)  iconEl.className = isError ? 'fas fa-xmark' : 'fas fa-check';
-    toast.style.borderColor = isError
-      ? 'rgba(224,85,85,0.45)'
-      : 'rgba(200,169,106,0.45)';
-    toast.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
-  }
+  document.getElementById('openEditProfile')?.addEventListener('click', () => {
+    closeOverlay('settings'); openOverlay('editProfile');
+  });
+  document.getElementById('openEditPassword')?.addEventListener('click', () => {
+    closeOverlay('settings'); openOverlay('editPassword');
+  });
 
-  /* --- Validation Helpers --- */
-  function setError(inp, errEl, msg) {
-    inp.classList.add('input-error');
-    if (errEl) errEl.textContent = msg;
-    return false;
-  }
-  function clearError(inp, errEl) {
-    inp.classList.remove('input-error');
-    if (errEl) errEl.textContent = '';
-    return true;
-  }
-  function validateNotEmpty(inp, errEl, label) {
-    return inp.value.trim()
-      ? clearError(inp, errEl)
-      : setError(inp, errEl, `${label} is required.`);
-  }
-  function validateEmail(inp, errEl) {
-    if (!inp.value.trim()) return setError(inp, errEl, 'Email is required.');
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inp.value.trim())
-      ? clearError(inp, errEl)
-      : setError(inp, errEl, 'Enter a valid email address.');
-  }
-  function validatePhone(inp, errEl) {
-    if (!inp.value.trim()) return setError(inp, errEl, 'Phone is required.');
-    return /^[\+]?[\d\s\-().]{7,20}$/.test(inp.value.trim())
-      ? clearError(inp, errEl)
-      : setError(inp, errEl, 'Enter a valid phone number.');
-  }
-
-  /* --- Password Strength --- */
-  function updateStrengthUI(pwd) {
-    const fill  = document.getElementById('strengthFill');
-    const label = document.getElementById('strengthLabel');
-    if (!fill || !label) return;
-    let score = 0;
-    if (pwd.length >= 8)           score++;
-    if (pwd.length >= 12)          score++;
-    if (/[A-Z]/.test(pwd))         score++;
-    if (/[0-9]/.test(pwd))         score++;
-    if (/[^A-Za-z0-9]/.test(pwd))  score++;
-    const levels = [
-      { pct: 0,   color: 'transparent', text: '' },
-      { pct: 20,  color: '#e05555',     text: 'Very Weak' },
-      { pct: 40,  color: '#e07040',     text: 'Weak' },
-      { pct: 60,  color: '#e0a040',     text: 'Fair' },
-      { pct: 80,  color: '#8bc34a',     text: 'Strong' },
-      { pct: 100, color: '#4caf50',     text: 'Very Strong' },
-    ];
-    const lvl = levels[score];
-    fill.style.width      = lvl.pct + '%';
-    fill.style.background = lvl.color;
-    label.textContent     = lvl.text;
-    label.style.color     = lvl.color;
-  }
-
-  /* --- Live Profile Update --- */
-  function applyProfileToPage(name, email, phone, address) {
-    const map = {
-      displayName:     name,
-      displayEmail:    email,
-      displayPhone:    phone,
-      displayLocation: address, // Waiter uses displayLocation
-      displayAddress:  address, // fallback
-    };
-    Object.entries(map).forEach(([id, val]) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
+  Object.values(overlays).forEach(overlay => {
+    overlay?.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('active');
     });
-  }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    const active = Object.entries(overlays).find(([, el]) => el?.classList.contains('active'));
+    if (active) closeOverlay(active[0]);
+  });
 
-  /* --- Password Toggles --- */
-  function initPasswordToggles() {
-    document.querySelectorAll('.pw-toggle-cp').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const inp  = document.getElementById(btn.dataset.target);
-        const icon = btn.querySelector('i');
-        if (!inp) return;
-        if (inp.type === 'password') {
-          inp.type = 'text';
-          icon.className = 'far fa-eye-slash';
-        } else {
-          inp.type = 'password';
-          icon.className = 'far fa-eye';
-        }
+  // Load profile
+  async function loadProfile() {
+    try {
+      const res  = await fetch('../api/profile.php');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!data.user) return;
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+      set('displayName',  data.user.name);
+      set('displayEmail', data.user.email);
+      const nameInp  = document.getElementById('inputName');
+      const emailInp = document.getElementById('inputEmail');
+      if (nameInp)  nameInp.value  = data.user.name;
+      if (emailInp) emailInp.value = data.user.email;
+    } catch {}
+  }
+  loadProfile();
+
+  // Save profile
+  document.getElementById('saveProfile')?.addEventListener('click', async () => {
+    const name  = document.getElementById('inputName')?.value.trim();
+    const email = document.getElementById('inputEmail')?.value.trim();
+    if (!name || !email) return;
+    try {
+      const res    = await fetch('../api/profile.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ action: 'update_profile', name, email }),
       });
-    });
-  }
+      const result = await res.json();
+      if (result.success) {
+        document.getElementById('displayName').textContent  = name;
+        document.getElementById('displayEmail').textContent = email;
+        closeOverlay('editProfile');
+        showToast('Profile updated!');
+      } else { showToast(result.error || 'Failed'); }
+    } catch { showToast('Network error.'); }
+  });
 
-  /* --- Profile Form --- */
-  function initProfileForm() {
-    const nameInput    = document.getElementById('inputName');
-    const addressInput = document.getElementById('inputAddress');
-    const phoneInput   = document.getElementById('inputPhone');
-    const emailInput   = document.getElementById('inputEmail');
-    const saveBtn      = document.getElementById('saveProfile');
-    if (!saveBtn) return;
-
-    // Pre-fill with current displayed values
-    const fillVal = (inputEl, sourceId) => {
-      const src = document.getElementById(sourceId);
-      if (inputEl && src) inputEl.value = src.textContent.trim();
-    };
-    fillVal(nameInput,    'displayName');
-    fillVal(emailInput,   'displayEmail');
-    fillVal(phoneInput,   'displayPhone');
-    fillVal(addressInput, 'displayLocation');
-    if (!addressInput.value) fillVal(addressInput, 'displayAddress');
-
-    saveBtn.addEventListener('click', () => {
-      const v1 = validateNotEmpty(nameInput,    document.getElementById('nameError'),    'Full name');
-      const v2 = validateNotEmpty(addressInput, document.getElementById('addressError'), 'Address');
-      const v3 = validatePhone   (phoneInput,   document.getElementById('phoneError'));
-      const v4 = validateEmail   (emailInput,   document.getElementById('emailError'));
-      if (!v1 || !v2 || !v3 || !v4) return;
-
-      applyProfileToPage(
-        nameInput.value.trim(),
-        emailInput.value.trim(),
-        phoneInput.value.trim(),
-        addressInput.value.trim()
-      );
-      closeModal('editProfile');
-      showToast('Profile updated successfully!');
-    });
-  }
-
-  /* --- Password Form --- */
-  function initPasswordForm() {
-    const curInp  = document.getElementById('inputCurrentPwd');
-    const newInp  = document.getElementById('inputNewPwd');
-    const confInp = document.getElementById('inputConfirmPwd');
-    const saveBtn = document.getElementById('savePassword');
-    if (!saveBtn) return;
-
-    newInp?.addEventListener('input', () => {
-      updateStrengthUI(newInp.value);
-      clearError(newInp, document.getElementById('newPwdError'));
-    });
-
-    saveBtn.addEventListener('click', () => {
-      let valid = true;
-      if (!curInp.value) {
-        setError(curInp, document.getElementById('currentPwdError'), 'Enter your current password.');
-        valid = false;
-      } else {
-        clearError(curInp, document.getElementById('currentPwdError'));
-      }
-      const newPwd = newInp.value;
-      if (!newPwd) {
-        setError(newInp, document.getElementById('newPwdError'), 'Enter a new password.');
-        valid = false;
-      } else if (newPwd.length < 8) {
-        setError(newInp, document.getElementById('newPwdError'), 'Password must be at least 8 characters.');
-        valid = false;
-      } else if (newPwd === curInp.value) {
-        setError(newInp, document.getElementById('newPwdError'), 'New password must differ from current.');
-        valid = false;
-      } else {
-        clearError(newInp, document.getElementById('newPwdError'));
-      }
-      if (!confInp.value) {
-        setError(confInp, document.getElementById('confirmPwdError'), 'Please confirm your new password.');
-        valid = false;
-      } else if (confInp.value !== newPwd) {
-        setError(confInp, document.getElementById('confirmPwdError'), 'Passwords do not match.');
-        valid = false;
-      } else {
-        clearError(confInp, document.getElementById('confirmPwdError'));
-      }
-      if (!valid) return;
-
-      curInp.value = ''; newInp.value = ''; confInp.value = '';
-      updateStrengthUI('');
-      closeModal('editPassword');
-      showToast('Password changed successfully!');
-    });
-  }
-
-  /* --- Modal Wiring --- */
-  function initModals() {
-    document.getElementById('openSettingsBtn')
-      ?.addEventListener('click', () => openModal('settings'));
-    document.getElementById('closeSettings')
-      ?.addEventListener('click', () => closeModal('settings'));
-    document.getElementById('closeEditProfile')
-      ?.addEventListener('click', () => closeModal('editProfile'));
-    document.getElementById('closeEditPassword')
-      ?.addEventListener('click', () => closeModal('editPassword'));
-
-    document.getElementById('openEditProfile')?.addEventListener('click', () => {
-      closeModal('settings');
-      openModal('editProfile');
-    });
-    document.getElementById('openEditPassword')?.addEventListener('click', () => {
-      closeModal('settings');
-      openModal('editPassword');
-    });
-
-    // Click outside → close
-    Object.values(overlays).forEach(overlay => {
-      overlay?.addEventListener('click', e => {
-        if (e.target === overlay) overlay.classList.remove('active');
+  // Change password
+  document.getElementById('savePassword')?.addEventListener('click', async () => {
+    const cur  = document.getElementById('inputCurrentPwd')?.value;
+    const newP = document.getElementById('inputNewPwd')?.value;
+    const conf = document.getElementById('inputConfirmPwd')?.value;
+    if (!cur || !newP || !conf) return;
+    if (newP.length < 8) { showToast('Password must be at least 8 characters'); return; }
+    if (newP !== conf)   { showToast('Passwords do not match'); return; }
+    try {
+      const res    = await fetch('../api/profile.php', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ action: 'change_password', current_password: cur, new_password: newP }),
       });
-    });
+      const result = await res.json();
+      if (result.success) {
+        document.getElementById('inputCurrentPwd').value = '';
+        document.getElementById('inputNewPwd').value     = '';
+        document.getElementById('inputConfirmPwd').value = '';
+        closeOverlay('editPassword');
+        showToast('Password changed!');
+      } else { showToast(result.error || 'Failed'); }
+    } catch { showToast('Network error.'); }
+  });
 
-    // Escape key → close
-    document.addEventListener('keydown', e => {
-      if (e.key !== 'Escape') return;
-      const active = Object.entries(overlays).find(([, el]) => el?.classList.contains('active'));
-      if (active) closeModal(active[0]);
+  // Password toggles
+  document.querySelectorAll('.pw-toggle-cp').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const inp  = document.getElementById(btn.dataset.target);
+      const icon = btn.querySelector('i');
+      if (!inp) return;
+      inp.type       = inp.type === 'password' ? 'text' : 'password';
+      icon.className = inp.type === 'password' ? 'far fa-eye' : 'far fa-eye-slash';
     });
-  }
+  });
 
-  /* --- Boot --- */
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      initModals();
-      initPasswordToggles();
-      initProfileForm();
-      initPasswordForm();
-    });
-  } else {
-    initModals();
-    initPasswordToggles();
-    initProfileForm();
-    initPasswordForm();
-  }
-
-})();
+}); // end DOMContentLoaded

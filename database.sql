@@ -6,6 +6,9 @@ CREATE TABLE users (
   name VARCHAR(100) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
+  phone VARCHAR(20),
+  address VARCHAR(255),
+  avatar_path VARCHAR(255),
   role ENUM('customer','chief','waiter','admin') NOT NULL DEFAULT 'customer',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -54,6 +57,21 @@ CREATE TABLE restaurant_tables (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE reservations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  table_id INT NOT NULL,
+  customer_id INT DEFAULT NULL,
+  reserved_date DATE NOT NULL,
+  reserved_time TIME NOT NULL,
+  guest_count INT NOT NULL DEFAULT 1,
+  special_requests TEXT,
+  status ENUM('pending','approved','rejected','cancelled') NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_reservations_table FOREIGN KEY (table_id) REFERENCES restaurant_tables(id) ON DELETE CASCADE,
+  CONSTRAINT fk_reservations_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE recipes (
   id INT AUTO_INCREMENT PRIMARY KEY,
   chef_id INT DEFAULT NULL,
@@ -71,12 +89,17 @@ CREATE TABLE recipes (
 
 CREATE TABLE orders (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  customer_id INT DEFAULT NULL,
   table_id INT DEFAULT NULL,
   waiter_id INT DEFAULT NULL,
   status ENUM('queued','in_progress','ready','served','cancelled') NOT NULL DEFAULT 'queued',
   total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  guest_name VARCHAR(100),
+  guest_phone VARCHAR(20),
+  notes TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE SET NULL,
   CONSTRAINT fk_orders_table FOREIGN KEY (table_id) REFERENCES restaurant_tables(id) ON DELETE SET NULL,
   CONSTRAINT fk_orders_waiter FOREIGN KEY (waiter_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -1,3 +1,11 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    header('Location: login.html');
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -250,6 +258,14 @@
                 <div class="stat-label">Occupied</div>
                 <div class="stat-value occupied" id="statOccupied">1</div>
               </div>
+            </div>
+
+            <div class="reservation-approval-panel">
+              <div class="reservation-approval-header">
+                <h3>Reservation Requests</h3>
+                <p class="sub">Approve or reject customer table bookings</p>
+              </div>
+              <div class="reservation-requests" id="reservationRequests"></div>
             </div>
 
             <!-- Filter Bar -->

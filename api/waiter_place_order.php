@@ -1,0 +1,43 @@
+<?php
+// api/waiter_place_order.php
+// Called by waiter.js when waiter places an order for a table
+// Method: POST JSON
+
+if (session_status() === PHP_SESSION_NONE) session_start();
+require_once '../PHP/db.php';
+requireLogin('waiter');
+
+$waiterId = $_SESSION['user_id'];
+$data     = json_decode(file_get_contents('php://input'), true);
+$tableId  = (int) ($data['table_id'] ?? 0);
+$items    = $data['items'] ?? [];
+
+if (!$tableId)   respond(['error' => 'No table selected'], 400);
+if (!$items)     respond(['error' => 'No items selected'], 400);
+
+$total = 0;
+foreach ($items as $item) $total += $item['price'] * $item['quantity'];
+$grandTotal = round($total * 1.10, 2); // 10% tax
+
+$pdo->beginTransaction();
+try {
+    $pdo->prepare(
+        'INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount) VALUES (NULL, ?, ?, ?, ?)'
+    )->execute([$tableId, $waiterId, 'queued', $grandTotal]);
+    $orderId = $pdo->lastInsertId();
+
+    $itemStmt = $pdo->prepare(
+        'INSERT INTO order_items (order_id, name, price, quantity, subtotal) VALUES (?, ?, ?, ?, ?)'
+    );
+    foreach ($items as $item) {
+        $sub = round($item['price'] * $item['quantity'], 2);
+        $itemStmt->execute([$orderId, $item['name'], $item['price'], $item['quantity'], $sub]);
+    }
+
+    $pdo->prepare("UPDATE restaurant_tables SET status='occupied' WHERE id=?")->execute([$tableId]);
+    $pdo->commit();
+    respond(['success' => true, 'order_id' => $orderId]);
+} catch (Exception $e) {
+    $pdo->rollBack();
+    respond(['error' => $e->getMessage()], 500);
+}
