@@ -82,21 +82,46 @@ document.addEventListener('DOMContentLoaded', () => {
   const certInput      = document.getElementById('certificate');
   const certGroup      = certInput ? certInput.closest('.form-group') : null;
 
+  if (employeeForm) {
+    employeeForm.noValidate = true;
+  }
+
   if (openAddEmpBtn) openAddEmpBtn.addEventListener('click', () => openModal('addEmployeeModal'));
 
-  // Show/hide certificate based on role
+  // Keep the certificate field visible; only make it mandatory for Chef.
   if (roleSelect && certGroup) {
     const toggle = () => {
-      certGroup.style.display = roleSelect.value === 'chief' ? 'block' : 'none';
-      if (certInput) certInput.required = roleSelect.value === 'chief';
+      const isChief = roleSelect.value === 'chief';
+      certGroup.style.display = 'flex';
+      if (certInput) {
+        certInput.required = isChief;
+        certInput.disabled = false;
+      }
     };
     toggle();
     roleSelect.addEventListener('change', toggle);
+    roleSelect.addEventListener('input', toggle);
   }
 
   if (employeeForm) {
     employeeForm.addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      const fullName = employeeForm.elements.fullName?.value.trim() || '';
+      const email = employeeForm.elements.email?.value.trim() || '';
+      const password = employeeForm.elements.password?.value || '';
+      const role = employeeForm.elements.role?.value || '';
+      const certificateFile = certInput?.files?.[0] || null;
+
+      if (!fullName || !email || !password || !role) {
+        showAdminToast('Please complete all required fields.', true);
+        return;
+      }
+
+      if (role === 'chief' && !certificateFile) {
+        showAdminToast('Please upload the chef certificate PDF.', true);
+        return;
+      }
 
       const submitBtn = employeeForm.querySelector('[type="submit"]');
       submitBtn.disabled    = true;

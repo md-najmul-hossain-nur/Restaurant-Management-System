@@ -594,7 +594,7 @@ require_once __DIR__ . '/../Php/db.php';
         <h3>Add New Employee</h3>
         <button type="button" class="modal-close" aria-label="Close">&times;</button>
       </div>
-          <form id="employeeForm" class="employee-form" enctype="multipart/form-data">
+          <form id="employeeForm" class="employee-form" action="../api/add_employee.php" method="post" enctype="multipart/form-data">
         <div class="form-row-flex">
           <div class="form-group">
             <label for="fullName">Full Name</label>
@@ -619,9 +619,9 @@ require_once __DIR__ . '/../Php/db.php';
             <input type="password" id="password" name="password" placeholder="Enter password" required minlength="8">
           </div>
         </div>
-        <div class="form-group full-width">
+        <div class="form-group full-width" id="certificateGroup">
           <label for="certificate">Certificate (PDF)</label>
-          <input type="file" id="certificate" name="certificate" accept=".pdf">
+          <input type="file" id="certificate" name="certificate" accept="application/pdf,.pdf">
         </div>
         <div class="btn-row">
           <button type="submit" class="btn-primary">Add Employee</button>
