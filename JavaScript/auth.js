@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const messageEl = document.getElementById('signup-message');
   const params = new URLSearchParams(window.location.search);
   const signupMessages = {
-    success: 'Signup successful. You can log in now.',
+    success: 'Signup successful. Please wait for admin approval before logging in.',
     missing: 'Please fill in all required fields.',
     password_mismatch: 'Passwords do not match.',
     invalid_email: 'Please enter a valid email address.',
@@ -48,6 +48,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (messageKey && signupMessages[messageKey]) {
       messageEl.textContent = signupMessages[messageKey];
       messageEl.classList.add(messageKey === 'success' ? 'is-success' : 'is-error');
+    }
+  }
+
+  const loginMessageEl = document.getElementById('login-message');
+  if (loginMessageEl) {
+    const loginMessages = {
+      missing: 'Please enter both email and password.',
+      not_found: 'No account found for that email address.',
+      bad_password: 'Incorrect password.',
+      role_mismatch: 'Selected role does not match your account.',
+      pending: 'Your account is pending admin approval. Please wait and try again later.',
+      rejected: 'Your account was rejected by the admin.',
+      server: 'Login failed. Please try again later.'
+    };
+
+    const error = params.get('error');
+    if (error && loginMessages[error]) {
+      loginMessageEl.textContent = loginMessages[error];
+      loginMessageEl.classList.add('is-error');
     }
   }
 

@@ -10,6 +10,8 @@ CREATE TABLE users (
   address VARCHAR(255),
   avatar_path VARCHAR(255),
   role ENUM('customer','chief','waiter','admin') NOT NULL DEFAULT 'customer',
+  approval_status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  approval_decided_at TIMESTAMP NULL DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -115,3 +117,20 @@ CREATE TABLE order_items (
   CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
   CONSTRAINT fk_order_items_recipe FOREIGN KEY (recipe_id) REFERENCES recipes(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO users (name, email, password, role, approval_status, approval_decided_at)
+VALUES (
+  'Admin',
+  'admin@gmail.com',
+  '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
+  'admin',
+  'approved',
+  NOW()
+);
+
+INSERT INTO admins (user_id, is_super, can_manage_staff)
+VALUES (
+  LAST_INSERT_ID(),
+  1,
+  1
+);
