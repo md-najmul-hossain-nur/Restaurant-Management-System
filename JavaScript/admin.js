@@ -107,10 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
     employeeForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const fullName = employeeForm.elements.fullName?.value.trim() || '';
-      const email = employeeForm.elements.email?.value.trim() || '';
-      const password = employeeForm.elements.password?.value || '';
-      const role = employeeForm.elements.role?.value || '';
+      const fullName = String(employeeForm.elements.fullName?.value || '').trim();
+      const email = String(employeeForm.elements.email?.value || '').trim();
+      const password = String(employeeForm.elements.password?.value || '');
+      const role = String(employeeForm.elements.role?.value || '').trim();
       const certificateFile = certInput?.files?.[0] || null;
 
       if (!fullName || !email || !password || !role) {
@@ -128,7 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
       submitBtn.textContent = 'Adding…';
 
       try {
-        const formData = new FormData(employeeForm);
+        const formData = new FormData();
+        formData.append('fullName', fullName);
+        formData.append('email', email);
+        formData.append('password', password);
+        formData.append('role', role);
+        if (certificateFile) {
+          formData.append('certificate', certificateFile, certificateFile.name);
+        }
+
         const res      = await fetch('../api/add_employee.php', {
           method: 'POST',
           body:   formData,   // multipart for file upload
