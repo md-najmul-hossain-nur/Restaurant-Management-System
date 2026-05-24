@@ -47,15 +47,17 @@ $ordersStmt = $pdo->prepare(
 $ordersStmt->execute([$start, $end]);
 $orders = $ordersStmt->fetchAll() ?: [];
 
-if ($format === 'csv') {
-    $filename = sprintf('financial-report-%s-to-%s.csv', $start, $end);
-    header('Content-Type: text/csv; charset=utf-8');
+if (in_array($format, ['csv', 'xls'], true)) {
+    $isExcel = $format === 'xls';
+    $filename = sprintf('financial-report-%s-to-%s.%s', $start, $end, $isExcel ? 'xls' : 'csv');
+    header('Content-Type: ' . ($isExcel ? 'application/vnd.ms-excel' : 'text/csv') . '; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
     header('Pragma: no-cache');
     header('Expires: 0');
 
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['Order ID', 'Created At', 'Customer', 'Contact', 'Status', 'Total Amount', 'Items']);
+    $delimiter = $isExcel ? "\t" : ',';
+    fputcsv($out, ['Order ID', 'Created At', 'Customer', 'Contact', 'Status', 'Total Amount', 'Items'], $delimiter);
 
     foreach ($orders as $order) {
         fputcsv($out, [
@@ -66,7 +68,7 @@ if ($format === 'csv') {
             $order['status'],
             number_format((float)$order['total_amount'], 2, '.', ''),
             $order['item_names'] ?: '',
-        ]);
+        ], $delimiter);
     }
 
     fclose($out);

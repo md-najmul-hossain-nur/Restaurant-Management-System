@@ -620,7 +620,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (downloadReportBtn) {
     downloadReportBtn.addEventListener('click', () => {
       const { start, end } = getReportRange();
-      const url = `../api/get_financial_report.php?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&format=csv`;
+      const url = `../api/get_financial_report.php?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&format=xls`;
       window.location.href = url;
     });
   }
