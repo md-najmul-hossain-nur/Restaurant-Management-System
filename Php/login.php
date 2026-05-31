@@ -17,6 +17,11 @@ if (!$identifier || !$password) {
     exit;
 }
 
+if (!$role) {
+    header('Location: ../Html/login.html?error=role_missing');
+    exit;
+}
+
 // Login by email only (since no phone column)
 $stmt = $pdo->prepare('SELECT id, name, email, password, role, approval_status FROM users WHERE email = ? LIMIT 1');
 $stmt->execute([$identifier]);

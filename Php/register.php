@@ -27,6 +27,11 @@ if ($password !== $confirmPassword) {
     exit;
 }
 
+if (strlen($password) < 8) {
+    header('Location: ../Html/signup.html?error=weak_password');
+    exit;
+}
+
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     header('Location: ../Html/signup.html?error=invalid_email');
     exit;
