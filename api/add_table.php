@@ -4,7 +4,7 @@
 // Method: POST multipart/form-data
 
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once '../PHP/db.php';
+require_once __DIR__ . '/../Php/db.php';
 requireLogin('admin');
 
 $tableNumber = (int) ($_POST['tableNumber']  ?? 0);
@@ -22,12 +22,15 @@ if ($check->fetch()) respond(['error' => 'Table number already exists'], 409);
 // Optional image upload
 $imagePath = null;
 if (!empty($_FILES['tableImageFile']['name'])) {
-    $uploadDir = '../uploads/tables/';
-    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+    $uploadDir = __DIR__ . '/../uploads/tables/';
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+        respond(['error' => 'Unable to create upload folder'], 500);
+    }
     $ext      = pathinfo($_FILES['tableImageFile']['name'], PATHINFO_EXTENSION);
     $safeName = 'table_' . $tableNumber . '_' . uniqid() . '.' . $ext;
-    if (move_uploaded_file($_FILES['tableImageFile']['tmp_name'], $uploadDir . $safeName))
-        $imagePath = $uploadDir . $safeName;
+    if (move_uploaded_file($_FILES['tableImageFile']['tmp_name'], $uploadDir . $safeName)) {
+        $imagePath = 'uploads/tables/' . $safeName;
+    }
 }
 
 $pdo->prepare('INSERT INTO restaurant_tables (table_number, capacity, position, image_path) VALUES (?, ?, ?, ?)')

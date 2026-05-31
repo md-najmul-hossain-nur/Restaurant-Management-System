@@ -4,7 +4,7 @@
 // Method: POST multipart/form-data
 
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once '../PHP/db.php';
+require_once __DIR__ . '/../Php/db.php';
 requireLogin('chief');
 
 $chefId = $_SESSION['user_id'];
@@ -18,16 +18,24 @@ if (!$name || !$desc || !$price)
 // Image upload
 $imagePath = null;
 if (!empty($_FILES['recipeImageFile']['name'])) {
-    $uploadDir = '../uploads/recipes/';
-    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+    $uploadDir = __DIR__ . '/../uploads/recipes/';
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+        respond(['error' => 'Unable to create upload folder'], 500);
+    }
     $ext      = pathinfo($_FILES['recipeImageFile']['name'], PATHINFO_EXTENSION);
     $safeName = 'recipe_' . uniqid() . '.' . $ext;
-    if (move_uploaded_file($_FILES['recipeImageFile']['tmp_name'], $uploadDir . $safeName))
-        $imagePath = $uploadDir . $safeName;
+    if (move_uploaded_file($_FILES['recipeImageFile']['tmp_name'], $uploadDir . $safeName)) {
+        $imagePath = 'uploads/recipes/' . $safeName;
+    }
 }
 
 $pdo->prepare(
     'INSERT INTO recipes (chef_id, name, description, price, image_path, status) VALUES (?, ?, ?, ?, ?, ?)'
 )->execute([$chefId, $name, $desc, $price, $imagePath, 'pending']);
 
-respond(['success' => true, 'recipe_id' => $pdo->lastInsertId(), 'message' => 'Recipe submitted for approval!']);
+respond([
+    'success' => true,
+    'recipe_id' => $pdo->lastInsertId(),
+    'image_path' => $imagePath,
+    'message' => 'Recipe submitted for approval!'
+]);

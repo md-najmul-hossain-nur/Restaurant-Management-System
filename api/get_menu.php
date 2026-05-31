@@ -5,7 +5,7 @@
  * Returns all approved recipes as JSON
  */
 
-require_once '../PHP/db.php';
+require_once __DIR__ . '/../Php/db.php';
 header('Content-Type: application/json');
 
 // No requireLogin() — this is a public endpoint for guests and customers

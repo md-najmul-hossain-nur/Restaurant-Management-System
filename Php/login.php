@@ -61,10 +61,10 @@ switch ($user['role']) {
         $redirect = '../Html/Admin.php';
         break;
     case 'chief':
-        $redirect = '../Html/Chief.html';
+        $redirect = '../Html/Chief.php';
         break;
     case 'waiter':
-        $redirect = '../Html/Waiter.html';
+        $redirect = '../Html/Waiter.php';
         break;
     default:
         $redirect = '../Html/Customer.html';

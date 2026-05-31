@@ -142,7 +142,44 @@ function ensureOrderCustomerColumn($pdo) {
     }
 }
 
+function ensureEmployeeClockColumns($pdo) {
+    static $initialized = false;
+    if ($initialized) {
+        return;
+    }
+    $initialized = true;
+
+    $targets = ['waiters', 'chiefs'];
+    foreach ($targets as $table) {
+        $stmt = $pdo->prepare(
+                "SELECT COLUMN_NAME
+                         FROM INFORMATION_SCHEMA.COLUMNS
+                         WHERE TABLE_SCHEMA = DATABASE()
+                             AND TABLE_NAME = ?
+                             AND COLUMN_NAME IN ('is_clocked_in', 'last_clock_in', 'last_clock_out')"
+        );
+        $stmt->execute([$table]);
+        $existing = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $alterParts = [];
+        if (!in_array('is_clocked_in', $existing, true)) {
+            $alterParts[] = "ADD COLUMN is_clocked_in TINYINT(1) NOT NULL DEFAULT 0";
+        }
+        if (!in_array('last_clock_in', $existing, true)) {
+            $alterParts[] = "ADD COLUMN last_clock_in TIMESTAMP NULL DEFAULT NULL";
+        }
+        if (!in_array('last_clock_out', $existing, true)) {
+            $alterParts[] = "ADD COLUMN last_clock_out TIMESTAMP NULL DEFAULT NULL";
+        }
+
+        if ($alterParts) {
+            $pdo->exec('ALTER TABLE ' . $table . ' ' . implode(', ', $alterParts));
+        }
+    }
+}
+
 ensureCustomerApprovalSchema($pdo);
 ensureDefaultAdminAccount($pdo);
 ensureOrderGuestColumns($pdo);
 ensureOrderCustomerColumn($pdo);
+ensureEmployeeClockColumns($pdo);

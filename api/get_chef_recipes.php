@@ -4,7 +4,7 @@
 // Method: GET
  
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once '../PHP/db.php';
+require_once __DIR__ . '/../Php/db.php';
 requireLogin('chief');
  
 $chefId = $_SESSION['user_id'];

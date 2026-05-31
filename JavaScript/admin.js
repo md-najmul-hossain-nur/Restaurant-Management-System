@@ -87,8 +87,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Keep the certificate field visible; only make it mandatory for Chef.
   if (roleSelect && certGroup) {
     const toggle = () => {
+      const isChief = String(roleSelect.value || '').toLowerCase() === 'chief';
       certGroup.style.display = 'flex';
-      if (certInput) certInput.disabled = false;
+      if (certInput) {
+        certInput.disabled = false;
+        certInput.required = isChief;
+      }
     };
     toggle();
     roleSelect.addEventListener('change', toggle);
@@ -160,6 +164,55 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ── Employee Timers ─────────────────────────────────────
+  const employeeCards = document.querySelectorAll('.employee-card');
+
+  function formatDuration(ms) {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    if (minutes > 0) return `${minutes}m ${seconds}s`;
+    return `${seconds}s`;
+  }
+
+  function parseTimestamp(value) {
+    if (!value) return null;
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+    return date;
+  }
+
+  function updateEmployeeTimers() {
+    const now = new Date();
+    employeeCards.forEach(card => {
+      const timeLabel = card.querySelector('.time-label');
+      const timeValue = card.querySelector('.time-value');
+      if (!timeLabel || !timeValue) return;
+
+      const isClocked = card.dataset.clocked === '1';
+      const clockIn = parseTimestamp(card.dataset.clockIn);
+      const clockOut = parseTimestamp(card.dataset.clockOut);
+
+      if (isClocked && clockIn) {
+        timeLabel.textContent = 'Clocked in for';
+        timeValue.textContent = formatDuration(now - clockIn);
+      } else if (!isClocked && clockOut) {
+        timeLabel.textContent = 'Clocked out for';
+        timeValue.textContent = formatDuration(now - clockOut);
+      } else {
+        timeLabel.textContent = '';
+        timeValue.textContent = '';
+      }
+    });
+  }
+
+  if (employeeCards.length) {
+    updateEmployeeTimers();
+    setInterval(updateEmployeeTimers, 1000);
+  }
+
   // ── Add Table Modal ───────────────────────────────────────
   const openAddTableBtn = document.getElementById('openAddTable');
   const tableForm       = document.getElementById('tableForm');
@@ -196,6 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Table Status Dropdown ─────────────────────────────────
   const tablesGrid = document.getElementById('tablesGrid');
+  const editTableForm = document.getElementById('editTableForm');
+  let currentTableCard = null;
   if (tablesGrid) {
     // Filter pills
     document.querySelectorAll('.filter-pill').forEach(pill => {
@@ -245,37 +300,43 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!editBtn) return;
       const card = editBtn.closest('.table-card');
       if (!card) return;
+      currentTableCard = card;
 
       const tableId = card.dataset.tableId;
       const pos     = card.dataset.position || '';
+      const cap     = card.dataset.capacity || '';
+      const tableNumber = card.dataset.tableNumber || tableId;
 
       const numEl  = document.getElementById('editTableNumber');
       const posEl  = document.getElementById('editTablePosition');
       const capEl  = document.getElementById('editTableCapacity');
       const delBtn = document.getElementById('deleteTableBtn');
 
-      if (numEl) numEl.value = tableId;
+      if (numEl) numEl.value = tableNumber;
       if (posEl) posEl.value = pos;
-      if (capEl) {
-        // read capacity from the card's meta text if available
-        const metaEl = card.querySelector('.table-meta');
-        capEl.value  = metaEl ? parseInt(metaEl.textContent) || '' : '';
-      }
+      if (capEl) capEl.value = cap;
 
       if (delBtn) {
         delBtn.onclick = async () => {
           if (!confirm('Delete this table? This cannot be undone.')) return;
           try {
-            const res    = await fetch('../api/update_table_status.php', {
+            const res = await fetch('../api/update_table_status.php', {
               method:  'POST',
               headers: { 'Content-Type': 'application/json' },
-              body:    JSON.stringify({ table_id: tableId, status: 'available', _delete: true }),
+              body:    JSON.stringify({ table_id: tableId, _delete: true }),
             });
-            card.remove();
-            closeModal('editTableModal');
-            updateTableStats();
-            showAdminToast('Table removed from view (delete API needed)');
-          } catch {}
+            const result = await res.json();
+            if (result.success) {
+              card.remove();
+              closeModal('editTableModal');
+              updateTableStats();
+              showAdminToast('Table deleted');
+            } else {
+              showAdminToast(result.error || 'Delete failed', true);
+            }
+          } catch {
+            showAdminToast('Network error.', true);
+          }
         };
       }
 
@@ -283,8 +344,60 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  if (editTableForm) {
+    editTableForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentTableCard) return;
+
+      const submitBtn = editTableForm.querySelector('[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving…';
+
+      try {
+        const formData = new FormData(editTableForm);
+        formData.append('tableId', currentTableCard.dataset.tableId || '');
+
+        const res = await fetch('../api/update_table.php', {
+          method: 'POST',
+          body: formData,
+        });
+        const result = await res.json();
+
+        if (result.success) {
+          const newCapacity = formData.get('editTableCapacity');
+          const newPosition = formData.get('editTablePosition');
+
+          currentTableCard.dataset.capacity = String(newCapacity || '');
+          currentTableCard.dataset.position = String(newPosition || '');
+
+          const positionBadge = currentTableCard.querySelector('.position-badge');
+          if (positionBadge) positionBadge.textContent = newPosition ? capitalize(newPosition) : 'Unknown';
+
+          const metaEl = currentTableCard.querySelector('.table-meta');
+          if (metaEl && newCapacity) metaEl.textContent = `Capacity: ${newCapacity}`;
+
+          if (result.image_path) {
+            const img = currentTableCard.querySelector('.table-icon');
+            if (img) img.src = normalizeImagePath(result.image_path);
+          }
+
+          closeModal('editTableModal');
+          showAdminToast('Table updated');
+        } else {
+          showAdminToast(result.error || 'Update failed', true);
+        }
+      } catch {
+        showAdminToast('Network error.', true);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Changes';
+      }
+    });
+  }
+
   function updateTableStats() {
-    const cards = document.querySelectorAll('.table-card');
+    const cards = Array.from(document.querySelectorAll('.table-card'))
+      .filter(card => card.dataset.tableId);
     let available = 0, reserved = 0, occupied = 0;
     cards.forEach(c => {
       if (c.dataset.status === 'available') available++;
@@ -298,15 +411,28 @@ document.addEventListener('DOMContentLoaded', () => {
     set('statOccupied',  occupied);
   }
 
-  // ── Menu Item Approval ────────────────────────────────────
-  // Approve/reject buttons on pending menu cards
-  document.querySelectorAll('.customer-action-btn[data-action]').forEach(btn => {
-    // This selector targets BOTH customer and menu approval buttons
-    // We only handle menu ones here — check parent context
-    const card = btn.closest('[data-menu-id]');
-    if (!card) return;
+  function normalizeImagePath(path) {
+    if (!path) return '';
+    if (path.startsWith('http') || path.startsWith('..')) return path;
+    return `../${path}`;
+  }
 
-    btn.addEventListener('click', async () => {
+  function capitalize(value) {
+    const str = String(value || '').toLowerCase();
+    if (!str) return '';
+    if (str === 'entrance') return 'Near Entrance';
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // ── Menu Item Approval ────────────────────────────────────
+  const pendingMenuItems = document.getElementById('pendingMenuItems');
+  if (pendingMenuItems) {
+    pendingMenuItems.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.menu-approve-btn, .menu-reject-btn');
+      if (!btn) return;
+      const card = btn.closest('[data-menu-id]');
+      if (!card) return;
+
       const menuId = card.dataset.menuId;
       const action = btn.dataset.action; // 'approve' or 'reject'
       try {
@@ -317,6 +443,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const result = await res.json();
         if (result.success) {
+          if (action === 'approve') {
+            const approvedGrid = document.getElementById('approvedMenuItems');
+            if (approvedGrid) {
+              const approvedCard = card.cloneNode(true);
+              approvedCard.classList.remove('pending');
+              approvedCard.classList.add('approved');
+
+              const actionRow = approvedCard.querySelector('.menu-action-row');
+              if (actionRow) actionRow.remove();
+
+              if (!approvedCard.querySelector('.menu-check')) {
+                const check = document.createElement('div');
+                check.className = 'menu-check';
+                check.setAttribute('aria-hidden', 'true');
+                check.innerHTML = '<i class="fas fa-check"></i>';
+                approvedCard.prepend(check);
+              }
+
+              approvedGrid.prepend(approvedCard);
+            }
+          }
+
           card.remove();
           updateMenuCount();
           showAdminToast(`Item ${action}d`);
@@ -327,12 +475,15 @@ document.addEventListener('DOMContentLoaded', () => {
         showAdminToast('Network error.', true);
       }
     });
-  });
+  }
 
   function updateMenuCount() {
     const pending = document.querySelectorAll('#pendingMenuItems [data-menu-id]').length;
-    const el      = document.getElementById('pendingMenuCount');
-    if (el) el.textContent = pending;
+    const approved = document.querySelectorAll('#approvedMenuItems [data-menu-id]').length;
+    const pendingEl = document.getElementById('pendingMenuCount');
+    const approvedEl = document.getElementById('approvedMenuCount');
+    if (pendingEl) pendingEl.textContent = String(pending);
+    if (approvedEl) approvedEl.textContent = String(approved);
   }
 
   const reservationRequests = document.getElementById('reservationRequests');
@@ -427,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const tagEl   = card.querySelector('.menu-tag');
 
       if (nameEl)  document.getElementById('editMenuName').value  = nameEl.textContent;
-      if (priceEl) document.getElementById('editMenuPrice').value = priceEl.textContent;
+      if (priceEl) document.getElementById('editMenuPrice').value = priceEl.textContent.replace(/[^0-9.]/g, '');
       if (descEl)  document.getElementById('editMenuDesc').value  = descEl.textContent;
       if (tagEl)   document.getElementById('editMenuTag').value   = tagEl.textContent;
       document.getElementById('editMenuImage').value = '';
@@ -459,7 +610,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const d = currentMenuCard.querySelector('.menu-desc');
             const t = currentMenuCard.querySelector('.menu-tag');
             if (n) n.textContent = formData.get('editMenuName');
-            if (p) p.textContent = formData.get('editMenuPrice');
+            if (p) {
+              const priceValue = String(formData.get('editMenuPrice') || '').trim();
+              p.textContent = priceValue ? `$${priceValue}` : '';
+            }
             if (d) d.textContent = formData.get('editMenuDesc');
             if (t) t.textContent = formData.get('editMenuTag');
           }

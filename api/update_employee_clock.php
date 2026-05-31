@@ -1,15 +1,17 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../Php/db.php';
+require_once __DIR__ . '/../Php/bootstrap.php';
 requireLogin('admin');
 
 // Expect JSON { user_id: int, action: 'in'|'out' }
-$payload = json_decode(file_get_contents('php://input'), true);
-if (!$payload || empty($payload['user_id']) || empty($payload['action'])) {
+$payload = json_decode(file_get_contents('php://input'), true) ?: [];
+$userId = (int) ($payload['user_id'] ?? ($_SESSION['user_id'] ?? 0));
+$action = ($payload['action'] ?? '') === 'in' ? 'in' : 'out';
+
+if (!$userId || !$action) {
     respond(['error' => 'Missing parameters'], 400);
 }
-$userId = (int)$payload['user_id'];
-$action = $payload['action'] === 'in' ? 'in' : 'out';
 
 // Determine which role table to update (chiefs or waiters)
 $stmt = $pdo->prepare('SELECT role FROM users WHERE id = ? LIMIT 1');
@@ -29,10 +31,10 @@ try {
         }
     } else {
         if ($role === 'waiter') {
-            $pdo->prepare('UPDATE waiters SET is_clocked_in = 0 WHERE user_id = ?')
+            $pdo->prepare('UPDATE waiters SET is_clocked_in = 0, last_clock_out = NOW() WHERE user_id = ?')
                 ->execute([$userId]);
         } else {
-            $pdo->prepare('UPDATE chiefs SET is_clocked_in = 0 WHERE user_id = ?')
+            $pdo->prepare('UPDATE chiefs SET is_clocked_in = 0, last_clock_out = NOW() WHERE user_id = ?')
                 ->execute([$userId]);
         }
     }

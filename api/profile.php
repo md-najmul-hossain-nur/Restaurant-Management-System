@@ -5,7 +5,7 @@
  * POST → updates name, phone, address, email (or password, or avatar)
  */
 
-require_once '../PHP/db.php';
+require_once __DIR__ . '/../Php/db.php';
 header('Content-Type: application/json');
 
 requireLogin();

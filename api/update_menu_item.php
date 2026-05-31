@@ -4,12 +4,14 @@
 // Method: POST multipart/form-data
 
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once '../PHP/db.php';
+require_once __DIR__ . '/../Php/db.php';
 requireLogin('admin');
 
 $recipeId = (int)  ($_POST['recipe_id']    ?? 0);
 $name     = trim($_POST['editMenuName']    ?? '');
-$price    = (float)($_POST['editMenuPrice'] ?? 0);
+$rawPrice = trim((string)($_POST['editMenuPrice'] ?? ''));
+$rawPrice = ltrim($rawPrice, "$ ");
+$price    = (float) $rawPrice;
 $desc     = trim($_POST['editMenuDesc']    ?? '');
 $category = trim($_POST['editMenuTag']     ?? '');
 
@@ -19,12 +21,15 @@ if (!$recipeId || !$name || !$price || !$category)
 // Optional image upload
 $imagePath = null;
 if (!empty($_FILES['editMenuImage']['name'])) {
-    $uploadDir = '../uploads/menu/';
-    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+    $uploadDir = __DIR__ . '/../uploads/menu/';
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+        respond(['error' => 'Unable to create upload folder'], 500);
+    }
     $ext      = pathinfo($_FILES['editMenuImage']['name'], PATHINFO_EXTENSION);
     $safeName = 'menu_' . $recipeId . '_' . uniqid() . '.' . $ext;
-    if (move_uploaded_file($_FILES['editMenuImage']['tmp_name'], $uploadDir . $safeName))
-        $imagePath = $uploadDir . $safeName;
+    if (move_uploaded_file($_FILES['editMenuImage']['tmp_name'], $uploadDir . $safeName)) {
+        $imagePath = 'uploads/menu/' . $safeName;
+    }
 }
 
 if ($imagePath) {

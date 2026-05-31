@@ -4,7 +4,7 @@
 // Method: POST JSON
 
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once '../PHP/db.php';
+require_once __DIR__ . '/../Php/db.php';
 requireLogin('waiter');
 
 $waiterId = $_SESSION['user_id'];
@@ -27,11 +27,18 @@ try {
     $orderId = $pdo->lastInsertId();
 
     $itemStmt = $pdo->prepare(
-        'INSERT INTO order_items (order_id, name, price, quantity, subtotal) VALUES (?, ?, ?, ?, ?)'
+        'INSERT INTO order_items (order_id, recipe_id, name, price, quantity, subtotal) VALUES (?, ?, ?, ?, ?, ?)'
     );
     foreach ($items as $item) {
         $sub = round($item['price'] * $item['quantity'], 2);
-        $itemStmt->execute([$orderId, $item['name'], $item['price'], $item['quantity'], $sub]);
+        $itemStmt->execute([
+            $orderId,
+            $item['recipe_id'] ?? null,
+            $item['name'],
+            $item['price'],
+            $item['quantity'],
+            $sub
+        ]);
     }
 
     $pdo->prepare("UPDATE restaurant_tables SET status='occupied' WHERE id=?")->execute([$tableId]);
