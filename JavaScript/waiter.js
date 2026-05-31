@@ -26,10 +26,23 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.toggle('is-clocked-out', out);
       clockBtn.textContent = out ? 'Clock In' : 'Clock Out';
     };
-    applyState(false);
-    clockBtn.addEventListener('click', () =>
-      applyState(!document.body.classList.contains('is-clocked-out'))
-    );
+
+    const initialClocked = document.body.dataset.clocked === '1';
+    applyState(!initialClocked);
+
+    clockBtn.addEventListener('click', async () => {
+      const nextOut = !document.body.classList.contains('is-clocked-out');
+      applyState(nextOut);
+      try {
+        await fetch('../api/update_employee_clock.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: nextOut ? 'out' : 'in' }),
+        });
+      } catch {
+        showToast('Clock update failed');
+      }
+    });
   }
 
   // ── Toast ─────────────────────────────────────────────────
@@ -50,8 +63,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const availTableCount = document.getElementById('availTableCount');
 
   function updateTableCounts() {
-    if (myTableCount)    myTableCount.textContent    = myTablesGrid?.querySelectorAll('.waiter-table-card').length   || 0;
-    if (availTableCount) availTableCount.textContent = availTablesGrid?.querySelectorAll('.waiter-table-card').length || 0;
+    const myCount = myTablesGrid?.querySelectorAll('.waiter-table-card[data-table-id]').length || 0;
+    const availCount = availTablesGrid?.querySelectorAll('.waiter-table-card[data-table-id]').length || 0;
+    if (myTableCount)    myTableCount.textContent    = myCount;
+    if (availTableCount) availTableCount.textContent = availCount;
+  }
+
+  function updateOrderTableOption(tableId, tableNumber, listKey) {
+    const select = document.getElementById('orderTableSelect');
+    if (!select) return;
+    const optionId = `table-option-${tableId}`;
+    let option = select.querySelector(`#${optionId}`);
+
+    if (listKey === 'remove') {
+      if (option) option.remove();
+      return;
+    }
+
+    if (!option) {
+      option = document.createElement('option');
+      option.id = optionId;
+      option.value = tableId;
+      option.textContent = `Table ${tableNumber}`;
+      select.appendChild(option);
+    }
   }
 
   async function updateTableStatusDB(tableId, status) {
@@ -69,6 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!releaseBtn || !availTablesGrid) return;
     const card    = releaseBtn.closest('.waiter-table-card');
     const tableId = releaseBtn.dataset.release;
+    const tableNumber = card?.dataset.tableNumber || tableId;
 
     releaseBtn.classList.replace('waiter-table-action--release', 'waiter-table-action--take');
     releaseBtn.textContent = 'Take Table';
@@ -78,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
     availTablesGrid.appendChild(card);
     updateTableCounts();
     updateTableStatusDB(tableId, 'available');
+    updateOrderTableOption(tableId, tableNumber, 'add');
   });
 
   availTablesGrid?.addEventListener('click', e => {
@@ -85,6 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!takeBtn || !myTablesGrid) return;
     const card    = takeBtn.closest('.waiter-table-card');
     const tableId = takeBtn.dataset.take;
+    const tableNumber = card?.dataset.tableNumber || tableId;
 
     takeBtn.classList.replace('waiter-table-action--take', 'waiter-table-action--release');
     takeBtn.textContent = 'Release Table';
@@ -94,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     myTablesGrid.appendChild(card);
     updateTableCounts();
     updateTableStatusDB(tableId, 'occupied');
+    updateOrderTableOption(tableId, tableNumber, 'add');
   });
 
   updateTableCounts();
@@ -108,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function updateOrderStats() {
     if (!orderList) return;
-    const cards    = orderList.querySelectorAll('.order-card');
+    const cards    = orderList.querySelectorAll('.order-card[data-order-id]');
     const ready    = orderList.querySelectorAll('.order-status--ready').length;
     const kitchen  = orderList.querySelectorAll('.order-status--kitchen').length;
     if (orderCountEl) orderCountEl.textContent  = cards.length;
@@ -116,6 +155,55 @@ document.addEventListener('DOMContentLoaded', () => {
     if (statProgress) statProgress.textContent  = kitchen;
   }
   updateOrderStats();
+
+  function appendOrderCard(orderId, tableId, itemsSnapshot) {
+    if (!orderList) return;
+
+    const select = document.getElementById('orderTableSelect');
+    const option = select?.querySelector(`option[value="${tableId}"]`);
+    const tableLabel = option?.textContent || `Table ${tableId}`;
+    const timeLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    let total = 0;
+    const itemsHtml = [];
+    const pricesHtml = [];
+    itemsSnapshot.forEach(({ qty, price }, name) => {
+      total += qty * price;
+      itemsHtml.push(`<div>${qty}× ${name}</div>`);
+      pricesHtml.push(`<div class="order-price">${qty}× $${price.toFixed(2)} = $${(qty * price).toFixed(2)}</div>`);
+    });
+    const grand = (total * 1.10).toFixed(2);
+
+    const card = document.createElement('div');
+    card.className = 'order-card';
+    card.dataset.orderId = orderId || '';
+    card.innerHTML = `
+      <div class="order-card-top">
+        <div class="order-left">
+          <div class="order-head">
+            <div>
+              <div class="order-table">${tableLabel}</div>
+              <div class="order-muted">Walk-in</div>
+              <div class="order-muted">${timeLabel}</div>
+            </div>
+          </div>
+          <div class="order-items">
+            ${itemsHtml.join('')}
+          </div>
+          <div class="order-total-label">Total (incl. tax)</div>
+        </div>
+        <div class="order-right">
+          <div class="order-status order-status--kitchen">In Kitchen</div>
+          <div class="order-prices">
+            ${pricesHtml.join('')}
+            <div class="order-grand">$${grand}</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    orderList.prepend(card);
+  }
 
   // Deliver button
   orderList?.addEventListener('click', async e => {
@@ -221,10 +309,11 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.addEventListener('click', () => {
         const name  = btn.dataset.name  || 'Item';
         const price = parseFloat(btn.dataset.price) || 0;
+        const recipeId = btn.dataset.recipeId ? parseInt(btn.dataset.recipeId) : null;
         const existing = selectedItems.get(name);
         selectedItems.set(name, existing
-          ? { qty: existing.qty + 1, price }
-          : { qty: 1, price }
+          ? { qty: existing.qty + 1, price, recipeId }
+          : { qty: 1, price, recipeId }
         );
         updateSelectedUI();
       });
@@ -246,8 +335,8 @@ document.addEventListener('DOMContentLoaded', () => {
       placeBtn.textContent = 'Placing…';
 
       const items = [];
-      selectedItems.forEach(({ qty, price }, name) => {
-        items.push({ name, price, quantity: qty });
+      selectedItems.forEach(({ qty, price, recipeId }, name) => {
+        items.push({ name, price, quantity: qty, recipe_id: recipeId });
       });
 
       try {
@@ -259,10 +348,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await res.json();
 
         if (result.success) {
+          const itemsSnapshot = new Map(selectedItems);
           closeModal();
           showToast('Order placed successfully!');
-          if (statPending)
-            statPending.textContent = (parseInt(statPending.textContent) || 0) + 1;
+          appendOrderCard(result.order_id, select.value, itemsSnapshot);
+          updateOrderStats();
         } else {
           showToast(result.error || 'Failed to place order');
         }
@@ -320,10 +410,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
       set('displayName',  data.user.name);
       set('displayEmail', data.user.email);
+      set('displayPhone', data.user.phone || '');
+      set('displayLocation', data.user.address || '');
       const nameInp  = document.getElementById('inputName');
       const emailInp = document.getElementById('inputEmail');
-      if (nameInp)  nameInp.value  = data.user.name;
-      if (emailInp) emailInp.value = data.user.email;
+      const phoneInp = document.getElementById('inputPhone');
+      const addrInp  = document.getElementById('inputAddress');
+      if (nameInp)  nameInp.value  = data.user.name || '';
+      if (emailInp) emailInp.value = data.user.email || '';
+      if (phoneInp) phoneInp.value = data.user.phone || '';
+      if (addrInp)  addrInp.value  = data.user.address || '';
     } catch {}
   }
   loadProfile();
@@ -332,17 +428,21 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('saveProfile')?.addEventListener('click', async () => {
     const name  = document.getElementById('inputName')?.value.trim();
     const email = document.getElementById('inputEmail')?.value.trim();
+    const phone = document.getElementById('inputPhone')?.value.trim();
+    const address = document.getElementById('inputAddress')?.value.trim();
     if (!name || !email) return;
     try {
       const res    = await fetch('../api/profile.php', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ action: 'update_profile', name, email }),
+        body:    JSON.stringify({ action: 'update_profile', name, email, phone, address }),
       });
       const result = await res.json();
       if (result.success) {
         document.getElementById('displayName').textContent  = name;
         document.getElementById('displayEmail').textContent = email;
+        document.getElementById('displayPhone').textContent = phone || '';
+        document.getElementById('displayLocation').textContent = address || '';
         closeOverlay('editProfile');
         showToast('Profile updated!');
       } else { showToast(result.error || 'Failed'); }

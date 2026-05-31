@@ -21,6 +21,9 @@ CREATE TABLE waiters (
   phone VARCHAR(20),
   shift ENUM('morning','afternoon','evening','night') DEFAULT 'morning',
   hired_at DATE,
+  is_clocked_in TINYINT(1) NOT NULL DEFAULT 0,
+  last_clock_in TIMESTAMP NULL DEFAULT NULL,
+  last_clock_out TIMESTAMP NULL DEFAULT NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_waiter_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -34,6 +37,9 @@ CREATE TABLE chiefs (
   specialty VARCHAR(100),
   hired_at DATE,
   is_head TINYINT(1) NOT NULL DEFAULT 0,
+  is_clocked_in TINYINT(1) NOT NULL DEFAULT 0,
+  last_clock_in TIMESTAMP NULL DEFAULT NULL,
+  last_clock_out TIMESTAMP NULL DEFAULT NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_chief_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

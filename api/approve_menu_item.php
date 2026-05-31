@@ -4,7 +4,7 @@
 // Method: POST JSON  { recipe_id, action: 'approve'|'reject' }
 
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once '../PHP/db.php';
+require_once __DIR__ . '/../Php/db.php';
 requireLogin('admin');
 
 $data     = json_decode(file_get_contents('php://input'), true);

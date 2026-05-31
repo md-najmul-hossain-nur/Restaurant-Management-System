@@ -1,12 +1,77 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'chief') {
     header('Location: login.html');
     exit;
 }
+
+require_once __DIR__ . '/../Php/db.php';
+require_once __DIR__ . '/../Php/bootstrap.php';
+
+$userId = (int) $_SESSION['user_id'];
+
+$userStmt = $pdo->prepare(
+    "SELECT name, email, phone, address, avatar_path, created_at
+     FROM users
+     WHERE id = ?"
+);
+$userStmt->execute([$userId]);
+$user = $userStmt->fetch() ?: [];
+
+$clockStmt = $pdo->prepare('SELECT is_clocked_in FROM chiefs WHERE user_id = ?');
+$clockStmt->execute([$userId]);
+$isClockedIn = (int) ($clockStmt->fetchColumn() ?: 0);
+
+$pendingCount = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 'queued'")->fetchColumn();
+$progressCount = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 'in_progress'")->fetchColumn();
+$completedToday = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 'served' AND DATE(created_at) = CURDATE()")
+    ->fetchColumn();
+
+$orderStmt = $pdo->query(
+    "SELECT o.id, o.status, o.created_at, o.table_id, rt.table_number, rt.image_path
+     FROM orders o
+     LEFT JOIN restaurant_tables rt ON rt.id = o.table_id
+     WHERE o.status IN ('queued','in_progress','ready')
+     ORDER BY o.created_at ASC"
+);
+$orders = $orderStmt->fetchAll() ?: [];
+
+$ordersWithItems = [];
+$itemStmt = $pdo->prepare('SELECT name, quantity FROM order_items WHERE order_id = ?');
+foreach ($orders as $order) {
+    $itemStmt->execute([$order['id']]);
+    $order['items'] = $itemStmt->fetchAll() ?: [];
+    $ordersWithItems[] = $order;
+}
+
+$recipesStmt = $pdo->prepare(
+    "SELECT id, name, description, price, image_path, status, created_at
+     FROM recipes
+     WHERE chef_id = ?
+     ORDER BY created_at DESC"
+);
+$recipesStmt->execute([$userId]);
+$recipes = $recipesStmt->fetchAll() ?: [];
+
+$normalizeImagePath = function ($path, $fallback) {
+    if (!$path) {
+        return $fallback;
+    }
+    if (strpos($path, 'http') === 0 || strpos($path, '../') === 0) {
+        return $path;
+    }
+    return '../' . ltrim($path, '/');
+};
+
+function formatOrderStatus($status) {
+    $status = strtolower(trim($status));
+    if ($status === 'in_progress') return 'In Progress';
+    if ($status === 'queued') return 'Queued';
+    if ($status === 'ready') return 'Ready';
+    if ($status === 'served') return 'Served';
+    return ucfirst($status);
+}
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,7 +82,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="../CSS/chief.css" />
 </head>
-<body>
+<body data-clocked="<?php echo $isClockedIn ? '1' : '0'; ?>">
   <div class="dashboard">
      <!-- Topbar -->
     <header class="topbar">
@@ -76,7 +141,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
                 </div>
                 <div class="waiter-stat-body">
                   <div class="waiter-stat-label">Pending Orders</div>
-                  <div class="waiter-stat-value">0</div>
+                  <div class="waiter-stat-value" id="statPending"><?php echo $pendingCount; ?></div>
                 </div>
               </div>
             </div>
@@ -88,7 +153,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
                 </div>
                 <div class="waiter-stat-body">
                   <div class="waiter-stat-label">In Progress</div>
-                  <div class="waiter-stat-value">2</div>
+                  <div class="waiter-stat-value" id="statProgress"><?php echo $progressCount; ?></div>
                 </div>
               </div>
             </div>
@@ -100,7 +165,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
                 </div>
                 <div class="waiter-stat-body">
                   <div class="waiter-stat-label">Completed Today</div>
-                  <div class="waiter-stat-value">16</div>
+                  <div class="waiter-stat-value" id="statCompleted"><?php echo $completedToday; ?></div>
                 </div>
               </div>
             </div>
@@ -113,31 +178,31 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
                   <h2 class="card-title">Shift Snapshot</h2>
                   <p class="card-subtitle">A quick view of the kitchen rhythm for the current shift.</p>
                 </div>
-                <span class="status-badge">Stable</span>
+                <span class="status-badge">Live</span>
               </div>
 
               <div class="metrics-list">
                 <div class="list-row">
                   <div>
-                    <strong>Prep station</strong>
-                    <p>Running on schedule</p>
+                    <strong>Queued tickets</strong>
+                    <p><?php echo $pendingCount; ?> waiting in queue</p>
                   </div>
-                  <span class="pill">100%</span>
+                  <span class="pill">Queued</span>
                 </div>
 
                 <div class="list-row">
                   <div>
-                    <strong>Pass</strong>
-                    <p>Two dishes ready to serve</p>
+                    <strong>Active tickets</strong>
+                    <p><?php echo $progressCount; ?> in progress</p>
                   </div>
-                  <span class="pill">2 ready</span>
+                  <span class="pill">Cooking</span>
                 </div>
                 <div class="list-row">
                   <div>
-                    <strong>Hot line</strong>
-                    <p>Next ticket due in 8 min</p>
+                    <strong>Completed</strong>
+                    <p><?php echo $completedToday; ?> served today</p>
                   </div>
-                  <span class="pill">8 min</span>
+                  <span class="pill">Served</span>
                 </div>
               </div>
             </article>
@@ -152,26 +217,26 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
               <div class="metrics-list">
                 <div class="list-row">
                   <div>
-                    <strong>Table 3</strong>
-                    <p>Margherita pizza and salad</p>
-                  </div>
-                  <span class="pill">In progress</span>
-                </div>
-
-                <div class="list-row">
-                  <div>
-                    <strong>Table 8</strong>
-                    <p>Ready for waiter pickup</p>
+                    <strong>Next ready handoff</strong>
+                    <p>Monitor ready tickets for pickup</p>
                   </div>
                   <span class="pill">Ready</span>
                 </div>
 
                 <div class="list-row">
                   <div>
-                    <strong>Recipe board</strong>
-                    <p>New dish ideas waiting in Recipes</p>
+                    <strong>Recipe approvals</strong>
+                    <p>New recipes await admin review</p>
                   </div>
-                  <span class="pill">Updated</span>
+                  <span class="pill">Pending</span>
+                </div>
+
+                <div class="list-row">
+                  <div>
+                    <strong>Order queue</strong>
+                    <p>Keep prep aligned with queued tickets</p>
+                  </div>
+                  <span class="pill">Queue</span>
                 </div>
               </div>
             </article>
@@ -182,95 +247,55 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
           <h1 class="page-title">Table Orders</h1>
           <p class="page-subtitle">Kitchen queue and handoff status</p>
 
-          <div class="section-grid">
-                <article class="card order-card grid-6">
-                    <img class="order-image" src="../Images/Table/Family%20Table.jpg" alt="Table 3">
-                    <div class="order-body">
-                        <div class="card-head">
-                            <div>
-                                <h3 class="card-title">Table 3</h3>
-                                <p class="card-subtitle">Prep time: 15 min</p>
-                            </div>
-                            <span class="status-badge">In progress</span>
-                        </div>
-                        <div class="order-meta">
-                            <span class="pill">2x Margherita Pizza</span>
-                            <span class="pill">1x Caesar Salad</span>
-                        </div>
-                        <div class="divider"></div>
-                        <div class="actions">
-                          <button class="btn btn-secondary" type="button" data-mark-ready>Mark Ready</button>
-                            <span class="pill">Kitchen queue</span>
-                        </div>
+          <div class="section-grid" id="kitchenOrdersGrid">
+            <?php if (!$ordersWithItems) { ?>
+              <article class="card order-card grid-6">
+                <div class="order-body">
+                  <div class="card-head">
+                    <div>
+                      <h3 class="card-title">No active orders</h3>
+                      <p class="card-subtitle">The kitchen queue is empty.</p>
                     </div>
-                </article>
-
-                <article class="card order-card grid-6">
-                    <img class="order-image" src="../Images/Table/Couple%20table.jpg" alt="Table 8">
-                    <div class="order-body">
-                        <div class="card-head">
-                            <div>
-                                <h3 class="card-title">Table 8</h3>
-                                <p class="card-subtitle">2 items ready for handoff</p>
-                            </div>
-                            <span class="status-badge">Ready</span>
-                        </div>
-                        <div class="order-meta">
-                            <span class="pill">Grilled chicken</span>
-                            <span class="pill">Lemon water</span>
-                        </div>
-                        <div class="divider"></div>
-                        <div class="actions">
-                          <button class="btn btn-secondary" type="button" data-mark-ready>Mark Ready</button>
-                            <span class="pill">Awaiting waiter</span>
-                        </div>
+                  </div>
+                </div>
+              </article>
+            <?php } else { ?>
+              <?php foreach ($ordersWithItems as $order) {
+                  $status = strtolower($order['status'] ?? 'queued');
+                  $tableNumber = $order['table_number'] ?? 'N/A';
+                  $imageSrc = $normalizeImagePath($order['image_path'] ?? '', '../Images/Table/4_people table.jpg');
+              ?>
+                <article class="card order-card grid-6" data-order-id="<?php echo (int) $order['id']; ?>" data-order-status="<?php echo htmlspecialchars($status); ?>">
+                  <img class="order-image" src="<?php echo htmlspecialchars($imageSrc); ?>" alt="Table <?php echo htmlspecialchars((string) $tableNumber); ?>">
+                  <div class="order-body">
+                    <div class="card-head">
+                      <div>
+                        <h3 class="card-title">Table <?php echo htmlspecialchars((string) $tableNumber); ?></h3>
+                        <p class="card-subtitle">Placed <?php echo date('g:i A', strtotime($order['created_at'] ?? 'now')); ?></p>
+                      </div>
+                      <span class="status-badge"><?php echo htmlspecialchars(formatOrderStatus($status)); ?></span>
                     </div>
-                </article>
-
-                <article class="card order-card grid-6">
-                    <img class="order-image" src="../Images/Table/Outdoor.jpg" alt="Table 11">
-                    <div class="order-body">
-                        <div class="card-head">
-                            <div>
-                                <h3 class="card-title">Table 11</h3>
-                                <p class="card-subtitle">Early prep order</p>
-                            </div>
-                            <span class="status-badge">Queued</span>
-                        </div>
-                        <div class="order-meta">
-                            <span class="pill">Burger</span>
-                            <span class="pill">Fries</span>
-                            <span class="pill">Sauce</span>
-                        </div>
-                        <div class="divider"></div>
-                        <div class="actions">
-                          <button class="btn btn-secondary" type="button" data-mark-ready>Mark Ready</button>
-                            <span class="pill">Next up</span>
-                        </div>
+                    <div class="order-meta">
+                      <?php if (!empty($order['items'])) { ?>
+                        <?php foreach ($order['items'] as $item) { ?>
+                          <span class="pill"><?php echo (int) $item['quantity']; ?>x <?php echo htmlspecialchars($item['name']); ?></span>
+                        <?php } ?>
+                      <?php } else { ?>
+                        <span class="pill">No items</span>
+                      <?php } ?>
                     </div>
-                </article>
-
-                <article class="card order-card grid-6">
-                    <img class="order-image" src="../Images/Table/Family%20Round%20table.jpg" alt="Table 14">
-                    <div class="order-body">
-                        <div class="card-head">
-                            <div>
-                                <h3 class="card-title">Table 14</h3>
-                                <p class="card-subtitle">Large table, family service</p>
-                            </div>
-                            <span class="status-badge">Served</span>
-                        </div>
-                        <div class="order-meta">
-                            <span class="pill">Dam biriani</span>
-                            <span class="pill">Khichuri</span>
-                        </div>
-                        <div class="divider"></div>
-                        <div class="actions">
-                            <span class="pill">High priority</span>
-                        </div>
+                    <div class="divider"></div>
+                    <div class="actions">
+                      <?php if ($status !== 'ready') { ?>
+                        <button class="btn btn-secondary" type="button" data-mark-ready>Mark Ready</button>
+                      <?php } ?>
+                      <span class="pill"><?php echo htmlspecialchars(formatOrderStatus($status)); ?></span>
                     </div>
+                  </div>
                 </article>
-            </div>
+              <?php } ?>
+            <?php } ?>
+          </div>
         </div>
 
         <!-- ===================== RECIPES ===================== -->
@@ -284,98 +309,45 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
           </div>
 
           <div class="section-grid" id="recipesGrid">
-            <article class="card order-card recipe-card grid-6">
-              <span class="status-badge corner-badge">Approved</span>
-              <img class="order-image" src="../Images/menu/saffronchicken.jpg" alt="Saffron Chicken" />
-              <div class="order-body">
-                <div class="card-head">
-                  <div>
-                    <h3 class="card-title">Saffron Chicken</h3>
-                    <p class="card-subtitle">Juicy chicken with saffron butter sauce</p>
+            <?php if (!$recipes) { ?>
+              <article class="card order-card recipe-card grid-6">
+                <div class="order-body">
+                  <div class="card-head">
+                    <div>
+                      <h3 class="card-title">No recipes yet</h3>
+                      <p class="card-subtitle">Add your first recipe for approval.</p>
+                    </div>
                   </div>
                 </div>
-                <div class="order-meta">
-                  <span class="pill">25 min</span>
-                  <span class="pill">Main</span>
-                  <span class="pill">Mild</span>
-                </div>
-                <p class="recipe-desc">Details: served with seasonal veggies and lemon rice.</p>
-                <div class="divider"></div>
-                <div class="actions recipe-actions">
-                  <span class="pill recipe-price">$18.99</span>
-                  <button class="order-edit-btn" data-edit-recipe>Edit</button>
-                </div>
-              </div>
-            </article>
-
-            <article class="card order-card recipe-card grid-6">
-              <span class="status-badge corner-badge">Pending</span>
-              <img class="order-image" src="../Images/menu/choclatelavacake.jpg" alt="Chocolate Lava Cake" />
-              <div class="order-body">
-                <div class="card-head">
-                  <div>
-                    <h3 class="card-title">Chocolate Lava Cake</h3>
-                    <p class="card-subtitle">Warm cake with molten chocolate center</p>
+              </article>
+            <?php } else { ?>
+              <?php foreach ($recipes as $recipe) {
+                  $imageSrc = $normalizeImagePath($recipe['image_path'] ?? '', '../Images/food/default.png');
+                  $status = strtolower($recipe['status'] ?? 'pending');
+              ?>
+                <article class="card order-card recipe-card grid-6" data-recipe-id="<?php echo (int) $recipe['id']; ?>">
+                  <span class="status-badge corner-badge"><?php echo htmlspecialchars(ucfirst($status)); ?></span>
+                  <img class="order-image" src="<?php echo htmlspecialchars($imageSrc); ?>" alt="<?php echo htmlspecialchars($recipe['name'] ?? 'Recipe'); ?>" />
+                  <div class="order-body">
+                    <div class="card-head">
+                      <div>
+                        <h3 class="card-title"><?php echo htmlspecialchars($recipe['name'] ?? 'Recipe'); ?></h3>
+                        <p class="card-subtitle"><?php echo $status === 'approved' ? 'Live on menu' : 'Awaiting approval'; ?></p>
+                      </div>
+                    </div>
+                    <div class="order-meta">
+                      <span class="pill"><?php echo $status === 'approved' ? 'Approved' : 'Pending'; ?></span>
+                    </div>
+                    <p class="recipe-desc">Details: <?php echo htmlspecialchars($recipe['description'] ?? ''); ?></p>
+                    <div class="divider"></div>
+                    <div class="actions recipe-actions">
+                      <span class="pill recipe-price">$<?php echo number_format((float) ($recipe['price'] ?? 0), 2); ?></span>
+                      <button class="order-edit-btn" data-edit-recipe>Edit</button>
+                    </div>
                   </div>
-                </div>
-                <div class="order-meta">
-                  <span class="pill">12 min</span>
-                  <span class="pill">Dessert</span>
-                </div>
-                <p class="recipe-desc">Details: topped with vanilla cream and cocoa dust.</p>
-                <div class="divider"></div>
-                <div class="actions recipe-actions">
-                  <span class="pill recipe-price">$8.50</span>
-                  <button class="order-edit-btn" data-edit-recipe>Edit</button>
-                </div>
-              </div>
-            </article>
-
-            <article class="card order-card recipe-card grid-6">
-              <span class="status-badge corner-badge">Approved</span>
-              <img class="order-image" src="../Images/food/Dam%20biriani.jpg" alt="Dam Biriani" />
-              <div class="order-body">
-                <div class="card-head">
-                  <div>
-                    <h3 class="card-title">Dam Biriani</h3>
-                    <p class="card-subtitle">Traditional biryani cooked in sealed pot</p>
-                  </div>
-                </div>
-                <div class="order-meta">
-                  <span class="pill">35 min</span>
-                  <span class="pill">Spicy</span>
-                  <span class="pill">Main</span>
-                </div>
-                <p class="recipe-desc">Details: basmati rice, tender meat, aromatic spices.</p>
-                <div class="divider"></div>
-                <div class="actions recipe-actions">
-                  <span class="pill recipe-price">$14.99</span>
-                  <button class="order-edit-btn" data-edit-recipe>Edit</button>
-                </div>
-              </div>
-            </article>
-            <article class="card order-card recipe-card grid-6">
-              <span class="status-badge corner-badge">Pending</span>
-              <img class="order-image" src="../Images/food/Burger.jpg" alt="Classic Burger" />
-              <div class="order-body">
-                <div class="card-head">
-                  <div>
-                    <h3 class="card-title">Classic Burger</h3>
-                    <p class="card-subtitle">Grilled beef patty with cheese and sauce</p>
-                  </div>
-                </div>
-                <div class="order-meta">
-                  <span class="pill">18 min</span>
-                  <span class="pill">Main</span>
-                </div>
-                <p class="recipe-desc">Details: served with fries and house pickles.</p>
-                <div class="divider"></div>
-                <div class="actions recipe-actions">
-                  <span class="pill recipe-price">$12.99</span>
-                  <button class="order-edit-btn" data-edit-recipe>Edit</button>
-                </div>
-              </div>
-            </article>
+                </article>
+              <?php } ?>
+            <?php } ?>
           </div>
         </div>
           <!-- Add Recipe Modal -->
@@ -439,25 +411,25 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
           <div class="profile-card">
             <div class="profile-left">
               <div class="profile-avatar" aria-hidden="true">
-                <img src="../Images/Customer/pexels-emad-hussien-830139385-27856326.jpg" alt="Profile" />
+                <img src="<?php echo htmlspecialchars($normalizeImagePath($user['avatar_path'] ?? '', '../Images/Customer/pexels-emad-hussien-830139385-27856326.jpg')); ?>" alt="Profile" />
               </div>
 
               <div class="profile-info">
-                <div class="profile-name" id="displayName">Richard Clark</div>
-                <div class="profile-sub">Member since Jan 2024</div>
+                <div class="profile-name" id="displayName"><?php echo htmlspecialchars($user['name'] ?? ''); ?></div>
+                <div class="profile-sub">Member since <?php echo !empty($user['created_at']) ? date('M Y', strtotime($user['created_at'])) : 'N/A'; ?></div>
 
                 <div class="profile-rows">
                   <div class="profile-row">
                     <i class="fa-solid fa-envelope"></i>
-                    <span id="displayEmail">my.rushnaosran@gmail.com</span>
+                    <span id="displayEmail"><?php echo htmlspecialchars($user['email'] ?? ''); ?></span>
                   </div>
                   <div class="profile-row">
                     <i class="fa-solid fa-phone"></i>
-                    <span id="displayPhone">+880 1XXX-XX-XX-XX</span>
+                    <span id="displayPhone"><?php echo htmlspecialchars($user['phone'] ?? ''); ?></span>
                   </div>
                   <div class="profile-row">
                     <i class="fa-solid fa-location-dot"></i>
-                    <span id="displayLocation">New York, NY</span>
+                    <span id="displayLocation"><?php echo htmlspecialchars($user['address'] ?? ''); ?></span>
                   </div>
                 </div>
               </div>
@@ -574,9 +546,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'chief') {
   <span class="toast-icon"><i class="fas fa-check"></i></span>
   <span class="toast-msg">Recipe added successfully!</span>
 </div>
-        
-  </div>   
-  <script src="../JavaScript/admin.js"></script>
-  <script src="../JavaScript/waiter.js"></script>
+
+  </div>
+  <script src="../JavaScript/chief.js"></script>
 </body>
 </html>

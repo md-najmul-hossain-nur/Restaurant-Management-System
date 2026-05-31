@@ -26,10 +26,23 @@ document.addEventListener('DOMContentLoaded', () => {
       document.body.classList.toggle('is-clocked-out', out);
       clockBtn.textContent = out ? 'Clock In' : 'Clock Out';
     };
-    applyState(false);
-    clockBtn.addEventListener('click', () =>
-      applyState(!document.body.classList.contains('is-clocked-out'))
-    );
+
+    const initialClocked = document.body.dataset.clocked === '1';
+    applyState(!initialClocked);
+
+    clockBtn.addEventListener('click', async () => {
+      const nextOut = !document.body.classList.contains('is-clocked-out');
+      applyState(nextOut);
+      try {
+        await fetch('../api/update_employee_clock.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: nextOut ? 'out' : 'in' }),
+        });
+      } catch {
+        showToast('Clock update failed', true);
+      }
+    });
   }
 
   // ── Toast ─────────────────────────────────────────────────
@@ -128,18 +141,38 @@ document.addEventListener('DOMContentLoaded', () => {
       submitBtn.textContent = 'Saving…';
 
       if (editingCard) {
-        // Edit: update DOM only (no dedicated update API yet — add one if needed)
-        const name  = document.getElementById('recipeName').value.trim();
-        const desc  = document.getElementById('recipeDetails').value.trim();
-        const price = document.getElementById('recipePrice').value;
+        try {
+          const formData = new FormData(addRecipeForm);
+          formData.append('recipe_id', editingCard.dataset.recipeId || '');
+          const res = await fetch('../api/update_recipe.php', { method: 'POST', body: formData });
+          const result = await res.json();
 
-        editingCard.querySelector('.card-title').textContent      = name;
-        editingCard.querySelector('.recipe-desc').textContent     = 'Details: ' + desc;
-        editingCard.querySelector('.recipe-price').textContent    = '$' + parseFloat(price).toFixed(2);
-        closeRecipeModal();
-        showToast('Recipe updated!');
-        submitBtn.disabled    = false;
-        submitBtn.textContent = 'Update Recipe';
+          if (result.success) {
+            const name  = document.getElementById('recipeName').value.trim();
+            const desc  = document.getElementById('recipeDetails').value.trim();
+            const price = document.getElementById('recipePrice').value;
+
+            editingCard.querySelector('.card-title').textContent   = name;
+            editingCard.querySelector('.recipe-desc').textContent  = 'Details: ' + desc;
+            editingCard.querySelector('.recipe-price').textContent = '$' + parseFloat(price).toFixed(2);
+
+            if (result.image_path) {
+              const img = editingCard.querySelector('.order-image');
+              if (img) img.src = normalizeImagePath(result.image_path);
+            }
+
+            closeRecipeModal();
+            showToast('Recipe updated!');
+          } else {
+            showToast(result.error || 'Update failed', true);
+          }
+        } catch (err) {
+          console.error(err);
+          showToast('Network error. Try again.', true);
+        } finally {
+          submitBtn.disabled    = false;
+          submitBtn.textContent = 'Update Recipe';
+        }
         return;
       }
 
@@ -154,7 +187,9 @@ document.addEventListener('DOMContentLoaded', () => {
           const name    = document.getElementById('recipeName').value.trim();
           const desc    = document.getElementById('recipeDetails').value.trim();
           const price   = parseFloat(document.getElementById('recipePrice').value).toFixed(2);
-          const imgSrc  = previewImg && !previewImg.hidden ? previewImg.src : '../Images/food/default.png';
+          const imgSrc  = previewImg && !previewImg.hidden
+            ? previewImg.src
+            : normalizeImagePath(result.image_path || '../Images/food/default.png');
 
           const article = document.createElement('article');
           article.className = 'card order-card recipe-card grid-6';
@@ -203,12 +238,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       recipesGrid.innerHTML = '';
       recipes.forEach(r => {
+        const imageSrc = normalizeImagePath(r.image_path || '../Images/food/default.png');
         const article = document.createElement('article');
         article.className    = 'card order-card recipe-card grid-6';
         article.dataset.recipeId = r.id;
         article.innerHTML = `
           <span class="status-badge corner-badge">${capitalize(r.status)}</span>
-          <img class="order-image" src="${r.image_path || '../Images/food/default.png'}" alt="${r.name}" />
+          <img class="order-image" src="${imageSrc}" alt="${r.name}" />
           <div class="order-body">
             <div class="card-head">
               <div>
@@ -228,41 +264,67 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch {}
   }
 
+  function normalizeImagePath(path) {
+    if (!path) return '../Images/food/default.png';
+    if (path.startsWith('http') || path.startsWith('..')) return path;
+    return `../${path.replace(/^\/+/, '')}`;
+  }
+
   function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
   loadRecipes();
 
   // ── Order Mark Ready ─────────────────────────────────────
-  document.querySelectorAll('.order-card').forEach(card => {
-    const statusEl  = card.querySelector('.status-badge');
-    const actionBtn = card.querySelector('[data-mark-ready]');
-    if (!actionBtn || !statusEl) return;
+  const kitchenOrdersGrid = document.getElementById('kitchenOrdersGrid');
+  const statPending = document.getElementById('statPending');
+  const statProgress = document.getElementById('statProgress');
 
-    const status = (statusEl.textContent || '').trim().toLowerCase();
-    if (status === 'ready' || status === 'served') {
-      actionBtn.hidden   = true;
-      actionBtn.disabled = true;
-      return;
+  function updateOrderStats() {
+    if (!kitchenOrdersGrid) return;
+    const cards = kitchenOrdersGrid.querySelectorAll('.order-card[data-order-id]');
+    let queued = 0;
+    let progress = 0;
+    cards.forEach(card => {
+      const status = (card.dataset.orderStatus || '').toLowerCase();
+      if (status === 'queued') queued++;
+      else if (status === 'in_progress') progress++;
+    });
+    if (statPending) statPending.textContent = String(queued);
+    if (statProgress) statProgress.textContent = String(progress);
+  }
+
+  kitchenOrdersGrid?.addEventListener('click', async (e) => {
+    const actionBtn = e.target.closest('[data-mark-ready]');
+    if (!actionBtn) return;
+    const card = actionBtn.closest('.order-card');
+    if (!card) return;
+
+    const statusEl = card.querySelector('.status-badge');
+    const orderId = card.dataset.orderId;
+
+    if (orderId) {
+      try {
+        await fetch('../api/update_order_status.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: parseInt(orderId), status: 'ready' }),
+        });
+      } catch {
+        showToast('Network error. Try again.', true);
+        return;
+      }
     }
 
-    actionBtn.addEventListener('click', async () => {
-      const orderId = card.dataset.orderId;
-      if (orderId) {
-        try {
-          await fetch('../api/update_order_status.php', {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ order_id: parseInt(orderId), status: 'ready' }),
-          });
-        } catch {}
-      }
-      statusEl.textContent  = 'Ready';
-      actionBtn.textContent = '✓ Ready';
-      actionBtn.disabled    = true;
-      setTimeout(() => { actionBtn.hidden = true; }, 400);
-      showToast('Order marked as ready!');
-    });
+    card.dataset.orderStatus = 'ready';
+    if (statusEl) statusEl.textContent = 'Ready';
+    actionBtn.textContent = '✓ Ready';
+    actionBtn.disabled = true;
+    setTimeout(() => { actionBtn.hidden = true; }, 400);
+    showToast('Order marked as ready!');
+    updateOrderStats();
   });
+
+  updateOrderStats();
 
   // ── Profile Modals (identical to waiter) ─────────────────
   const overlays = {
@@ -302,11 +364,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
       set('displayName',  data.user.name);
       set('displayEmail', data.user.email);
+      set('displayPhone', data.user.phone || '');
+      set('displayLocation', data.user.address || '');
       // Pre-fill form
       const nameInp  = document.getElementById('inputName');
       const emailInp = document.getElementById('inputEmail');
-      if (nameInp)  nameInp.value  = data.user.name;
-      if (emailInp) emailInp.value = data.user.email;
+      const phoneInp = document.getElementById('inputPhone');
+      const addrInp  = document.getElementById('inputAddress');
+      if (nameInp)  nameInp.value  = data.user.name || '';
+      if (emailInp) emailInp.value = data.user.email || '';
+      if (phoneInp) phoneInp.value = data.user.phone || '';
+      if (addrInp)  addrInp.value  = data.user.address || '';
     } catch {}
   }
   loadProfile();
@@ -315,18 +383,22 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('saveProfile')?.addEventListener('click', async () => {
     const name  = document.getElementById('inputName')?.value.trim();
     const email = document.getElementById('inputEmail')?.value.trim();
+    const phone = document.getElementById('inputPhone')?.value.trim();
+    const address = document.getElementById('inputAddress')?.value.trim();
     if (!name || !email) return;
 
     try {
       const res    = await fetch('../api/profile.php', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ action: 'update_profile', name, email }),
+        body:    JSON.stringify({ action: 'update_profile', name, email, phone, address }),
       });
       const result = await res.json();
       if (result.success) {
         document.getElementById('displayName').textContent  = name;
         document.getElementById('displayEmail').textContent = email;
+        document.getElementById('displayPhone').textContent = phone || '';
+        document.getElementById('displayLocation').textContent = address || '';
         closeOverlay('editProfile');
         showToast('Profile updated!');
       } else {
