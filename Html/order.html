@@ -20,9 +20,7 @@
         <li><a href="menu.html">Menu</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
-      <a href="login.html" class="btn-profile" aria-label="Go to Login">
-        <img src="../Images/profile.png" alt="Profile" class="nav-profile-img">
-      </a>
+      <div class="btn-profile" aria-hidden="true"></div>
     </nav>
     <div class="order-hero-text">
       <h1>Order</h1>
@@ -39,11 +37,10 @@
     <section class="order-card">
       <form class="order-form" id="orderForm">
 
-        <!-- Shown if logged in -->
-        <p class="logged-in-note hidden" id="loggedInNote"></p>
+        <p class="logged-in-note" id="loggedInNote">Ordering as guest</p>
 
-        <!-- Guest fields — hidden if logged in -->
-        <div id="guestFields" class="hidden">
+        <!-- Guest fields -->
+        <div id="guestFields">
           <div class="order-grid">
             <div class="order-field">
               <label for="orderName">Full Name <span class="required">*</span></label>

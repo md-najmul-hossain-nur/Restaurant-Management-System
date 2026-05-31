@@ -9,7 +9,8 @@ require_once '../PHP/bootstrap.php';
 header('Content-Type: application/json');
 
 $data = json_decode(file_get_contents('php://input'), true) ?: [];
-$userId = $_SESSION['user_id'] ?? null;
+$forceGuest = !empty($data['force_guest']);
+$userId = $forceGuest ? null : ($_SESSION['user_id'] ?? null);
 
 $guestName  = trim($data['guest_name']  ?? '');
 $guestPhone = trim($data['guest_phone'] ?? '');
@@ -30,6 +31,31 @@ $paymentMethod = $data['payment_method'] ?? 'Cash';
 $notes         = $data['notes']          ?? '';
 $items         = $data['items'];
 
+$waiterId = null;
+if (empty($_SESSION['user_id'])) {
+    $stmt = $pdo->query(
+        "SELECT user_id
+         FROM waiters
+         WHERE is_active = 1 AND is_clocked_in = 1
+         ORDER BY last_clock_in DESC
+         LIMIT 1"
+    );
+    $waiterId = (int) ($stmt->fetchColumn() ?: 0);
+    if (!$waiterId) {
+        $stmt = $pdo->query(
+            "SELECT user_id
+             FROM waiters
+             WHERE is_active = 1
+             ORDER BY created_at ASC
+             LIMIT 1"
+        );
+        $waiterId = (int) ($stmt->fetchColumn() ?: 0);
+    }
+    if ($waiterId === 0) {
+        $waiterId = null;
+    }
+}
+
 // Calculate total
 $total = 0;
 foreach ($items as $item) {
@@ -43,10 +69,10 @@ try {
 
     // Insert order
     $stmt = $pdo->prepare(
-        "INSERT INTO orders (customer_id, table_id, status, total_amount, guest_name, guest_phone, notes)
-         VALUES (?, ?, 'queued', ?, ?, ?, ?)"
+        "INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, guest_name, guest_phone, notes)
+         VALUES (?, ?, ?, 'queued', ?, ?, ?, ?)"
     );
-    $stmt->execute([$userId, $tableId, $grandTotal, $guestName ?: null, $guestPhone ?: null, $notes]);
+    $stmt->execute([$userId, $tableId, $waiterId, $grandTotal, $guestName ?: null, $guestPhone ?: null, $notes]);
     $orderId = $pdo->lastInsertId();
 
     // Insert items

@@ -22,9 +22,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     const name = params.get('item');
     const price = parseFloat(params.get('price') || '');
+    const recipeId = parseInt(params.get('recipe_id') || '', 10);
 
-    if (!name || Number.isNaN(price)) return null;
-    return { name, price };
+    if ((!name || Number.isNaN(price)) && Number.isNaN(recipeId)) return null;
+    return { name, price, recipe_id: Number.isNaN(recipeId) ? null : recipeId };
   }
 
   function addSelectedItem(item) {
@@ -43,17 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ── Check if logged in ─────────────────────────────────
-  async function checkLogin() {
-    try {
-      const res = await fetch('../api/profile.php');
-      if (res.status === 401) return null;
-      const data = await res.json();
-      return data.user || null;
-    } catch {
-      return null;
-    }
-  }
+  // Guest-only page; do not check login state.
 
   // ── Load menu items from DB ────────────────────────────
   async function loadMenuItems() {
@@ -208,6 +199,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           guest_name:     guestName  || null,
           guest_phone:    guestPhone || null,
           notes:          notes      || null,
+          force_guest:    true,
           items:          selectedItems.map(i => ({
             recipe_id: i.recipe_id,
             name:      i.name,
@@ -237,29 +229,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // ── Boot ───────────────────────────────────────────────
-  const user = await checkLogin();
-
-  if (user) {
-    // Logged in — hide guest fields, show welcome
-    if (guestFields) guestFields.classList.add('hidden');
-    const welcomeEl = document.getElementById('loggedInNote');
-    if (welcomeEl) { welcomeEl.classList.remove("hidden"); welcomeEl.textContent = `Ordering as: ${user.name}`; }
-  } else {
-    // Guest — show name + phone fields
-    if (guestFields) guestFields.classList.remove('hidden');
-    const welcomeEl = document.getElementById('loggedInNote');
-    if (welcomeEl) {
-      welcomeEl.classList.remove('hidden');
-      welcomeEl.textContent = 'Ordering as guest';
-    }
+  if (guestFields) guestFields.classList.remove('hidden');
+  const welcomeEl = document.getElementById('loggedInNote');
+  if (welcomeEl) {
+    welcomeEl.classList.remove('hidden');
+    welcomeEl.textContent = 'Ordering as guest';
   }
 
   await loadMenuItems();
   const preselected = getPreselectedItem();
   if (preselected) {
-    const matched = menuItems.find(item => item.name.toLowerCase() === preselected.name.toLowerCase());
+    const matched = preselected.recipe_id
+      ? menuItems.find(item => parseInt(item.id) === preselected.recipe_id)
+      : menuItems.find(item => item.name.toLowerCase() === String(preselected.name || '').toLowerCase());
+
     addSelectedItem({
-      recipe_id: matched?.id || null,
+      recipe_id: matched?.id || preselected.recipe_id || null,
       name: matched?.name || preselected.name,
       price: matched?.price || preselected.price,
     });
