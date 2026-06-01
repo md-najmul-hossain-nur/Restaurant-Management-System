@@ -19,8 +19,78 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ── Clock Out ─────────────────────────────────────────────
+  // ── Clock Out / Shift Timer ───────────────────────────────
   const clockBtn = document.querySelector('[data-clock-out]');
+  const timerEl = document.getElementById('shiftTimer');
+  let shiftTimerInterval = null;
+
+  const parseTimestamp = (value) => {
+    if (!value) return null;
+    const normalized = value.trim().replace(' ', 'T');
+    const dt = new Date(normalized);
+    return Number.isNaN(dt.getTime()) ? null : dt;
+  };
+
+  const formatDuration = (ms) => {
+    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  const setTimerText = (text) => {
+    if (timerEl) timerEl.textContent = text;
+  };
+
+  const clearShiftTimer = () => {
+    if (shiftTimerInterval) {
+      clearInterval(shiftTimerInterval);
+      shiftTimerInterval = null;
+    }
+  };
+
+  const startShiftTimer = (startTime) => {
+    if (!timerEl || !startTime) return;
+    clearShiftTimer();
+    const tick = () => setTimerText(formatDuration(Date.now() - startTime.getTime()));
+    tick();
+    shiftTimerInterval = setInterval(tick, 1000);
+  };
+
+  const setLastSessionDuration = (startTime, endTime) => {
+    if (!timerEl) return;
+    if (!startTime || !endTime) {
+      setTimerText('Not clocked in');
+      return;
+    }
+    setTimerText(`Last session: ${formatDuration(endTime.getTime() - startTime.getTime())}`);
+  };
+
+  const getLastClockIn = () => parseTimestamp(document.body.dataset.lastClockIn);
+  const getLastClockOut = () => parseTimestamp(document.body.dataset.lastClockOut);
+
+  const updateShiftDisplay = () => {
+    if (document.body.dataset.clocked === '1') {
+      const startTime = getLastClockIn();
+      if (startTime) {
+        startShiftTimer(startTime);
+        return;
+      }
+      setTimerText('Shift started');
+      return;
+    }
+
+    clearShiftTimer();
+    const startTime = getLastClockIn();
+    const endTime = getLastClockOut();
+    if (startTime && endTime) {
+      setLastSessionDuration(startTime, endTime);
+      return;
+    }
+    setTimerText('Not clocked in');
+  };
+
   if (clockBtn) {
     const applyState = (out) => {
       document.body.classList.toggle('is-clocked-out', out);
@@ -29,17 +99,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const initialClocked = document.body.dataset.clocked === '1';
     applyState(!initialClocked);
+    updateShiftDisplay();
 
     clockBtn.addEventListener('click', async () => {
       const nextOut = !document.body.classList.contains('is-clocked-out');
       applyState(nextOut);
       try {
-        await fetch('../api/update_employee_clock.php', {
+        const response = await fetch('../api/update_employee_clock.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action: nextOut ? 'out' : 'in' }),
         });
-      } catch {
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Clock update failed');
+        }
+        document.body.dataset.clocked = nextOut ? '0' : '1';
+        if (typeof result.last_clock_in !== 'undefined' && result.last_clock_in !== null) {
+          document.body.dataset.lastClockIn = result.last_clock_in;
+        }
+        if (typeof result.last_clock_out !== 'undefined' && result.last_clock_out !== null) {
+          document.body.dataset.lastClockOut = result.last_clock_out;
+        }
+        updateShiftDisplay();
+      } catch (err) {
+        applyState(!nextOut);
         showToast('Clock update failed', true);
       }
     });

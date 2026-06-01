@@ -2,11 +2,11 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../Php/db.php';
 require_once __DIR__ . '/../Php/bootstrap.php';
-requireLogin('admin');
+requireLogin();
 
-// Expect JSON { user_id: int, action: 'in'|'out' }
+// Expect JSON { action: 'in'|'out' }
 $payload = json_decode(file_get_contents('php://input'), true) ?: [];
-$userId = (int) ($payload['user_id'] ?? ($_SESSION['user_id'] ?? 0));
+$userId = (int) ($_SESSION['user_id'] ?? 0);
 $action = ($payload['action'] ?? '') === 'in' ? 'in' : 'out';
 
 if (!$userId || !$action) {
@@ -38,7 +38,19 @@ try {
                 ->execute([$userId]);
         }
     }
-    respond(['success' => true, 'action' => $action]);
+
+    $table = $role === 'waiter' ? 'waiters' : 'chiefs';
+    $clockStmt = $pdo->prepare("SELECT is_clocked_in, last_clock_in, last_clock_out FROM {$table} WHERE user_id = ?");
+    $clockStmt->execute([$userId]);
+    $clockRow = $clockStmt->fetch();
+
+    respond([
+        'success' => true,
+        'action' => $action,
+        'clocked_in' => $clockRow['is_clocked_in'] ?? 0,
+        'last_clock_in' => $clockRow['last_clock_in'] ?? null,
+        'last_clock_out' => $clockRow['last_clock_out'] ?? null,
+    ]);
 } catch (Exception $e) {
     respond(['error' => $e->getMessage()], 500);
 }

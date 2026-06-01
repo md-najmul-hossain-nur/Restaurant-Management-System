@@ -205,6 +205,7 @@ body {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
+  scrollbar-gutter: stable;
 }
 
 .main-content::-webkit-scrollbar { width: 3px; }
@@ -700,6 +701,12 @@ body {
   overflow: hidden;
 }
 
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .chat-sidebar-header,
 .chat-panel-header {
   padding: 18px 20px;
@@ -723,8 +730,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0;
-  max-height: 640px;
+  max-height: calc(100vh - 260px);
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .chat-conversation-item {
@@ -752,9 +760,11 @@ body {
 }
 
 .chat-thread {
-  min-height: 420px;
-  max-height: 620px;
+  flex: 1;
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 18px;
   display: flex;
   flex-direction: column;

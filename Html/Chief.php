@@ -18,9 +18,12 @@ $userStmt = $pdo->prepare(
 $userStmt->execute([$userId]);
 $user = $userStmt->fetch() ?: [];
 
-$clockStmt = $pdo->prepare('SELECT is_clocked_in FROM chiefs WHERE user_id = ?');
+$clockStmt = $pdo->prepare('SELECT is_clocked_in, last_clock_in, last_clock_out FROM chiefs WHERE user_id = ?');
 $clockStmt->execute([$userId]);
-$isClockedIn = (int) ($clockStmt->fetchColumn() ?: 0);
+$clockData = $clockStmt->fetch() ?: [];
+$isClockedIn = (int) ($clockData['is_clocked_in'] ?? 0);
+$lastClockIn = $clockData['last_clock_in'] ?? '';
+$lastClockOut = $clockData['last_clock_out'] ?? '';
 
 $pendingCount = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 'queued'")->fetchColumn();
 $progressCount = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 'in_progress'")->fetchColumn();
@@ -83,7 +86,7 @@ function formatOrderStatus($status) {
   <link rel="stylesheet" href="../CSS/chief.css" />
   <link rel="stylesheet" href="../CSS/responsive.css">
 </head>
-<body data-clocked="<?php echo $isClockedIn ? '1' : '0'; ?>">
+<body data-clocked="<?php echo $isClockedIn ? '1' : '0'; ?>" data-last-clock-in="<?php echo htmlspecialchars($lastClockIn); ?>" data-last-clock-out="<?php echo htmlspecialchars($lastClockOut); ?>">
   <div class="dashboard">
      <!-- Topbar -->
     <header class="topbar">
@@ -102,6 +105,10 @@ function formatOrderStatus($status) {
                 <p class="eyebrow">Kitchen command center</p>
                 <h1 class="page-title">Work Status</h1>
                 <p class="page-subtitle">You are currently in the kitchen. Track orders, manage recipes, and keep the shift moving from one shared interface.</p>
+                <div class="shift-clock">
+                  <span class="shift-clock-label">Shift timer</span>
+                  <span class="shift-clock-value" id="shiftTimer">Not clocked in</span>
+                </div>
             </div>
             <button class="btn btn-primary" data-clock-out>Clock Out</button>
         </section>
