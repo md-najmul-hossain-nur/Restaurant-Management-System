@@ -14,6 +14,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'customer') {
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="../CSS/customer_table.css"/>
+  <link rel="stylesheet" href="../CSS/responsive.css">
 </head>
 <body>
 
@@ -231,7 +232,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'customer') {
           </div>
           <div class="form-group">
             <label class="form-label">Time</label>
-            <input type="time" class="form-input" id="bookTime" value="19:00"/>
+            <!-- Allow any booking time; keep 30-minute step for convenience -->
+            <input type="time" class="form-input" id="bookTime" value="19:00" step="1800"/>
           </div>
         </div>
 
@@ -300,6 +302,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'customer') {
         <div class="capacity-warning" id="capacityWarning">
           <i class="fas fa-exclamation-triangle"></i>
           <span id="capacityWarningMsg">This table cannot accommodate your party size.</span>
+        </div>
+
+        <!-- Availability warning — shown/hidden by JS when time slot conflicts -->
+        <div class="capacity-warning" id="availabilityWarning" style="display:none;">
+          <i class="fas fa-exclamation-circle"></i>
+          <span id="availabilityWarningMsg">This time slot is already booked for the selected table.</span>
         </div>
 
         <div class="form-group">

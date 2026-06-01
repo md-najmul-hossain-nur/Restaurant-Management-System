@@ -56,8 +56,8 @@ try {
         $email,
         $passwordHash,
         $role,
-        'approved',
-        date('Y-m-d H:i:s')
+        'pending',
+        null
     ]);
 
     // Success message on signup page

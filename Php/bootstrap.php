@@ -183,3 +183,41 @@ ensureDefaultAdminAccount($pdo);
 ensureOrderGuestColumns($pdo);
 ensureOrderCustomerColumn($pdo);
 ensureEmployeeClockColumns($pdo);
+// Ensure chat messages table exists for chatbot logging
+function ensureChatMessagesTable($pdo) {
+    static $initialized = false;
+    if ($initialized) return;
+    $initialized = true;
+
+    $stmt = $pdo->prepare(
+        "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'chat_messages'"
+    );
+    $stmt->execute();
+    if ($stmt->fetch()) {
+        // Ensure session_id column exists for conversation linking.
+        $colStmt = $pdo->prepare(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'chat_messages' AND COLUMN_NAME = 'session_id'"
+        );
+        $colStmt->execute();
+        if (!$colStmt->fetch()) {
+            $pdo->exec("ALTER TABLE chat_messages ADD COLUMN session_id VARCHAR(128) NULL AFTER role");
+        }
+        return;
+    }
+
+    $pdo->exec(
+        "CREATE TABLE chat_messages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NULL,
+            name VARCHAR(150) NULL,
+            email VARCHAR(150) NULL,
+            role VARCHAR(50) NULL,
+            session_id VARCHAR(128) NULL,
+            source ENUM('user','bot') NOT NULL DEFAULT 'user',
+            message TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
+    );
+}
+
+ensureChatMessagesTable($pdo);

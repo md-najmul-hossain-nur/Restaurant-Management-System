@@ -286,12 +286,31 @@ function selectAndBook(tableKey) {
 function openBookingForm(tableKey) {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('bookDate').value = today;
+  // set sensible default time: next 30-min slot or keep 19:00
+  const timeInput = document.getElementById('bookTime');
+  try {
+    const step = parseInt(timeInput.step || '1800', 10);
+
+    const now = new Date();
+    // round up to next 30-minute slot
+    const nextSlot = new Date(Math.ceil(now.getTime() / (step * 1000)) * (step * 1000));
+    const hh = String(nextSlot.getHours()).padStart(2, '0');
+    const mm = String(nextSlot.getMinutes()).padStart(2, '0');
+    const candidate = `${hh}:${mm}`;
+    // set next slot as default (fallback to 19:00 if something fails)
+    timeInput.value = candidate || timeInput.value || '19:00';
+  } catch (e) {
+    // fallback
+    timeInput.value = timeInput.value || '19:00';
+  }
 
   document.querySelectorAll('.table-chip').forEach(c => {
     c.classList.toggle('selected', c.dataset.table === tableKey.replace('table', ''));
   });
 
   openModal('bookingOverlay');
+  // refresh availability for the selection we just set
+  setTimeout(refreshAvailabilityForSelection, 50);
 }
 
 function selectTable(el) {
@@ -300,12 +319,56 @@ function selectTable(el) {
   });
   el.classList.add('selected');
   checkCapacity();
+  // refresh availability for the new selection
+  refreshAvailabilityForSelection();
 }
 
 /* ==========================================
    Capacity Warning Logic  (unchanged)
 ========================================== */
 let tableCapacities = { 1:2, 2:2, 3:4, 4:4, 5:4, 6:6, 7:6, 8:8 };
+// occupiedTimesCache: { '<tableNum>|<date>': ['19:00','19:30'] }
+let occupiedTimesCache = {};
+
+async function fetchOccupiedTimes(tableNum, date) {
+  const key = `${tableNum}|${date}`;
+  if (occupiedTimesCache[key]) return occupiedTimesCache[key];
+  try {
+    const tableId = parseInt(dbTableByNumber[tableNum]?.id || tableNum);
+    const res = await fetch(`../api/get_table_availability.php?table_id=${tableId}&date=${encodeURIComponent(date)}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    occupiedTimesCache[key] = Array.isArray(data.occupied) ? data.occupied : [];
+    return occupiedTimesCache[key];
+  } catch (e) {
+    console.error('Could not fetch availability', e);
+    return [];
+  }
+}
+
+async function refreshAvailabilityForSelection() {
+  const selectedChip = document.querySelector('.table-chip.selected');
+  if (!selectedChip) return;
+  const tableNum = parseInt(selectedChip.dataset.table);
+  const date = document.getElementById('bookDate').value || new Date().toISOString().split('T')[0];
+  const time = document.getElementById('bookTime').value;
+
+  const occupied = await fetchOccupiedTimes(tableNum, date);
+  const warnEl = document.getElementById('availabilityWarning');
+  const warnMsg = document.getElementById('availabilityWarningMsg');
+  const submitBtn = document.getElementById('bookingSubmitBtn');
+
+  if (occupied.includes(time)) {
+    warnMsg.textContent = `Time ${time} is already booked for Table ${tableNum}. Please choose another slot.`;
+    warnEl.style.display = 'block';
+    submitBtn.disabled = true;
+    submitBtn.classList.add('disabled');
+  } else {
+    warnEl.style.display = 'none';
+    // re-check capacity to decide submit state
+    checkCapacity();
+  }
+}
 
 function renderTableChips() {
   const grid = document.getElementById('tableChipGrid');
@@ -384,6 +447,9 @@ async function submitBooking() {
     return;
   }
 
+  // no hard min/max range enforced by UI; server will still prevent conflicts
+  const timeInput = document.getElementById('bookTime');
+
   const tableId = parseInt(dbTableByNumber[tableNum]?.id || tableNum);
   if (!tableId) {
     showToast('Table not found. Please try again.');
@@ -414,6 +480,10 @@ async function submitBooking() {
       closeModal('bookingOverlay');
       showToast("Reservation request sent! We'll confirm shortly.");
       // Refresh status badges
+      // clear cached occupied times for this table/date so UI updates
+      const tableNum = parseInt(document.querySelector('.table-chip.selected')?.dataset.table || tableId);
+      const key = `${tableNum}|${date}`;
+      delete occupiedTimesCache[key];
       await loadTableStatuses();
       await loadReservations();
     } else {
@@ -620,6 +690,8 @@ function showToast(msg, isError = false) {
 ========================================== */
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bookGuests').addEventListener('change', checkCapacity);
+  document.getElementById('bookDate').addEventListener('change', refreshAvailabilityForSelection);
+  document.getElementById('bookTime').addEventListener('change', refreshAvailabilityForSelection);
   renderTableChips();
   loadTableStatuses(); // ★ load real availability on page load
   loadReservations();

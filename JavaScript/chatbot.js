@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
   // Prevent duplicate initialization
-  if (document.getElementById('chatbot-fab')) return;
+  if (document.getElementById('chatbot-widget')) return;
 
   // ==================== CREATE ELEMENTS ====================
   const fab = document.createElement('button');
@@ -34,30 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // ==================== STYLES ====================
   const style = document.createElement('style');
   style.innerHTML = `
-    #chatbot-fab {
-      position: fixed;
-      bottom: 28px;
-      right: 28px;
-      width: 62px;
-      height: 62px;
-      background: linear-gradient(135deg, #c8a96e, #a67c52);
-      color: #fff;
-      border: none;
-      border-radius: 50%;
-      box-shadow: 0 6px 20px rgba(200, 169, 110, 0.4);
-      font-size: 1.9rem;
-      cursor: pointer;
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.3s ease;
-    }
-    #chatbot-fab:hover {
-      transform: scale(1.1);
-      box-shadow: 0 8px 25px rgba(200, 169, 110, 0.5);
-    }
-
     #chatbot-widget {
       position: fixed;
       bottom: 110px;
@@ -170,6 +146,30 @@ document.addEventListener('DOMContentLoaded', function () {
       background: rgba(255,255,255,0.25);
     }
 
+    #chatbot-fab {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      width: 62px;
+      height: 62px;
+      background: linear-gradient(135deg, #c8a96e, #a67c52);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      box-shadow: 0 6px 20px rgba(200, 169, 110, 0.4);
+      font-size: 1.6rem;
+      cursor: pointer;
+      z-index: 10001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    #chatbot-fab:hover {
+      transform: scale(1.08);
+      box-shadow: 0 8px 25px rgba(200, 169, 110, 0.5);
+    }
+
     #chatbot-form button {
       background: #c8a96e;
       color: #1a1a1a;
@@ -191,14 +191,59 @@ document.addEventListener('DOMContentLoaded', function () {
   const widget = document.getElementById('chatbot-widget');
   const fabBtn = document.getElementById('chatbot-fab');
 
-  let isTyping = false;
+  const CHAT_SESSION_KEY = 'feliciano_chat_session';
+  const chatSessionId = localStorage.getItem(CHAT_SESSION_KEY) || (() => {
+    const id = `guest_${Math.random().toString(36).slice(2)}_${Date.now()}`;
+    localStorage.setItem(CHAT_SESSION_KEY, id);
+    return id;
+  })();
 
-  function addMessage(text, from) {
+  let isTyping = false;
+  let chatPollTimer = null;
+
+  function startChatPolling() {
+    if (chatPollTimer) return;
+    chatPollTimer = setInterval(() => {
+      if (widget.style.display === 'flex') {
+        loadChatHistory();
+      }
+    }, 3000);
+  }
+
+  function stopChatPolling() {
+    if (chatPollTimer) {
+      clearInterval(chatPollTimer);
+      chatPollTimer = null;
+    }
+  }
+
+  function addMessage(text, from, meta = '') {
     const msg = document.createElement('div');
     msg.className = `chatbot-msg ${from}`;
     msg.textContent = text;
+    if (meta) {
+      const metaEl = document.createElement('div');
+      metaEl.className = 'chatbot-meta';
+      metaEl.textContent = meta;
+      msg.appendChild(metaEl);
+    }
     messagesContainer.appendChild(msg);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }
+
+  async function loadChatHistory() {
+    try {
+      const res = await fetch(`../api/get_chat_history.php?session_id=${encodeURIComponent(chatSessionId)}`, { credentials: 'same-origin' });
+      const data = await res.json();
+      if (!data.success || !Array.isArray(data.messages)) return;
+      messagesContainer.innerHTML = '';
+      data.messages.forEach(msg => {
+        const sender = msg.source === 'user' ? 'user' : 'bot';
+        addMessage(msg.message, sender);
+      });
+    } catch (err) {
+      console.warn('Could not load chat history', err);
+    }
   }
 
   function showTypingIndicator() {
@@ -250,26 +295,44 @@ document.addEventListener('DOMContentLoaded', function () {
         reply = "Goodbye! Have a great day! 👋";
 
       addMessage(reply, 'bot');
+      // save bot reply
+      sendToServer(reply, 'bot');
     }, 800);
   }
 
   // Send message
-  form.onsubmit = function (e) {
+  form.onsubmit = async function (e) {
     e.preventDefault();
     const text = input.value.trim();
     if (!text || isTyping) return;
 
-    addMessage(text, 'user');
     input.value = '';
+    addMessage(text, 'user');
+    await sendToServer(text, 'user');
+    await loadChatHistory();
     botReply(text);
   };
 
+  async function sendToServer(message, source = 'user') {
+    try {
+      await fetch('../api/save_chat.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, source, session_id: chatSessionId })
+      });
+    } catch (err) {
+      // fail silently
+      console.warn('Chat save failed', err);
+    }
+  }
+
   // Open / Close
-  fabBtn.onclick = () => {
+  fabBtn.onclick = async () => {
     widget.style.display = 'flex';
     input.focus();
-    
-    // Show welcome message only once
+    await loadChatHistory();
+    startChatPolling();
     if (messagesContainer.children.length === 0) {
       setTimeout(() => {
         addMessage("Hi there! I'm Feliciano's AI assistant. How can I help you today?", 'bot');
@@ -277,7 +340,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   };
 
-  closeBtn.onclick = () => widget.style.display = 'none';
+  closeBtn.onclick = () => {
+    widget.style.display = 'none';
+    stopChatPolling();
+  };
 
   // Clear chat
   clearBtn.onclick = () => {
@@ -287,11 +353,19 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   // Keyboard support
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', async (e) => {
     if (e.key === '/' && document.activeElement.tagName !== "INPUT" && document.activeElement.tagName !== "TEXTAREA") {
       e.preventDefault();
       widget.style.display = 'flex';
       input.focus();
+      await loadChatHistory();
+      startChatPolling();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    if (widget.style.display === 'flex') {
+      loadChatHistory();
     }
   });
 });

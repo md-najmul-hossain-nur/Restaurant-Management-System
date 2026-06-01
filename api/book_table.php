@@ -40,20 +40,27 @@ $specialRequests = $data['special_requests'] ?? '';
 // Get the logged-in customer's ID from session
 $customerId = $_SESSION['user_id'] ?? null;
 
+// Check for conflicting reservations (same table, same date & time)
+$conflictStmt = $pdo->prepare(
+    "SELECT id FROM reservations WHERE table_id = ? AND reserved_date = ? AND TIME_FORMAT(reserved_time, '%H:%i') = ? AND status NOT IN ('cancelled','rejected') LIMIT 1"
+);
+$conflictStmt->execute([$tableId, $date, $time]);
+$conflict = $conflictStmt->fetch();
+
+if ($conflict) {
+    respond(['error' => 'Selected time slot is already reserved for this table. Please choose another time.'], 409);
+}
+
 try {
     $pdo->beginTransaction();
 
-    // 1. Insert reservation record
+    // Insert reservation record (time-based)
     $stmt = $pdo->prepare(
         "INSERT INTO reservations (table_id, customer_id, reserved_date, reserved_time, guest_count, special_requests, status)
          VALUES (?, ?, ?, ?, ?, ?, 'pending')"
     );
     $stmt->execute([$tableId, $customerId, $date, $time, $guests, $specialRequests]);
     $reservationId = $pdo->lastInsertId();
-
-    // 2. Mark table as reserved
-    $pdo->prepare("UPDATE restaurant_tables SET status = 'reserved' WHERE id = ?")
-        ->execute([$tableId]);
 
     $pdo->commit();
 

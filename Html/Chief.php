@@ -81,6 +81,7 @@ function formatOrderStatus($status) {
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="../CSS/chief.css" />
+  <link rel="stylesheet" href="../CSS/responsive.css">
 </head>
 <body data-clocked="<?php echo $isClockedIn ? '1' : '0'; ?>">
   <div class="dashboard">

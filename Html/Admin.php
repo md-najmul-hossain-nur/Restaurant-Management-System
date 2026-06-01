@@ -19,6 +19,7 @@ require_once __DIR__ . '/../Php/bootstrap.php';
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="../CSS/admin.css" />
+  <link rel="stylesheet" href="../CSS/responsive.css">
 </head>
 <body>
   <div class="dashboard">
@@ -50,6 +51,10 @@ require_once __DIR__ . '/../Php/bootstrap.php';
           <i class="fas fa-user-check"></i>
           <span>Customer</span>
         </div>
+        <div class="tab" data-section="chat">
+          <i class="fas fa-comments"></i>
+          <span>Chat</span>
+        </div>
         <div class="tab" data-section="tables">
           <i class="fas fa-chair"></i>
           <span>Tables</span>
@@ -58,10 +63,10 @@ require_once __DIR__ . '/../Php/bootstrap.php';
           <i class="fas fa-utensils"></i>
           <span>Menu Items</span>
         </div>
-<div class="tab" data-section="reports">
-  <i class="fas fa-chart-bar"></i>
-  <span>Reports</span>
-</div>
+        <div class="tab" data-section="reports">
+          <i class="fas fa-chart-bar"></i>
+          <span>Reports</span>
+        </div>
       </nav>
 
       <!-- Main Scrollable Content -->
@@ -115,6 +120,10 @@ require_once __DIR__ . '/../Php/bootstrap.php';
               <div class="action-btn" onclick="switchTab('customer')">
                 <i class="fas fa-user-check"></i>
                 <span>Approve Customer</span>
+              </div>
+              <div class="action-btn" onclick="switchTab('chat')">
+                <i class="fas fa-comments"></i>
+                <span>Chat</span>
               </div>
               <div class="action-btn" onclick="switchTab('reports')">
                   <i class="fas fa-chart-bar"></i>
@@ -232,6 +241,40 @@ require_once __DIR__ . '/../Php/bootstrap.php';
                   <p>No approved customers yet.</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== CHAT ===================== -->
+        <div class="section-content" id="chat">
+          <div class="chat-dashboard">
+            <div class="chat-sidebar">
+              <div class="chat-sidebar-header">
+                <h2>Guest Conversations</h2>
+                <small>Click a session to view and reply</small>
+              </div>
+              <div class="chat-conversation-list" id="conversationList">
+                <div class="empty-state">
+                  <p>Loading conversations...</p>
+                </div>
+              </div>
+            </div>
+            <div class="chat-panel">
+              <div class="chat-panel-header">
+                <div>
+                  <h2 id="chatPanelTitle">Select a conversation</h2>
+                  <small id="chatPanelSubtitle">Guest chat history will appear here</small>
+                </div>
+              </div>
+              <div class="chat-thread" id="chatThread">
+                <div class="empty-state">
+                  <p>Select a conversation from the left to begin.</p>
+                </div>
+              </div>
+              <form class="chat-reply-form" id="chatReplyForm">
+                <input type="text" id="chatReplyInput" placeholder="Type your reply..." autocomplete="off" />
+                <button type="submit">Send</button>
+              </form>
             </div>
           </div>
         </div>
@@ -782,6 +825,5 @@ require_once __DIR__ . '/../Php/bootstrap.php';
 
    
   <script src="../JavaScript/admin.js"></script>
-  <script src="../JavaScript/chatbot.js"></script>
 </body>
 </html>

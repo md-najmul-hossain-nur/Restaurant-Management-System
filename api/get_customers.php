@@ -6,11 +6,11 @@ header('Content-Type: application/json');
 
 requireLogin('admin');
 
-$stmt = $pdo->query(
-    "SELECT id, name, email, approval_status, approval_decided_at, created_at
-     FROM users
-     WHERE role = 'customer'
-     ORDER BY created_at DESC"
+ $stmt = $pdo->query(
+     "SELECT id, name, email, approval_status, approval_decided_at, created_at, avatar_path
+      FROM users
+      WHERE role = 'customer'
+      ORDER BY created_at DESC"
 );
 
 $customers = $stmt->fetchAll() ?: [];

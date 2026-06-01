@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const sec = document.getElementById(sectionId);
     if (tab) tab.classList.add('active');
     if (sec) sec.classList.add('active');
+    if (sectionId === 'chat') {
+      loadChatConversations();
+    }
   }
 
   // Expose globally for onclick= in HTML quick actions
@@ -661,6 +664,9 @@ document.addEventListener('DOMContentLoaded', () => {
     pendingCustomers.innerHTML = pending.length ? pending.map(customer => `
       <div class="customer-request" data-customer-id="${escapeHtml(customer.id)}">
         <div class="customer-request-info">
+          <div class="customer-avatar">
+            <img src="${escapeHtml(customer.avatar_path ? ('../' + customer.avatar_path) : '../Images/Customer/pexels-emad-hussien-830139385-27856326.jpg')}" alt="${escapeHtml(customer.name)}"/>
+          </div>
           <h4>${escapeHtml(customer.name)}</h4>
           <p>${escapeHtml(customer.email)}</p>
           <small>Member since ${escapeHtml(formatDate(customer.created_at))}</small>
@@ -679,6 +685,9 @@ document.addEventListener('DOMContentLoaded', () => {
     approvedCustomers.innerHTML = approved.length ? approved.map(customer => `
       <div class="customer-request approved" data-customer-id="${escapeHtml(customer.id)}">
         <div class="customer-request-info">
+          <div class="customer-avatar">
+            <img src="${escapeHtml(customer.avatar_path ? ('../' + customer.avatar_path) : '../Images/Customer/pexels-emad-hussien-830139385-27856326.jpg')}" alt="${escapeHtml(customer.name)}"/>
+          </div>
           <h4>${escapeHtml(customer.name)}</h4>
           <p>${escapeHtml(customer.email)}</p>
           <small>Approved on ${escapeHtml(formatDate(customer.approval_decided_at || customer.created_at))}</small>
@@ -742,6 +751,164 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadCustomers();
+  }
+
+  const conversationList = document.getElementById('conversationList');
+  const chatThread = document.getElementById('chatThread');
+  const chatPanelTitle = document.getElementById('chatPanelTitle');
+  const chatPanelSubtitle = document.getElementById('chatPanelSubtitle');
+  const chatReplyForm = document.getElementById('chatReplyForm');
+  const chatReplyInput = document.getElementById('chatReplyInput');
+
+  let selectedChatSession = null;
+  let chatPollTimer = null;
+
+  function formatChatDate(value) {
+    if (!value) return '';
+    const dt = new Date(value);
+    if (Number.isNaN(dt.getTime())) return value;
+    return dt.toLocaleString();
+  }
+
+  function renderConversationList(conversations) {
+    if (!conversationList) return;
+    if (!Array.isArray(conversations) || conversations.length === 0) {
+      conversationList.innerHTML = '<div class="empty-state"><p>No chat conversations yet.</p></div>';
+      return;
+    }
+
+    conversationList.innerHTML = conversations.map(conv => `
+      <div class="chat-conversation-item" data-session-id="${conv.session_id}">
+        <strong>${conv.participants || 'Guest'}</strong>
+        <span>Last activity: ${formatChatDate(conv.last_activity)}</span>
+        <span>${conv.last_user_message ? 'Recent guest message' : 'No guest message yet'}</span>
+      </div>
+    `).join('');
+  }
+
+  async function loadChatConversations() {
+    if (!conversationList) return;
+    try {
+      const res = await fetch('../api/get_chat_conversations.php', { credentials: 'same-origin' });
+      const data = await res.json();
+      if (data.success) {
+        renderConversationList(data.conversations);
+      } else {
+        conversationList.innerHTML = '<div class="empty-state"><p>Could not load conversations.</p></div>';
+      }
+    } catch (err) {
+      console.error(err);
+      conversationList.innerHTML = '<div class="empty-state"><p>Could not load conversations.</p></div>';
+    }
+  }
+
+  async function loadChatHistory(sessionId) {
+    if (!chatThread) return;
+    selectedChatSession = sessionId;
+    chatPanelTitle.textContent = 'Conversation';
+    chatPanelSubtitle.textContent = 'Loading messages...';
+    const wasAtBottom = chatThread.scrollHeight - chatThread.scrollTop - chatThread.clientHeight < 50;
+    chatThread.innerHTML = '<div class="empty-state"><p>Loading chat history...</p></div>';
+    if (chatReplyInput) chatReplyInput.disabled = true;
+
+    try {
+      const res = await fetch(`../api/get_chat_history.php?session_id=${encodeURIComponent(sessionId)}`, { credentials: 'same-origin' });
+      const data = await res.json();
+      if (data.success) {
+        if (!Array.isArray(data.messages) || data.messages.length === 0) {
+          chatThread.innerHTML = '<div class="empty-state"><p>No messages in this conversation yet.</p></div>';
+        } else {
+          chatThread.innerHTML = '';
+          data.messages.forEach(msg => {
+            const item = document.createElement('div');
+            item.className = `chat-message ${msg.source === 'user' ? 'user' : 'bot'}`;
+            const author = msg.source === 'user' ? (msg.name || msg.email || 'Guest') : (msg.role === 'admin' ? 'Admin' : 'Bot');
+            item.innerHTML = `<div>${msg.message}</div><span class="meta">${author} · ${formatChatDate(msg.created_at)}</span>`;
+            chatThread.appendChild(item);
+          });
+          if (wasAtBottom) {
+            chatThread.scrollTop = chatThread.scrollHeight;
+          }
+        }
+        chatPanelSubtitle.textContent = `Session: ${data.session_id}`;
+      } else {
+        chatThread.innerHTML = '<div class="empty-state"><p>Could not load this conversation.</p></div>';
+      }
+    } catch (err) {
+      console.error(err);
+      chatThread.innerHTML = '<div class="empty-state"><p>Could not load this conversation.</p></div>';
+    } finally {
+      if (chatReplyInput) chatReplyInput.disabled = false;
+    }
+  }
+
+  function selectConversationElement(el) {
+    document.querySelectorAll('.chat-conversation-item').forEach(item => item.classList.remove('active'));
+    if (el) el.classList.add('active');
+  }
+
+  if (conversationList) {
+    conversationList.addEventListener('click', event => {
+      const item = event.target.closest('.chat-conversation-item');
+      if (!item) return;
+      const sessionId = item.dataset.sessionId;
+      if (!sessionId) return;
+      selectConversationElement(item);
+      loadChatHistory(sessionId);
+      if (chatPollTimer) clearInterval(chatPollTimer);
+      chatPollTimer = setInterval(() => loadChatHistory(sessionId), 5000);
+    });
+  }
+
+  if (chatReplyForm) {
+    chatReplyForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      if (!selectedChatSession) {
+        showAdminToast('Please select a conversation first.', true);
+        return;
+      }
+      const text = (chatReplyInput?.value || '').trim();
+      if (!text) return;
+      const submitBtn = chatReplyForm.querySelector('button');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+      }
+      try {
+        const res = await fetch('../api/save_chat.php', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, source: 'bot', session_id: selectedChatSession })
+        });
+        const result = await res.json();
+        if (result.success) {
+          chatReplyInput.value = '';
+          await loadChatHistory(selectedChatSession);
+          await loadChatConversations();
+          showAdminToast('Reply sent.');
+        } else {
+          showAdminToast(result.error || 'Could not send reply.', true);
+        }
+      } catch (err) {
+        console.error(err);
+        showAdminToast('Network error.', true);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Send';
+        }
+      }
+    });
+  }
+
+  if (document.querySelector('.tab[data-section="chat"]')) {
+    document.querySelector('.tab[data-section="chat"]').addEventListener('click', loadChatConversations);
+  }
+
+  // Load chat conversations when the page loads if chat section is active by default.
+  if (document.querySelector('.section-content#chat.active')) {
+    loadChatConversations();
   }
 
   // ── Financial Reports ───────────────────────────────────
