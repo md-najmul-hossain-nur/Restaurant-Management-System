@@ -866,6 +866,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let selectedChatSession = null;
   let chatPollTimer = null;
+  let lastChatSignature = '';
 
   function formatChatDate(value) {
     if (!value) return '';
@@ -876,6 +877,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderConversationList(conversations) {
     if (!conversationList) return;
+    const previousScrollTop = conversationList.scrollTop;
+    const activeSessionId = selectedChatSession;
+
     if (!Array.isArray(conversations) || conversations.length === 0) {
       conversationList.innerHTML = '<div class="empty-state"><p>No chat conversations yet.</p></div>';
       return;
@@ -888,6 +892,13 @@ document.addEventListener('DOMContentLoaded', () => {
         <span>${conv.last_user_message ? 'Recent guest message' : 'No guest message yet'}</span>
       </div>
     `).join('');
+
+    if (activeSessionId) {
+      [...conversationList.querySelectorAll('.chat-conversation-item')]
+        .find(item => item.dataset.sessionId === activeSessionId)
+        ?.classList.add('active');
+    }
+    conversationList.scrollTop = previousScrollTop;
   }
 
   async function loadChatConversations() {
@@ -908,22 +919,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadChatHistory(sessionId) {
     if (!chatThread) return;
+    const isNewSession = selectedChatSession !== sessionId;
     selectedChatSession = sessionId;
     chatPanelTitle.textContent = 'Conversation';
-    chatPanelSubtitle.textContent = 'Loading messages...';
-    const wasAtBottom = chatThread.scrollHeight - chatThread.scrollTop - chatThread.clientHeight < 50;
-    chatThread.innerHTML = '<div class="empty-state"><p>Loading chat history...</p></div>';
-    if (chatReplyInput) chatReplyInput.disabled = true;
+    if (isNewSession) {
+      lastChatSignature = '';
+      chatPanelSubtitle.textContent = 'Loading messages...';
+      chatThread.innerHTML = '<div class="empty-state"><p>Loading chat history...</p></div>';
+    }
+    const distanceFromBottom = chatThread.scrollHeight - chatThread.scrollTop - chatThread.clientHeight;
+    const wasAtBottom = isNewSession || distanceFromBottom < 70;
+    const previousScrollHeight = chatThread.scrollHeight;
+    const previousScrollTop = chatThread.scrollTop;
+    if (chatReplyInput && isNewSession) chatReplyInput.disabled = true;
 
     try {
       const res = await fetch(`../api/get_chat_history.php?session_id=${encodeURIComponent(sessionId)}`, { credentials: 'same-origin' });
       const data = await res.json();
       if (data.success) {
-        if (!Array.isArray(data.messages) || data.messages.length === 0) {
+        const messages = Array.isArray(data.messages) ? data.messages : [];
+        const signature = messages.map(msg => `${msg.id || ''}:${msg.created_at || ''}`).join('|');
+
+        if (!isNewSession && signature === lastChatSignature) {
+          chatPanelSubtitle.textContent = `Session: ${data.session_id}`;
+          return;
+        }
+
+        lastChatSignature = signature;
+
+        if (messages.length === 0) {
           chatThread.innerHTML = '<div class="empty-state"><p>No messages in this conversation yet.</p></div>';
         } else {
           chatThread.innerHTML = '';
-          data.messages.forEach(msg => {
+          messages.forEach(msg => {
             const item = document.createElement('div');
             item.className = `chat-message ${msg.source === 'user' ? 'user' : 'bot'}`;
             const author = msg.source === 'user' ? (msg.name || msg.email || 'Guest') : (msg.role === 'admin' ? 'Admin' : 'Bot');
@@ -934,13 +962,19 @@ document.addEventListener('DOMContentLoaded', () => {
             chatThread.scrollTop = chatThread.scrollHeight;
           }
         }
+        if (!wasAtBottom) {
+          const heightDiff = chatThread.scrollHeight - previousScrollHeight;
+          chatThread.scrollTop = previousScrollTop + Math.max(0, heightDiff);
+        }
         chatPanelSubtitle.textContent = `Session: ${data.session_id}`;
-      } else {
+      } else if (isNewSession) {
         chatThread.innerHTML = '<div class="empty-state"><p>Could not load this conversation.</p></div>';
       }
     } catch (err) {
       console.error(err);
-      chatThread.innerHTML = '<div class="empty-state"><p>Could not load this conversation.</p></div>';
+      if (isNewSession) {
+        chatThread.innerHTML = '<div class="empty-state"><p>Could not load this conversation.</p></div>';
+      }
     } finally {
       if (chatReplyInput) chatReplyInput.disabled = false;
     }
@@ -988,7 +1022,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await res.json();
         if (result.success) {
           chatReplyInput.value = '';
+          lastChatSignature = '';
           await loadChatHistory(selectedChatSession);
+          chatThread.scrollTop = chatThread.scrollHeight;
           await loadChatConversations();
           showAdminToast('Reply sent.');
         } else {

@@ -120,9 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!res.ok || !result.success) {
         throw new Error(result.error || 'Table update failed');
       }
-      return true;
+      return result;
     } catch {
-      return false;
+      return null;
     }
   }
 
@@ -143,8 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ensureEmptyCard(myTablesGrid, 'No assigned tables');
     ensureEmptyCard(availTablesGrid, 'No available tables');
 
-    const ok = await assignTableDB(tableId, 'release');
-    if (!ok) {
+    const result = await assignTableDB(tableId, 'release');
+    if (!result) {
       myTablesGrid.appendChild(card);
       releaseBtn.classList.replace('waiter-table-action--take', 'waiter-table-action--release');
       releaseBtn.textContent = 'Release Table';
@@ -157,7 +157,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    updateOrderTableOption(tableId, tableNumber, 'add');
+    if (result.next_status === 'available') {
+      updateOrderTableOption(tableId, tableNumber, 'remove');
+    } else {
+      card.remove();
+      updateOrderTableOption(tableId, tableNumber, 'remove');
+      showToast('Table released. It is reserved for a customer.');
+    }
+    updateTableCounts();
+    ensureEmptyCard(myTablesGrid, 'No assigned tables');
+    ensureEmptyCard(availTablesGrid, 'No available tables');
   });
 
   availTablesGrid?.addEventListener('click', async e => {
@@ -177,8 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
     ensureEmptyCard(myTablesGrid, 'No assigned tables');
     ensureEmptyCard(availTablesGrid, 'No available tables');
 
-    const ok = await assignTableDB(tableId, 'take');
-    if (!ok) {
+    const result = await assignTableDB(tableId, 'take');
+    if (!result) {
       availTablesGrid.appendChild(card);
       takeBtn.classList.replace('waiter-table-action--release', 'waiter-table-action--take');
       takeBtn.textContent = 'Take Table';

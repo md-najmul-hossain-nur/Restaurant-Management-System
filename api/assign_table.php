@@ -22,7 +22,7 @@ try {
             "UPDATE restaurant_tables
              SET assigned_waiter_id = ?, status = 'occupied'
              WHERE id = ?
-               AND status IN ('available','reserved')
+               AND status = 'available'
                AND (assigned_waiter_id IS NULL OR assigned_waiter_id = 0)"
         );
         $stmt->execute([$userId, $tableId]);
@@ -33,7 +33,7 @@ try {
         $futureApproved = $pdo->prepare(
             "SELECT COUNT(*) FROM reservations
              WHERE table_id = ?
-               AND status = 'approved'
+               AND status IN ('approved', 'confirmed')
                AND CONCAT(reserved_date, ' ', reserved_end_time) >= NOW()"
         );
         $futureApproved->execute([$tableId]);
@@ -53,7 +53,12 @@ try {
         }
     }
 
-    respond(['success' => true, 'table_id' => $tableId, 'action' => $action]);
+    respond([
+        'success' => true,
+        'table_id' => $tableId,
+        'action' => $action,
+        'next_status' => $nextStatus ?? 'occupied',
+    ]);
 } catch (Exception $e) {
     respond(['error' => 'Failed: ' . $e->getMessage()], 500);
 }

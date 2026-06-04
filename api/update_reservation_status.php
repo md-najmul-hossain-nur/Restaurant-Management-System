@@ -43,7 +43,7 @@ try {
              FROM reservations
              WHERE table_id = ?
                AND reserved_date = ?
-               AND status = 'approved'
+               AND status IN ('approved', 'confirmed')
                AND id <> ?
                AND ? < TIME_FORMAT(reserved_end_time, '%H:%i')
                AND ? > TIME_FORMAT(reserved_time, '%H:%i')
@@ -80,7 +80,7 @@ try {
         $active = $pdo->prepare(
             "SELECT COUNT(*) FROM reservations
              WHERE table_id = ?
-               AND status IN ('pending', 'approved')
+               AND status IN ('pending', 'approved', 'confirmed')
                AND id <> ?"
         );
         $active->execute([$reservation['table_id'], $reservationId]);

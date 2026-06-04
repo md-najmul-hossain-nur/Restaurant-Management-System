@@ -23,7 +23,7 @@ if (!$tableId) {
 
 // Check the table exists and is available
 $stmt = $pdo->prepare(
-    "SELECT id, capacity, status FROM restaurant_tables WHERE id = ?"
+    "SELECT id, capacity, status, assigned_waiter_id FROM restaurant_tables WHERE id = ?"
 );
 $stmt->execute([$tableId]);
 $table = $stmt->fetch();
@@ -31,7 +31,7 @@ $table = $stmt->fetch();
 if (!$table) {
     respond(['error' => 'Table not found'], 404);
 }
-if ($table['status'] === 'occupied') {
+if ($table['status'] === 'occupied' || !empty($table['assigned_waiter_id'])) {
     respond(['error' => 'Table is currently occupied'], 409);
 }
 if ($guests > $table['capacity']) {

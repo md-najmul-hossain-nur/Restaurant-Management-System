@@ -691,6 +691,8 @@ body {
   grid-template-columns: 320px 1fr;
   gap: 18px;
   margin-top: 14px;
+  height: clamp(480px, calc(100svh - 260px), 720px);
+  min-height: 0;
 }
 
 .chat-sidebar,
@@ -699,12 +701,18 @@ body {
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: var(--radius-card);
   overflow: hidden;
+  min-height: 0;
 }
 
 .chat-panel {
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+.chat-sidebar {
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-sidebar-header,
@@ -730,9 +738,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0;
-  max-height: calc(100vh - 260px);
+  flex: 1;
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
   scrollbar-gutter: stable;
+  overscroll-behavior: contain;
 }
 
 .chat-conversation-item {
@@ -765,6 +776,7 @@ body {
   max-height: none;
   overflow-y: auto;
   scrollbar-gutter: stable;
+  overscroll-behavior: contain;
   padding: 18px;
   display: flex;
   flex-direction: column;
@@ -824,6 +836,35 @@ body {
   color: #1a1a1a;
   font-weight: 700;
   cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .chat-dashboard {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .chat-conversation-list {
+    max-height: 260px;
+  }
+
+  .chat-panel {
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 560px) {
+  .chat-reply-form {
+    flex-direction: column;
+  }
+
+  .chat-reply-form button {
+    width: 100%;
+  }
+
+  .chat-message {
+    max-width: 92%;
+  }
 }
 
 /* ==========================================
