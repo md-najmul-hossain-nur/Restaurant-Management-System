@@ -178,11 +178,65 @@ function ensureEmployeeClockColumns($pdo) {
     }
 }
 
+function ensureTableAssignmentColumn($pdo) {
+    static $initialized = false;
+    if ($initialized) {
+        return;
+    }
+    $initialized = true;
+
+    $stmt = $pdo->prepare(
+        "SELECT COLUMN_NAME
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'restaurant_tables'
+           AND COLUMN_NAME = 'assigned_waiter_id'"
+    );
+    $stmt->execute();
+    $hasAssigned = (bool) $stmt->fetchColumn();
+
+    if (!$hasAssigned) {
+        $pdo->exec("ALTER TABLE restaurant_tables ADD COLUMN assigned_waiter_id INT DEFAULT NULL AFTER status");
+    }
+}
+
+function ensureTableCustomerColumns($pdo) {
+    static $initialized = false;
+    if ($initialized) {
+        return;
+    }
+    $initialized = true;
+
+    $stmt = $pdo->prepare(
+        "SELECT COLUMN_NAME
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'restaurant_tables'
+           AND COLUMN_NAME IN ('reserved_customer_id', 'active_customer_id')"
+    );
+    $stmt->execute();
+    $existing = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    $alterParts = [];
+    if (!in_array('reserved_customer_id', $existing, true)) {
+        $alterParts[] = "ADD COLUMN reserved_customer_id INT DEFAULT NULL AFTER assigned_waiter_id";
+    }
+    if (!in_array('active_customer_id', $existing, true)) {
+        $alterParts[] = "ADD COLUMN active_customer_id INT DEFAULT NULL AFTER reserved_customer_id";
+    }
+
+    if ($alterParts) {
+        $pdo->exec('ALTER TABLE restaurant_tables ' . implode(', ', $alterParts));
+    }
+}
+
 ensureCustomerApprovalSchema($pdo);
 ensureDefaultAdminAccount($pdo);
 ensureOrderGuestColumns($pdo);
 ensureOrderCustomerColumn($pdo);
 ensureEmployeeClockColumns($pdo);
+ensureTableAssignmentColumn($pdo);
+ensureTableCustomerColumns($pdo);
 // Ensure chat messages table exists for chatbot logging
 function ensureChatMessagesTable($pdo) {
     static $initialized = false;

@@ -148,8 +148,13 @@ let dbTableByNumber = {}; // { table_number: table row }
 function buildTableFromDb(row) {
   const tableNum = parseInt(row.table_number);
   const local = tableData.find(t => t.key === `table${tableNum}`) || {};
+  const normalizeImagePath = (path) => {
+    if (!path) return '';
+    if (path.startsWith('http') || path.startsWith('..')) return path;
+    return `../${path}`;
+  };
   const imagePath = row.image_path
-    ? row.image_path.replace(/^\.\.\//, '../')
+    ? normalizeImagePath(row.image_path)
     : local.image;
 
   return {
@@ -359,7 +364,7 @@ async function refreshAvailabilityForSelection() {
   const submitBtn = document.getElementById('bookingSubmitBtn');
 
   if (occupied.includes(time)) {
-    warnMsg.textContent = `Time ${time} is already booked for Table ${tableNum}. Please choose another slot.`;
+    warnMsg.textContent = `Time ${time} is already occupied for Table ${tableNum}. Please choose another slot.`;
     warnEl.style.display = 'block';
     submitBtn.disabled = true;
     submitBtn.classList.add('disabled');

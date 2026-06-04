@@ -69,6 +69,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (availTableCount) availTableCount.textContent = availCount;
   }
 
+  function ensureEmptyCard(grid, message) {
+    if (!grid) return;
+    const hasCards = grid.querySelectorAll('.waiter-table-card[data-table-id]').length > 0;
+    const emptyCard = grid.querySelector('.waiter-table-card[data-empty="1"]');
+    if (hasCards) {
+      grid.querySelectorAll('.waiter-table-card:not([data-table-id])').forEach(card => card.remove());
+    }
+    if (hasCards && emptyCard) {
+      emptyCard.remove();
+      return;
+    }
+    if (!hasCards && !emptyCard) {
+      const card = document.createElement('div');
+      card.className = 'waiter-table-card';
+      card.dataset.empty = '1';
+      card.innerHTML = `<div class="waiter-table-name">${message}</div>`;
+      grid.appendChild(card);
+    }
+  }
+
   function updateOrderTableOption(tableId, tableNumber, listKey) {
     const select = document.getElementById('orderTableSelect');
     if (!select) return;
@@ -89,17 +109,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function updateTableStatusDB(tableId, status) {
+  async function assignTableDB(tableId, action) {
     try {
-      await fetch('../api/update_table_status.php', {
+      const res = await fetch('../api/assign_table.php', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ table_id: tableId, status }),
+        body:    JSON.stringify({ table_id: tableId, action }),
       });
-    } catch {}
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        throw new Error(result.error || 'Table update failed');
+      }
+      return true;
+    } catch {
+      return false;
+    }
   }
 
-  myTablesGrid?.addEventListener('click', e => {
+  myTablesGrid?.addEventListener('click', async e => {
     const releaseBtn = e.target.closest('[data-release]');
     if (!releaseBtn || !availTablesGrid) return;
     const card    = releaseBtn.closest('.waiter-table-card');
@@ -113,11 +140,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     availTablesGrid.appendChild(card);
     updateTableCounts();
-    updateTableStatusDB(tableId, 'available');
+    ensureEmptyCard(myTablesGrid, 'No assigned tables');
+    ensureEmptyCard(availTablesGrid, 'No available tables');
+
+    const ok = await assignTableDB(tableId, 'release');
+    if (!ok) {
+      myTablesGrid.appendChild(card);
+      releaseBtn.classList.replace('waiter-table-action--take', 'waiter-table-action--release');
+      releaseBtn.textContent = 'Release Table';
+      releaseBtn.removeAttribute('data-take');
+      releaseBtn.setAttribute('data-release', tableId);
+      updateTableCounts();
+      ensureEmptyCard(myTablesGrid, 'No assigned tables');
+      ensureEmptyCard(availTablesGrid, 'No available tables');
+      showToast('Table release failed');
+      return;
+    }
+
     updateOrderTableOption(tableId, tableNumber, 'add');
   });
 
-  availTablesGrid?.addEventListener('click', e => {
+  availTablesGrid?.addEventListener('click', async e => {
     const takeBtn = e.target.closest('[data-take]');
     if (!takeBtn || !myTablesGrid) return;
     const card    = takeBtn.closest('.waiter-table-card');
@@ -131,11 +174,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     myTablesGrid.appendChild(card);
     updateTableCounts();
-    updateTableStatusDB(tableId, 'occupied');
+    ensureEmptyCard(myTablesGrid, 'No assigned tables');
+    ensureEmptyCard(availTablesGrid, 'No available tables');
+
+    const ok = await assignTableDB(tableId, 'take');
+    if (!ok) {
+      availTablesGrid.appendChild(card);
+      takeBtn.classList.replace('waiter-table-action--release', 'waiter-table-action--take');
+      takeBtn.textContent = 'Take Table';
+      takeBtn.removeAttribute('data-release');
+      takeBtn.setAttribute('data-take', tableId);
+      updateTableCounts();
+      ensureEmptyCard(myTablesGrid, 'No assigned tables');
+      ensureEmptyCard(availTablesGrid, 'No available tables');
+      showToast('Table assign failed');
+      return;
+    }
+
     updateOrderTableOption(tableId, tableNumber, 'add');
   });
 
   updateTableCounts();
+  ensureEmptyCard(myTablesGrid, 'No assigned tables');
+  ensureEmptyCard(availTablesGrid, 'No available tables');
 
   // ── Order Stats ───────────────────────────────────────────
   const orderList       = document.querySelector('#order .order-list') ||

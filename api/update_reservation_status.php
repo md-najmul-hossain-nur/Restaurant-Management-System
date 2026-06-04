@@ -15,7 +15,7 @@ if (!$reservationId || !in_array($status, ['approved', 'rejected', 'cancelled'],
     respond(['error' => 'Invalid reservation update'], 400);
 }
 
-$stmt = $pdo->prepare("SELECT id, table_id FROM reservations WHERE id = ? LIMIT 1");
+$stmt = $pdo->prepare("SELECT id, table_id, customer_id FROM reservations WHERE id = ? LIMIT 1");
 $stmt->execute([$reservationId]);
 $reservation = $stmt->fetch();
 
@@ -30,8 +30,12 @@ try {
         ->execute([$status, $reservationId]);
 
     if ($status === 'approved') {
-        $pdo->prepare("UPDATE restaurant_tables SET status = 'reserved' WHERE id = ?")
-            ->execute([$reservation['table_id']]);
+        $pdo->prepare(
+            "UPDATE restaurant_tables
+             SET status = CASE WHEN status = 'occupied' THEN 'occupied' ELSE 'reserved' END,
+                 reserved_customer_id = ?
+             WHERE id = ?"
+        )->execute([$reservation['customer_id'] ?: null, $reservation['table_id']]);
     } else {
         $active = $pdo->prepare(
             "SELECT COUNT(*) FROM reservations
@@ -41,8 +45,14 @@ try {
         );
         $active->execute([$reservation['table_id'], $reservationId]);
 
-        if ((int) $active->fetchColumn() === 0) {
-            $pdo->prepare("UPDATE restaurant_tables SET status = 'available' WHERE id = ?")
+        $assigned = $pdo->prepare(
+            "SELECT assigned_waiter_id FROM restaurant_tables WHERE id = ?"
+        );
+        $assigned->execute([$reservation['table_id']]);
+        $assignedWaiter = $assigned->fetchColumn();
+
+        if ((int) $active->fetchColumn() === 0 && empty($assignedWaiter)) {
+            $pdo->prepare("UPDATE restaurant_tables SET status = 'available', reserved_customer_id = NULL WHERE id = ?")
                 ->execute([$reservation['table_id']]);
         }
     }

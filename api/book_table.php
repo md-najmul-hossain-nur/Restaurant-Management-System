@@ -4,8 +4,21 @@ require_once '../PHP/db.php';
 require_once __DIR__ . '/reservation_helpers.php';
 header('Content-Type: application/json');
 
-requireLogin('customer');
+requireLogin();
 ensureReservationsTable($pdo);
+
+$userId = (int) ($_SESSION['user_id'] ?? 0);
+$roleStmt = $pdo->prepare('SELECT role FROM users WHERE id = ? LIMIT 1');
+$roleStmt->execute([$userId]);
+$role = strtolower(trim((string) $roleStmt->fetchColumn()));
+$sessionRole = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+if ($role === '' && $sessionRole !== '') {
+    $role = $sessionRole;
+}
+if ($role !== 'customer') {
+    respond(['error' => 'Access denied'], 403);
+}
+$_SESSION['role'] = $role;
 
 $data = json_decode(file_get_contents('php://input'), true);
 
@@ -26,8 +39,8 @@ $table = $stmt->fetch();
 if (!$table) {
     respond(['error' => 'Table not found'], 404);
 }
-if ($table['status'] !== 'available') {
-    respond(['error' => 'Table is not available'], 409);
+if ($table['status'] === 'occupied') {
+    respond(['error' => 'Table is currently occupied'], 409);
 }
 if ($guests > $table['capacity']) {
     respond(['error' => 'Too many guests for this table'], 400);
@@ -38,7 +51,7 @@ $time            = $data['time']             ?? '19:00';
 $specialRequests = $data['special_requests'] ?? '';
 
 // Get the logged-in customer's ID from session
-$customerId = $_SESSION['user_id'] ?? null;
+$customerId = $userId ?: null;
 
 // Check for conflicting reservations (same table, same date & time)
 $conflictStmt = $pdo->prepare(
@@ -48,7 +61,7 @@ $conflictStmt->execute([$tableId, $date, $time]);
 $conflict = $conflictStmt->fetch();
 
 if ($conflict) {
-    respond(['error' => 'Selected time slot is already reserved for this table. Please choose another time.'], 409);
+    respond(['error' => 'Selected time slot is already occupied for this table. Please choose another time.'], 409);
 }
 
 try {

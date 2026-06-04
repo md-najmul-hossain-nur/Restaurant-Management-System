@@ -4,10 +4,23 @@ require_once '../PHP/db.php';
 require_once __DIR__ . '/reservation_helpers.php';
 header('Content-Type: application/json');
 
-requireLogin('customer');
+requireLogin();
 ensureReservationsTable($pdo);
 
-$customerId = (int) ($_SESSION['user_id'] ?? 0);
+$userId = (int) ($_SESSION['user_id'] ?? 0);
+$roleStmt = $pdo->prepare('SELECT role FROM users WHERE id = ? LIMIT 1');
+$roleStmt->execute([$userId]);
+$role = strtolower(trim((string) $roleStmt->fetchColumn()));
+$sessionRole = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+if ($role === '' && $sessionRole !== '') {
+  $role = $sessionRole;
+}
+if ($role !== 'customer') {
+  respond(['error' => 'Access denied'], 403);
+}
+$_SESSION['role'] = $role;
+
+$customerId = $userId;
 
 $stmt = $pdo->prepare(
     "SELECT

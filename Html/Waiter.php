@@ -23,21 +23,19 @@ $clockStmt->execute([$userId]);
 $isClockedIn = (int) ($clockStmt->fetchColumn() ?: 0);
 
 $myTablesStmt = $pdo->prepare(
-    "SELECT rt.id, rt.table_number, rt.capacity, rt.image_path, MAX(o.created_at) AS last_order_at
-     FROM restaurant_tables rt
-     JOIN orders o ON o.table_id = rt.id AND o.waiter_id = ?
-     WHERE rt.status = 'occupied'
-     GROUP BY rt.id
-     ORDER BY last_order_at DESC"
+  "SELECT rt.id, rt.table_number, rt.capacity, rt.image_path
+   FROM restaurant_tables rt
+   WHERE rt.assigned_waiter_id = ?
+   ORDER BY rt.table_number"
 );
 $myTablesStmt->execute([$userId]);
 $myTables = $myTablesStmt->fetchAll() ?: [];
 
 $availTablesStmt = $pdo->query(
-    "SELECT id, table_number, capacity, image_path
-     FROM restaurant_tables
-     WHERE status = 'available'
-     ORDER BY table_number"
+  "SELECT id, table_number, capacity, image_path
+   FROM restaurant_tables
+   WHERE status = 'available' AND assigned_waiter_id IS NULL
+   ORDER BY table_number"
 );
 $availableTables = $availTablesStmt->fetchAll() ?: [];
 

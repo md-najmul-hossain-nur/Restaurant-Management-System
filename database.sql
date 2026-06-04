@@ -61,6 +61,9 @@ CREATE TABLE restaurant_tables (
   capacity INT NOT NULL DEFAULT 4,
   position VARCHAR(50),
   status ENUM('available','reserved','occupied') NOT NULL DEFAULT 'available',
+  assigned_waiter_id INT DEFAULT NULL,
+  reserved_customer_id INT DEFAULT NULL,
+  active_customer_id INT DEFAULT NULL,
   image_path VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

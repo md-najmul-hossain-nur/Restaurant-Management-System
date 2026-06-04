@@ -15,6 +15,15 @@ $items    = $data['items'] ?? [];
 if (!$tableId)   respond(['error' => 'No table selected'], 400);
 if (!$items)     respond(['error' => 'No items selected'], 400);
 
+$tableCheck = $pdo->prepare(
+    "SELECT assigned_waiter_id FROM restaurant_tables WHERE id = ?"
+);
+$tableCheck->execute([$tableId]);
+$assignedWaiter = $tableCheck->fetchColumn();
+if ((int) $assignedWaiter !== (int) $waiterId) {
+    respond(['error' => 'Table is not assigned to you'], 403);
+}
+
 $total = 0;
 foreach ($items as $item) $total += $item['price'] * $item['quantity'];
 $grandTotal = round($total * 1.10, 2); // 10% tax
