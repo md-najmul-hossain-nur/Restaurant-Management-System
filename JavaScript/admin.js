@@ -136,20 +136,34 @@ document.addEventListener('DOMContentLoaded', () => {
           // Add card to the employees grid
           const grid = document.querySelector('.employees-grid');
           if (grid) {
-            const role   = formData.get('role');
+            const role   = String(formData.get('role') || '').toLowerCase();
+            const name   = String(formData.get('fullName') || '').trim() || 'New Employee';
+            const email  = String(formData.get('email') || '').trim() || '—';
             const card   = document.createElement('div');
             card.className = 'employee-card';
+            card.dataset.added = new Date().toISOString();
+            card.dataset.clocked = '0';
             card.innerHTML = `
               <div class="employee-info">
-                <h4>${formData.get('fullName')}</h4>
-                <p>${formData.get('email')}</p>
+                <h4>${name}</h4>
+                <p>${email}</p>
                 <div class="status-badges">
                   <span class="badge clocked-out"><i class="fas fa-clock"></i> Clocked Out</span>
                   <span class="badge approved"><i class="fas fa-check"></i> Approved</span>
                 </div>
+                <div class="employee-time"><span class="time-label"></span> <span class="time-value"></span></div>
               </div>
-              <span class="role-badge ${role}">${role === 'chief' ? 'Chef' : 'Waiter'}</span>`;
+              <div class="employee-actions">
+                <span class="role-badge ${role}">${role === 'chief' ? 'Chef' : 'Waiter'}</span>
+              </div>`;
+
+            const empty = grid.querySelector('.employee-empty');
+            if (empty) empty.remove();
             grid.appendChild(card);
+          }
+          if (!employeeTimerId) {
+            updateEmployeeTimers();
+            employeeTimerId = setInterval(updateEmployeeTimers, 1000);
           }
           employeeForm.reset();
           closeModal('addEmployeeModal');
@@ -168,7 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Employee Timers ─────────────────────────────────────
-  const employeeCards = document.querySelectorAll('.employee-card');
+  let employeeTimerId = null;
+
+  function getEmployeeCards() {
+    return document.querySelectorAll('.employee-card');
+  }
 
   function formatDuration(ms) {
     const totalSeconds = Math.max(0, Math.floor(ms / 1000));
@@ -180,30 +198,44 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${seconds}s`;
   }
 
-  function parseTimestamp(value) {
+  function parseTimestamp(value, forceLocal = false) {
     if (!value) return null;
-    const date = new Date(value);
+    const normalized = value.trim().replace(' ', 'T');
+    const cleaned = forceLocal ? normalized.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '') : normalized;
+    const date = new Date(cleaned);
     if (Number.isNaN(date.getTime())) return null;
     return date;
   }
 
   function updateEmployeeTimers() {
     const now = new Date();
-    employeeCards.forEach(card => {
+    getEmployeeCards().forEach(card => {
       const timeLabel = card.querySelector('.time-label');
       const timeValue = card.querySelector('.time-value');
       if (!timeLabel || !timeValue) return;
 
       const isClocked = card.dataset.clocked === '1';
-      const clockIn = parseTimestamp(card.dataset.clockIn);
-      const clockOut = parseTimestamp(card.dataset.clockOut);
+      const clockInRaw = card.dataset.clockIn;
+      const clockOutRaw = card.dataset.clockOut;
+      const clockIn = parseTimestamp(clockInRaw);
+      const clockOut = parseTimestamp(clockOutRaw);
 
       if (isClocked && clockIn) {
         timeLabel.textContent = 'Clocked in for';
-        timeValue.textContent = formatDuration(now - clockIn);
+        let diff = now - clockIn;
+        if (diff < 0 && clockInRaw) {
+          const fallback = parseTimestamp(clockInRaw, true);
+          if (fallback) diff = now - fallback;
+        }
+        timeValue.textContent = formatDuration(diff);
       } else if (!isClocked && clockOut) {
         timeLabel.textContent = 'Clocked out for';
-        timeValue.textContent = formatDuration(now - clockOut);
+        let diff = now - clockOut;
+        if (diff < 0 && clockOutRaw) {
+          const fallback = parseTimestamp(clockOutRaw, true);
+          if (fallback) diff = now - fallback;
+        }
+        timeValue.textContent = formatDuration(diff);
       } else {
         timeLabel.textContent = '';
         timeValue.textContent = '';
@@ -211,9 +243,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (employeeCards.length) {
+  if (getEmployeeCards().length) {
     updateEmployeeTimers();
-    setInterval(updateEmployeeTimers, 1000);
+    employeeTimerId = setInterval(updateEmployeeTimers, 1000);
   }
 
   // ── Add Table Modal ───────────────────────────────────────
@@ -235,9 +267,72 @@ document.addEventListener('DOMContentLoaded', () => {
         const result   = await res.json();
 
         if (result.success) {
+          const grid = document.getElementById('tablesGrid');
+          if (grid) {
+            const tableId = result.table_id || '';
+            const tableNumber = result.table_number || formData.get('tableNumber');
+            const capacity = result.capacity || formData.get('tableCapacity');
+            const position = String(result.position || formData.get('tablePosition') || '').toLowerCase();
+            const status = result.status || 'available';
+
+            const posLabel = position ? capitalize(position) : 'Unknown';
+            const imgPath = result.image_path ? normalizeImagePath(result.image_path) : '../Images/Table/4_people table.jpg';
+
+            const card = document.createElement('div');
+            card.className = 'table-card';
+            card.dataset.tableId = String(tableId);
+            card.dataset.tableNumber = String(tableNumber || '');
+            card.dataset.capacity = String(capacity || '');
+            card.dataset.status = String(status);
+            card.dataset.position = String(position);
+            card.dataset.guest = 'Customer';
+            card.dataset.time = '';
+            card.dataset.guests = '';
+
+            card.innerHTML = `
+              <div class="table-header-row">
+                <span class="position-badge">${posLabel}</span>
+                <div class="table-actions">
+                  <button type="button" class="table-edit-btn" aria-label="Edit table" title="Edit">
+                    <i class="fas fa-pencil"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="table-number">
+                <img class="table-icon" src="${imgPath}" alt="Table" />
+              </div>
+              <h4>Table ${tableNumber}</h4>
+              <div class="table-meta">Capacity: ${capacity}</div>
+              <div class="table-status-dropdown">
+                <select class="status-select" data-table-id="${tableId}">
+                  <option value="available" ${status === 'available' ? 'selected' : ''}>Available</option>
+                  <option value="reserved" ${status === 'reserved' ? 'selected' : ''}>Reserved</option>
+                  <option value="occupied" ${status === 'occupied' ? 'selected' : ''}>Occupied</option>
+                </select>
+              </div>
+            `;
+
+            const empty = grid.querySelector('.table-card:not([data-table-id])');
+            if (empty) empty.remove();
+
+            const cards = Array.from(grid.querySelectorAll('.table-card[data-table-number]'));
+            const num = parseInt(tableNumber, 10);
+            const insertBefore = cards.find(c => {
+              const n = parseInt(c.dataset.tableNumber || '0', 10);
+              return Number.isFinite(num) && Number.isFinite(n) && n > num;
+            });
+            if (insertBefore) {
+              grid.insertBefore(card, insertBefore);
+            } else {
+              grid.appendChild(card);
+            }
+
+            updateTableStats();
+          }
+
           tableForm.reset();
           closeModal('addTableModal');
-          showAdminToast('Table added! Refresh to see it in the grid.');
+          showAdminToast('Table added!');
         } else {
           showAdminToast(result.error || 'Failed to add table', true);
         }

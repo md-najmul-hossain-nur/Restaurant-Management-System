@@ -36,4 +36,12 @@ if (!empty($_FILES['tableImageFile']['name'])) {
 $pdo->prepare('INSERT INTO restaurant_tables (table_number, capacity, position, image_path) VALUES (?, ?, ?, ?)')
     ->execute([$tableNumber, $capacity, $position, $imagePath]);
 
-respond(['success' => true, 'table_id' => $pdo->lastInsertId()]);
+respond([
+    'success' => true,
+    'table_id' => $pdo->lastInsertId(),
+    'table_number' => $tableNumber,
+    'capacity' => $capacity,
+    'position' => $position,
+    'status' => 'available',
+    'image_path' => $imagePath,
+]);

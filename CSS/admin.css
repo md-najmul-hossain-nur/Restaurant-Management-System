@@ -1046,9 +1046,9 @@ body {
 }
 
 .table-number {
-  width: 80px;
+  width: 120px;
   height: 80px;
-  border-radius: 50%;
+  border-radius: 10px;
   display: grid;
   place-items: center;
   background: rgba(255,255,255,0.90);

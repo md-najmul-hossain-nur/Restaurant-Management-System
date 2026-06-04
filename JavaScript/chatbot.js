@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function () {
         <small>Online</small>
       </div>
       <div style="display:flex; gap:8px;">
-        <span id="chatbot-clear" title="Clear chat">🗑</span>
         <span id="chatbot-close" title="Close">&times;</span>
       </div>
     </div>
