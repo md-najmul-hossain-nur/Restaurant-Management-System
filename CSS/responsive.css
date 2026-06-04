@@ -121,3 +121,478 @@ body > * {
     align-self: flex-end;
   }
 }
+
+/* Project-wide responsive overrides */
+@media (max-width: 1280px) {
+  nav {
+    margin-left: 32px;
+    margin-right: 32px;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .about-section,
+  .menu-showcase,
+  .chef-section,
+  .testimony-section,
+  .footer {
+    padding-left: clamp(24px, 5vw, 70px);
+    padding-right: clamp(24px, 5vw, 70px);
+  }
+
+  .about-images {
+    min-width: 0;
+    margin-left: 0;
+  }
+
+  .menu-grid,
+  .chef-grid,
+  .footer-grid,
+  .instagram-grid,
+  .stats,
+  .filter-row,
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .main-layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+
+  .menu-grid .menu-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 1100px) {
+  html,
+  body {
+    min-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  body {
+    background-attachment: scroll;
+  }
+
+  nav {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    height: auto;
+    margin: 0;
+    gap: 18px;
+  }
+
+  .nav-links {
+    position: static;
+    transform: none;
+    flex: 1 1 100%;
+    order: 3;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+  }
+
+  .hero-home {
+    min-height: 100svh;
+    height: auto;
+    padding-top: 130px;
+    padding-bottom: 28px;
+    background-attachment: scroll;
+  }
+
+  .hero-center {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    margin: 0 auto;
+    padding-top: 80px;
+  }
+
+  .dish-row {
+    position: relative;
+    bottom: auto;
+    margin-top: 52px;
+  }
+
+  .about-section,
+  .contact-wrap,
+  .content-wrap,
+  .order-content,
+  .menu-inner,
+  .profile-card,
+  .report-layout,
+  .chat-layout {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .dashboard,
+  .outer-wrapper {
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .outer-wrapper {
+    margin: 20px;
+  }
+
+  .main-content {
+    overflow: visible;
+    max-width: 100%;
+  }
+
+  .topbar {
+    height: auto;
+    min-height: 72px;
+    padding: 16px 24px;
+    gap: 16px;
+  }
+
+  .navbar {
+    height: auto;
+    gap: 10px;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .tab,
+  .nav-item {
+    flex: 0 0 auto;
+  }
+
+  .main-layout {
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+  }
+
+  .cart-panel,
+  .cart-sidebar,
+  .order-summary,
+  .summary-panel {
+    width: 100%;
+    max-width: none;
+    position: static;
+  }
+}
+
+@media (max-width: 900px) {
+  .page-wrapper {
+    width: 100%;
+    min-height: 100svh;
+    height: auto;
+    padding: 92px 20px 28px;
+    justify-content: center;
+    align-items: flex-start;
+    overflow: visible;
+  }
+
+  .top-logo {
+    top: 18px;
+    left: 20px;
+  }
+
+  .left-content,
+  .right-content {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    max-width: 680px;
+    width: 100%;
+    margin: 0 auto 22px;
+    text-align: center;
+  }
+
+  .login-card,
+  .signup-card {
+    width: min(100%, 540px);
+    margin: 0 auto;
+  }
+
+  .about-images,
+  .menu-grid,
+  .chef-grid,
+  .testimony-grid,
+  .footer-grid,
+  .stats-strip,
+  .stats,
+  .admin-stats,
+  .waiter-stats,
+  .customer-stats,
+  .table-browser-grid,
+  .cards-grid,
+  .employee-grid,
+  .recipe-grid,
+  .order-items-grid,
+  .payment-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .about-images img,
+  .menu-image-card img,
+  .chef-img,
+  .card-img {
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .category-bar,
+  .filters,
+  .actions-row,
+  .order-header,
+  .profile-card,
+  .profile-left,
+  .profile-right,
+  .order-card-top,
+  .order-selected-footer,
+  .modal-actions,
+  .payment-actions,
+  .customize-actions,
+  .form-row {
+    flex-wrap: wrap;
+  }
+
+  .form-grid,
+  .profile-grid,
+  .reservation-grid,
+  .table-details-grid,
+  .recipe-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal,
+  .settings-modal,
+  .form-modal,
+  .recipe-modal-box,
+  .customize-modal,
+  .payment-modal,
+  .order-modal-content,
+  .table-modal,
+  .confirm-modal {
+    width: min(94vw, 680px);
+    max-height: 88svh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 680px) {
+  nav {
+    align-items: center;
+  }
+
+  .nav-logo,
+  .brand {
+    font-size: 1rem;
+    letter-spacing: 1.5px;
+  }
+
+  .nav-links {
+    gap: 8px 12px;
+  }
+
+  .nav-links a {
+    font-size: 0.82rem;
+  }
+
+  .btn-profile,
+  .logout,
+  .logout-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .hero-home {
+    padding-top: 150px;
+  }
+
+  .script-title,
+  .menu-script,
+  .testimony-script {
+    font-size: clamp(2.6rem, 13vw, 4rem);
+  }
+
+  .hero-center h1,
+  .section-title,
+  .menu-title,
+  .testimony-title,
+  .page-title {
+    font-size: clamp(1.7rem, 8vw, 2.5rem);
+    line-height: 1.15;
+  }
+
+  .dish-row,
+  .about-images,
+  .menu-grid,
+  .chef-grid,
+  .testimony-grid,
+  .footer-grid,
+  .instagram-grid,
+  .stats-strip,
+  .stats,
+  .admin-stats,
+  .waiter-stats,
+  .customer-stats,
+  .menu-section .menu-grid,
+  .table-browser-grid,
+  .cards-grid,
+  .employee-grid,
+  .recipe-grid,
+  .order-items-grid,
+  .payment-options {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    align-items: stretch;
+  }
+
+  .top-right {
+    justify-content: space-between;
+  }
+
+  .outer-wrapper {
+    margin: 12px;
+    padding: 10px;
+    border-radius: 12px;
+  }
+
+  .main-content {
+    padding: 14px 8px;
+  }
+
+  .navbar {
+    padding: 10px;
+  }
+
+  .tab,
+  .nav-item,
+  .cat-btn {
+    font-size: 0.9rem;
+    padding: 9px 12px;
+  }
+
+  .order-card,
+  .table-card,
+  .menu-card,
+  .profile-card,
+  .card,
+  .reservation-card {
+    padding: 14px;
+  }
+
+  .order-card-top,
+  .order-head,
+  .cart-item,
+  .profile-left,
+  .profile-row,
+  .customer-row,
+  .employee-row,
+  .table-row {
+    align-items: flex-start;
+  }
+
+  .cart-actions,
+  .order-selected-actions,
+  .payment-actions,
+  .customize-actions,
+  .modal-cta-row,
+  .form-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .cart-actions button,
+  .order-selected-actions button,
+  .payment-actions button,
+  .customize-actions button,
+  .modal-cta-row button,
+  .form-actions button,
+  .order-new-btn,
+  .order-delivered-btn,
+  .profile-settings-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-wrapper {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .login-card,
+  .signup-card {
+    padding: 24px 18px;
+  }
+
+  .card-logo-img {
+    width: 76px;
+    height: 82px;
+  }
+
+  .card-script {
+    font-size: 2.25rem;
+  }
+
+  .signup-row {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .topbar {
+    padding: 14px;
+  }
+
+  .admin-title,
+  .dashboard-label {
+    text-align: left;
+    font-size: 0.82rem;
+  }
+
+  .category-bar {
+    padding-left: 10px;
+    padding-right: 10px;
+    gap: 10px;
+  }
+
+  .order-thumb,
+  .cart-thumb,
+  .avatar,
+  .avatar-wrap {
+    width: 58px;
+    height: 58px;
+  }
+
+  .table-browser-grid,
+  .waiter-table-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal,
+  .settings-modal,
+  .form-modal,
+  .recipe-modal-box,
+  .customize-modal,
+  .payment-modal,
+  .order-modal-content,
+  .table-modal,
+  .confirm-modal {
+    width: calc(100vw - 24px);
+    padding: 18px;
+  }
+}
