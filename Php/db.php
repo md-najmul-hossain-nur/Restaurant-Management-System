@@ -38,13 +38,68 @@ function respond($data, $status = 200) {
     exit;
 }
 
+function rememberRoleSession($user) {
+    $role = strtolower(trim((string) ($user['role'] ?? '')));
+    if ($role === '') {
+        return;
+    }
+
+    $_SESSION['auth'][$role] = [
+        'user_id' => (int) ($user['id'] ?? $user['user_id'] ?? 0),
+        'name'    => $user['name'] ?? null,
+        'email'   => $user['email'] ?? null,
+        'role'    => $role,
+    ];
+}
+
+function restoreRoleSession($requiredRole) {
+    $requiredRole = strtolower(trim((string) $requiredRole));
+    $saved = $_SESSION['auth'][$requiredRole] ?? null;
+
+    if (!is_array($saved) || empty($saved['user_id'])) {
+        return false;
+    }
+
+    $_SESSION['user_id'] = (int) $saved['user_id'];
+    $_SESSION['name'] = $saved['name'] ?? null;
+    $_SESSION['email'] = $saved['email'] ?? null;
+    $_SESSION['role'] = $requiredRole;
+
+    return true;
+}
+
 function requireLogin($requiredRole = null) {
     if (empty($_SESSION['user_id'])) {
+        if ($requiredRole !== null && restoreRoleSession($requiredRole)) {
+            return;
+        }
+
         respond(['error' => 'Not logged in'], 401);
     }
 
     if ($requiredRole !== null) {
-        $actualRole = $_SESSION['role'] ?? '';
+        $actualRole = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+        $requiredRole = strtolower(trim((string) $requiredRole));
+
+        if ($actualRole !== $requiredRole && restoreRoleSession($requiredRole)) {
+            $actualRole = $requiredRole;
+        }
+
+        if ($actualRole !== $requiredRole) {
+            global $pdo;
+
+            if (isset($pdo)) {
+                $stmt = $pdo->prepare('SELECT role FROM users WHERE id = ? LIMIT 1');
+                $stmt->execute([(int) $_SESSION['user_id']]);
+                $dbRole = strtolower(trim((string) $stmt->fetchColumn()));
+
+                if ($dbRole !== '') {
+                    $_SESSION['role'] = $dbRole;
+                    $actualRole = $dbRole;
+                }
+            }
+        }
+
         if ($actualRole !== $requiredRole) {
             respond(['error' => 'Access denied'], 403);
         }

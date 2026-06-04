@@ -1,6 +1,22 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'customer') {
+
+require_once __DIR__ . '/../Php/db.php';
+
+restoreRoleSession('customer');
+$sessionRole = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+if (isset($_SESSION['user_id']) && $sessionRole !== 'customer') {
+  $roleStmt = $pdo->prepare('SELECT role FROM users WHERE id = ? LIMIT 1');
+  $roleStmt->execute([(int) $_SESSION['user_id']]);
+  $dbRole = strtolower(trim((string) $roleStmt->fetchColumn()));
+
+  if ($dbRole !== '') {
+    $_SESSION['role'] = $dbRole;
+    $sessionRole = $dbRole;
+  }
+}
+
+if (!isset($_SESSION['user_id']) || $sessionRole !== 'customer') {
     header('Location: login.html');
     exit;
 }

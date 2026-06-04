@@ -1,13 +1,27 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+
+// Load DB for server-side rendering and to verify the current session role.
+require_once __DIR__ . '/../Php/db.php';
+require_once __DIR__ . '/../Php/bootstrap.php';
+
+restoreRoleSession('admin');
+$sessionRole = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+if (isset($_SESSION['user_id']) && $sessionRole !== 'admin') {
+  $roleStmt = $pdo->prepare('SELECT role FROM users WHERE id = ? LIMIT 1');
+  $roleStmt->execute([(int) $_SESSION['user_id']]);
+  $dbRole = strtolower(trim((string) $roleStmt->fetchColumn()));
+
+  if ($dbRole !== '') {
+    $_SESSION['role'] = $dbRole;
+    $sessionRole = $dbRole;
+  }
+}
+
+if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
   header('Location: login.html');
   exit;
 }
-
-// Load DB for server-side rendering
-require_once __DIR__ . '/../Php/db.php';
-require_once __DIR__ . '/../Php/bootstrap.php';
 ?>
 
 <!DOCTYPE html>

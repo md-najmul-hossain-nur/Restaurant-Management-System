@@ -618,7 +618,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!reservationRequests) return;
 
     try {
-      const res = await fetch('../api/get_reservations_admin.php');
+      const res = await fetch('../api/get_reservations_admin.php', {
+        credentials: 'same-origin',
+      });
       const data = await res.json();
       renderReservationRequests(Array.isArray(data) ? data : []);
     } catch {
@@ -639,6 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         const res = await fetch('../api/update_reservation_status.php', {
           method: 'POST',
+          credentials: 'same-origin',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reservation_id: reservationId, status }),
         });

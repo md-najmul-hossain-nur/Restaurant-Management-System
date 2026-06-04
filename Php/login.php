@@ -49,11 +49,21 @@ if ($role && $role !== $user['role']) {
     exit;
 }
 
+if (!empty($_SESSION['user_id']) && !empty($_SESSION['role'])) {
+    rememberRoleSession([
+        'id'    => $_SESSION['user_id'],
+        'name'  => $_SESSION['name'] ?? null,
+        'email' => $_SESSION['email'] ?? null,
+        'role'  => $_SESSION['role'],
+    ]);
+}
+
 // Set session variables
 $_SESSION['user_id'] = $user['id'];
 $_SESSION['name']   = $user['name'];
 $_SESSION['email']  = $user['email'];
 $_SESSION['role']   = $user['role'];
+rememberRoleSession($user);
 
 // Redirect based on role
 switch ($user['role']) {

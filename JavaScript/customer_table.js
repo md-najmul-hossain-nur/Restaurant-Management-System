@@ -192,7 +192,9 @@ function getDisplayTables() {
 
 async function loadTableStatuses() {
   try {
-    const res    = await fetch('../api/get_tables.php');
+    const res    = await fetch('../api/get_tables.php', {
+      credentials: 'same-origin',
+    });
     const tables = await res.json();
 
     dbTables = Array.isArray(tables) ? tables : [];
@@ -334,13 +336,38 @@ function selectTable(el) {
 let tableCapacities = { 1:2, 2:2, 3:4, 4:4, 5:4, 6:6, 7:6, 8:8 };
 // occupiedTimesCache: { '<tableNum>|<date>': ['19:00','19:30'] }
 let occupiedTimesCache = {};
+const reservationStorageKey = 'felicianoReservationIds';
+
+function getStoredReservationIds() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(reservationStorageKey) || '[]');
+    return Array.isArray(parsed)
+      ? parsed.map(id => parseInt(id, 10)).filter(Number.isFinite)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function rememberReservationId(id) {
+  const reservationId = parseInt(id, 10);
+  if (!Number.isFinite(reservationId)) return;
+
+  const ids = getStoredReservationIds();
+  if (!ids.includes(reservationId)) {
+    ids.push(reservationId);
+    localStorage.setItem(reservationStorageKey, JSON.stringify(ids.slice(-25)));
+  }
+}
 
 async function fetchOccupiedTimes(tableNum, date) {
   const key = `${tableNum}|${date}`;
   if (occupiedTimesCache[key]) return occupiedTimesCache[key];
   try {
     const tableId = parseInt(dbTableByNumber[tableNum]?.id || tableNum);
-    const res = await fetch(`../api/get_table_availability.php?table_id=${tableId}&date=${encodeURIComponent(date)}`);
+    const res = await fetch(`../api/get_table_availability.php?table_id=${tableId}&date=${encodeURIComponent(date)}`, {
+      credentials: 'same-origin',
+    });
     if (!res.ok) return [];
     const data = await res.json();
     occupiedTimesCache[key] = Array.isArray(data.occupied) ? data.occupied : [];
@@ -468,6 +495,7 @@ async function submitBooking() {
   try {
     const res    = await fetch('../api/book_table.php', {
       method:  'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         table_id:         tableId,
@@ -480,6 +508,7 @@ async function submitBooking() {
     const result = await res.json();
 
     if (result.success) {
+      rememberReservationId(result.reservation_id);
       // Save table id to sessionStorage so order page can use it
       sessionStorage.setItem('selectedTableId', tableId);
       closeModal('bookingOverlay');
@@ -580,7 +609,21 @@ async function loadReservations() {
   if (list) list.innerHTML = '<div class="reservations-empty">Loading reservations...</div>';
 
   try {
-    const res = await fetch('../api/get_my_reservations.php');
+    const storedIds = getStoredReservationIds();
+    const params = new URLSearchParams();
+    if (storedIds.length) {
+      params.set('ids', storedIds.join(','));
+    }
+
+    const selectedTableId = parseInt(sessionStorage.getItem('selectedTableId') || '', 10);
+    if (Number.isFinite(selectedTableId)) {
+      params.set('table_id', String(selectedTableId));
+    }
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`../api/get_my_reservations.php${query}`, {
+      credentials: 'same-origin',
+    });
     const result = await res.json();
 
     if (res.ok && Array.isArray(result)) {
@@ -604,6 +647,7 @@ async function cancelReservation(reservationId) {
   try {
     const res = await fetch('../api/cancel_reservation.php', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reservation_id: reservationId }),
     });
