@@ -232,7 +232,7 @@ function renderBrowserGrid() {
   grid.innerHTML = getDisplayTables().map(t => {
     const tableNum = t.tableNumber || parseInt(t.key.replace('table', ''));
     const status   = t.status || dbTableStatuses[tableNum] || 'available';
-    const isBlocked = status !== 'available';
+    const isBlocked = status === 'occupied';
     const badgeHTML = status !== 'available'
       ? `<span class="browser-card-status-badge ${status}">${status}</span>`
       : '';
@@ -259,7 +259,7 @@ function renderBrowserGrid() {
                   ${isBlocked ? 'disabled' : ''}
                   onclick="event.stopPropagation(); selectAndBook('${t.key}')">
             <i class="fas fa-calendar-plus"></i>
-            ${isBlocked ? 'Not Available' : 'Reserve This Table'}
+            ${isBlocked ? 'Not Available' : (status === 'reserved' ? 'Check Times' : 'Reserve This Table')}
           </button>
         </div>
       </div>
@@ -293,22 +293,29 @@ function selectAndBook(tableKey) {
 function openBookingForm(tableKey) {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('bookDate').value = today;
-  // set sensible default time: next 30-min slot or keep 19:00
+  // set sensible default range: next 30-min slot for 1 hour
   const timeInput = document.getElementById('bookTime');
+  const endTimeInput = document.getElementById('bookEndTime');
   try {
     const step = parseInt(timeInput.step || '1800', 10);
 
     const now = new Date();
     // round up to next 30-minute slot
     const nextSlot = new Date(Math.ceil(now.getTime() / (step * 1000)) * (step * 1000));
+    const endSlot = new Date(nextSlot.getTime() + (60 * 60 * 1000));
     const hh = String(nextSlot.getHours()).padStart(2, '0');
     const mm = String(nextSlot.getMinutes()).padStart(2, '0');
+    const endHh = String(endSlot.getHours()).padStart(2, '0');
+    const endMm = String(endSlot.getMinutes()).padStart(2, '0');
     const candidate = `${hh}:${mm}`;
+    const endCandidate = `${endHh}:${endMm}`;
     // set next slot as default (fallback to 19:00 if something fails)
     timeInput.value = candidate || timeInput.value || '19:00';
+    if (endTimeInput) endTimeInput.value = endCandidate || endTimeInput.value || '20:00';
   } catch (e) {
     // fallback
     timeInput.value = timeInput.value || '19:00';
+    if (endTimeInput) endTimeInput.value = endTimeInput.value || '20:00';
   }
 
   document.querySelectorAll('.table-chip').forEach(c => {
@@ -334,9 +341,45 @@ function selectTable(el) {
    Capacity Warning Logic  (unchanged)
 ========================================== */
 let tableCapacities = { 1:2, 2:2, 3:4, 4:4, 5:4, 6:6, 7:6, 8:8 };
-// occupiedTimesCache: { '<tableNum>|<date>': ['19:00','19:30'] }
-let occupiedTimesCache = {};
+// availabilityCache: { '<tableNum>|<date>': [{ start:'18:00', end:'19:00' }] }
+let availabilityCache = {};
 const reservationStorageKey = 'felicianoReservationIds';
+
+function timeToMinutes(value) {
+  const [h, m] = String(value || '').split(':').map(Number);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+  return h * 60 + m;
+}
+
+function addMinutesToTime(value, minutes) {
+  const start = timeToMinutes(value);
+  if (start === null) return '';
+  const total = (start + minutes + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
+
+function rangesOverlap(startA, endA, startB, endB) {
+  const aStart = timeToMinutes(startA);
+  const aEnd = timeToMinutes(endA);
+  const bStart = timeToMinutes(startB);
+  const bEnd = timeToMinutes(endB);
+  if ([aStart, aEnd, bStart, bEnd].some(v => v === null)) return false;
+  return aStart < bEnd && aEnd > bStart;
+}
+
+function formatSlotTime(value) {
+  const minutes = timeToMinutes(value);
+  if (minutes === null) return value || '';
+  const h24 = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const suffix = h24 >= 12 ? 'PM' : 'AM';
+  const h12 = h24 % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${suffix}`;
+}
+
+function formatSlotRange(slot) {
+  return `${formatSlotTime(slot.start)} - ${formatSlotTime(slot.end)}`;
+}
 
 function getStoredReservationIds() {
   try {
@@ -360,9 +403,9 @@ function rememberReservationId(id) {
   }
 }
 
-async function fetchOccupiedTimes(tableNum, date) {
+async function fetchAvailabilitySlots(tableNum, date) {
   const key = `${tableNum}|${date}`;
-  if (occupiedTimesCache[key]) return occupiedTimesCache[key];
+  if (availabilityCache[key]) return availabilityCache[key];
   try {
     const tableId = parseInt(dbTableByNumber[tableNum]?.id || tableNum);
     const res = await fetch(`../api/get_table_availability.php?table_id=${tableId}&date=${encodeURIComponent(date)}`, {
@@ -370,8 +413,10 @@ async function fetchOccupiedTimes(tableNum, date) {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    occupiedTimesCache[key] = Array.isArray(data.occupied) ? data.occupied : [];
-    return occupiedTimesCache[key];
+    availabilityCache[key] = Array.isArray(data.slots)
+      ? data.slots
+      : (Array.isArray(data.occupied) ? data.occupied.map(start => ({ start, end: addMinutesToTime(start, 60) })) : []);
+    return availabilityCache[key];
   } catch (e) {
     console.error('Could not fetch availability', e);
     return [];
@@ -384,14 +429,33 @@ async function refreshAvailabilityForSelection() {
   const tableNum = parseInt(selectedChip.dataset.table);
   const date = document.getElementById('bookDate').value || new Date().toISOString().split('T')[0];
   const time = document.getElementById('bookTime').value;
+  const endTimeInput = document.getElementById('bookEndTime');
+  const endTime = endTimeInput?.value || addMinutesToTime(time, 60);
 
-  const occupied = await fetchOccupiedTimes(tableNum, date);
+  const slots = await fetchAvailabilitySlots(tableNum, date);
   const warnEl = document.getElementById('availabilityWarning');
   const warnMsg = document.getElementById('availabilityWarningMsg');
   const submitBtn = document.getElementById('bookingSubmitBtn');
+  const slotsEl = document.getElementById('availabilitySlots');
 
-  if (occupied.includes(time)) {
-    warnMsg.textContent = `Time ${time} is already occupied for Table ${tableNum}. Please choose another slot.`;
+  if (slotsEl) {
+    slotsEl.innerHTML = slots.length
+      ? `<strong>Reserved times:</strong> ${slots.map(slot => `<span>${formatSlotRange(slot)}</span>`).join('')}`
+      : '<strong>Reserved times:</strong> No reservations for this table/date.';
+  }
+
+  if (!time || !endTime || timeToMinutes(endTime) <= timeToMinutes(time)) {
+    warnMsg.textContent = 'End time must be after start time.';
+    warnEl.style.display = 'block';
+    submitBtn.disabled = true;
+    submitBtn.classList.add('disabled');
+    return;
+  }
+
+  const conflict = slots.find(slot => rangesOverlap(time, endTime, slot.start, slot.end));
+
+  if (conflict) {
+    warnMsg.textContent = `Table ${tableNum} is already reserved from ${formatSlotRange(conflict)}. Please choose another time.`;
     warnEl.style.display = 'block';
     submitBtn.disabled = true;
     submitBtn.classList.add('disabled');
@@ -471,6 +535,7 @@ async function submitBooking() {
   const tableNum = parseInt(selectedChip.dataset.table);
   const date     = document.getElementById('bookDate').value;
   const time     = document.getElementById('bookTime').value;
+  const endTime  = document.getElementById('bookEndTime')?.value || addMinutesToTime(time, 60);
   const guests   = getSelectedGuests();
   const special  = document.querySelector('.form-group .form-input[placeholder]')?.value || '';
 
@@ -479,8 +544,10 @@ async function submitBooking() {
     return;
   }
 
-  // no hard min/max range enforced by UI; server will still prevent conflicts
-  const timeInput = document.getElementById('bookTime');
+  if (!time || !endTime || timeToMinutes(endTime) <= timeToMinutes(time)) {
+    showToast('Please choose a valid start and end time.', true);
+    return;
+  }
 
   const tableId = parseInt(dbTableByNumber[tableNum]?.id || tableNum);
   if (!tableId) {
@@ -501,6 +568,7 @@ async function submitBooking() {
         table_id:         tableId,
         date,
         time,
+        end_time: endTime,
         guests,
         special_requests: special,
       }),
@@ -517,7 +585,7 @@ async function submitBooking() {
       // clear cached occupied times for this table/date so UI updates
       const tableNum = parseInt(document.querySelector('.table-chip.selected')?.dataset.table || tableId);
       const key = `${tableNum}|${date}`;
-      delete occupiedTimesCache[key];
+      delete availabilityCache[key];
       await loadTableStatuses();
       await loadReservations();
     } else {
@@ -535,16 +603,17 @@ async function submitBooking() {
 /* ==========================================
    View Table Details — Reservation Cards  (unchanged)
 ========================================== */
-function formatReservationDate(date, time) {
+function formatReservationDate(date, time, endTime = '') {
   if (!date) return 'Date not set';
   const safeTime = time || '00:00';
   const d = new Date(`${date}T${safeTime}`);
   if (Number.isNaN(d.getTime())) return `${date} at ${safeTime}`;
+  const timeText = endTime ? `${safeTime.slice(0, 5)} - ${endTime.slice(0, 5)}` : safeTime.slice(0, 5);
   return d.toLocaleDateString(undefined, {
     month: '2-digit',
     day: '2-digit',
     year: 'numeric',
-  }) + ` at ${safeTime.slice(0, 5)}`;
+  }) + ` at ${timeText}`;
 }
 
 function getReservationStatus(status) {
@@ -582,7 +651,7 @@ function renderReservations(reservations) {
           </span>
         </div>
         <div class="card-meta">
-          <span><i class="far fa-calendar"></i> ${formatReservationDate(r.reserved_date, r.reserved_time)}</span>
+          <span><i class="far fa-calendar"></i> ${formatReservationDate(r.reserved_date, r.reserved_time, r.reserved_end_time)}</span>
           <span><i class="fas fa-users"></i> ${r.guest_count} guests</span>
         </div>
         <div class="confirmation-msg">
@@ -655,6 +724,7 @@ async function cancelReservation(reservationId) {
 
     if (result.success) {
       showToast('Reservation cancelled.');
+      availabilityCache = {};
       await loadReservations();
       await loadTableStatuses();
     } else {
@@ -741,6 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bookGuests').addEventListener('change', checkCapacity);
   document.getElementById('bookDate').addEventListener('change', refreshAvailabilityForSelection);
   document.getElementById('bookTime').addEventListener('change', refreshAvailabilityForSelection);
+  document.getElementById('bookEndTime')?.addEventListener('change', refreshAvailabilityForSelection);
   renderTableChips();
   loadTableStatuses(); // ★ load real availability on page load
   loadReservations();

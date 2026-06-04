@@ -247,10 +247,17 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'customer') {
             <input type="date" class="form-input" id="bookDate"/>
           </div>
           <div class="form-group">
-            <label class="form-label">Time</label>
-            <!-- Allow any booking time; keep 30-minute step for convenience -->
+            <label class="form-label">Start Time</label>
             <input type="time" class="form-input" id="bookTime" value="19:00" step="1800"/>
           </div>
+          <div class="form-group">
+            <label class="form-label">End Time</label>
+            <input type="time" class="form-input" id="bookEndTime" value="20:00" step="1800"/>
+          </div>
+        </div>
+
+        <div class="availability-slots" id="availabilitySlots" aria-live="polite">
+          Select a table and date to see reserved times.
         </div>
 
         <div class="form-group">

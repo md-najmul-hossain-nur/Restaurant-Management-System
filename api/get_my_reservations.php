@@ -55,6 +55,7 @@ $stmt = $pdo->prepare(
         rt.position,
         r.reserved_date,
         TIME_FORMAT(r.reserved_time, '%H:%i') AS reserved_time,
+        TIME_FORMAT(r.reserved_end_time, '%H:%i') AS reserved_end_time,
         r.guest_count,
         r.special_requests,
         r.status,

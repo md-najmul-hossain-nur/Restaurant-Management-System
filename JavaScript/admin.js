@@ -595,11 +595,17 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    const formatTimeRange = (r) => {
+      const start = r.reserved_time || '';
+      const end = r.reserved_end_time || '';
+      return end ? `${start} - ${end}` : start;
+    };
+
     reservationRequests.innerHTML = pending.map(r => `
       <div class="reservation-request" data-reservation-id="${r.id}">
         <div>
           <h4>Table ${r.table_number} - ${r.customer_name || 'Customer'}</h4>
-          <p>${r.reserved_date} at ${r.reserved_time} - ${r.guest_count} guests</p>
+          <p>${r.reserved_date} at ${formatTimeRange(r)} - ${r.guest_count} guests</p>
           <p>${r.customer_email || ''}</p>
         </div>
         <div class="reservation-request-actions">

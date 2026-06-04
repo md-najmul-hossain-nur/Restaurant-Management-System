@@ -74,6 +74,7 @@ CREATE TABLE reservations (
   customer_id INT DEFAULT NULL,
   reserved_date DATE NOT NULL,
   reserved_time TIME NOT NULL,
+  reserved_end_time TIME NOT NULL DEFAULT '21:00:00',
   guest_count INT NOT NULL DEFAULT 1,
   special_requests TEXT,
   status ENUM('pending','approved','rejected','cancelled') NOT NULL DEFAULT 'pending',

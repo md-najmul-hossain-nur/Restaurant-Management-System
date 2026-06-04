@@ -34,7 +34,7 @@ try {
             "SELECT COUNT(*) FROM reservations
              WHERE table_id = ?
                AND status = 'approved'
-               AND CONCAT(reserved_date, ' ', reserved_time) >= NOW()"
+               AND CONCAT(reserved_date, ' ', reserved_end_time) >= NOW()"
         );
         $futureApproved->execute([$tableId]);
         $nextStatus = ((int) $futureApproved->fetchColumn() > 0) ? 'reserved' : 'available';

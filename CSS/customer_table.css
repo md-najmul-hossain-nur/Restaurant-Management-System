@@ -1189,6 +1189,35 @@ body {
   animation: warnSlide 0.25s cubic-bezier(.22,.68,0,1.2);
 }
 
+.availability-slots {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(254,254,255,0.12);
+  border-radius: 8px;
+  background: rgba(20,22,18,0.28);
+  color: rgba(254,254,255,0.72);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.availability-slots strong {
+  color: #fefeff;
+  font-weight: 700;
+}
+
+.availability-slots span {
+  display: inline-flex;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(200,169,106,0.35);
+  background: rgba(200,169,106,0.12);
+  color: #f3d79d;
+  white-space: nowrap;
+}
+
 .capacity-warning.show {
   display: flex;
 }

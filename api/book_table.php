@@ -39,29 +39,51 @@ if ($guests > $table['capacity']) {
 }
 
 $date            = $data['date']             ?? date('Y-m-d');
-$time            = $data['time']             ?? '19:00';
+$time            = normalizeReservationTime($data['time'] ?? '19:00');
+$endTime         = normalizeReservationTime($data['end_time'] ?? '');
 $specialRequests = $data['special_requests'] ?? '';
 
-// Check for conflicting reservations (same table, same date & time)
+if (!$time) {
+    respond(['error' => 'Please choose a valid start time'], 400);
+}
+
+if (!$endTime) {
+    $endTime = (new DateTime($time))->modify('+1 hour')->format('H:i');
+}
+
+if ($endTime <= $time) {
+    respond(['error' => 'End time must be after start time'], 400);
+}
+
+// Check for conflicting reservations (same table, same date, overlapping start/end time)
 $conflictStmt = $pdo->prepare(
-    "SELECT id FROM reservations WHERE table_id = ? AND reserved_date = ? AND TIME_FORMAT(reserved_time, '%H:%i') = ? AND status NOT IN ('cancelled','rejected') LIMIT 1"
+    "SELECT id, TIME_FORMAT(reserved_time, '%H:%i') AS reserved_time, TIME_FORMAT(reserved_end_time, '%H:%i') AS reserved_end_time
+     FROM reservations
+     WHERE table_id = ?
+       AND reserved_date = ?
+       AND status NOT IN ('cancelled','rejected')
+       AND ? < TIME_FORMAT(reserved_end_time, '%H:%i')
+       AND ? > TIME_FORMAT(reserved_time, '%H:%i')
+     LIMIT 1"
 );
-$conflictStmt->execute([$tableId, $date, $time]);
+$conflictStmt->execute([$tableId, $date, $time, $endTime]);
 $conflict = $conflictStmt->fetch();
 
 if ($conflict) {
-    respond(['error' => 'Selected time slot is already occupied for this table. Please choose another time.'], 409);
+    respond([
+        'error' => 'Selected time overlaps an existing reservation: ' . formatReservationRange($conflict['reserved_time'], $conflict['reserved_end_time']) . '. Please choose another time.'
+    ], 409);
 }
 
 try {
     $pdo->beginTransaction();
 
-    // Insert reservation record (time-based)
+    // Insert reservation record (time-range based)
     $stmt = $pdo->prepare(
-        "INSERT INTO reservations (table_id, customer_id, reserved_date, reserved_time, guest_count, special_requests, status)
-         VALUES (?, ?, ?, ?, ?, ?, 'pending')"
+        "INSERT INTO reservations (table_id, customer_id, reserved_date, reserved_time, reserved_end_time, guest_count, special_requests, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')"
     );
-    $stmt->execute([$tableId, $customerId, $date, $time, $guests, $specialRequests]);
+    $stmt->execute([$tableId, $customerId, $date, $time, $endTime, $guests, $specialRequests]);
     $reservationId = $pdo->lastInsertId();
     $_SESSION['customer_reservation_ids'][] = (int) $reservationId;
 

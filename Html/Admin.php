@@ -332,7 +332,7 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
               }
 
               $reservationsStmt = $pdo->query(
-                "SELECT r.table_id, r.guest_count, r.reserved_date, r.reserved_time,
+                "SELECT r.table_id, r.guest_count, r.reserved_date, r.reserved_time, r.reserved_end_time,
                     u.name AS customer_name
                  FROM reservations r
                  LEFT JOIN users u ON u.id = r.customer_id
@@ -434,6 +434,9 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
                     $timeText = '';
                     if (!empty($reservation['reserved_time'])) {
                         $timeText = date('g:i A', strtotime($reservation['reserved_time']));
+                        if (!empty($reservation['reserved_end_time'])) {
+                          $timeText .= ' - ' . date('g:i A', strtotime($reservation['reserved_end_time']));
+                        }
                     }
                 ?>
                   <div class="table-card"
