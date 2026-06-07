@@ -292,66 +292,66 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
                 </button>
               </div>
 
-            <?php
-            require_once __DIR__ . '/../api/reservation_helpers.php';
-            ensureReservationsTable($pdo);
+              <?php
+              require_once __DIR__ . '/../api/reservation_helpers.php';
+              ensureReservationsTable($pdo);
 
-            $tablesStmt = $pdo->query(
-              "SELECT id, table_number, capacity, position, status, image_path
+              $tablesStmt = $pdo->query(
+                "SELECT id, table_number, capacity, position, status, image_path
                  FROM restaurant_tables
                  ORDER BY table_number"
-            );
-            $tables = $tablesStmt->fetchAll() ?: [];
+              );
+              $tables = $tablesStmt->fetchAll() ?: [];
 
-            $stats = [
-              'total' => count($tables),
-              'available' => 0,
-              'reserved' => 0,
-              'occupied' => 0,
-            ];
+              $stats = [
+                'total' => count($tables),
+                'available' => 0,
+                'reserved' => 0,
+                'occupied' => 0,
+              ];
 
-            foreach ($tables as $table) {
-              $status = $table['status'] ?? 'available';
-              if (isset($stats[$status])) {
-                $stats[$status]++;
+              foreach ($tables as $table) {
+                $status = $table['status'] ?? 'available';
+                if (isset($stats[$status])) {
+                  $stats[$status]++;
+                }
               }
-            }
 
-            $reservationsStmt = $pdo->query(
-              "SELECT r.table_id, r.guest_count, r.reserved_date, r.reserved_time, r.reserved_end_time,
+              $reservationsStmt = $pdo->query(
+                "SELECT r.table_id, r.guest_count, r.reserved_date, r.reserved_time, r.reserved_end_time,
                     u.name AS customer_name
                  FROM reservations r
                  LEFT JOIN users u ON u.id = r.customer_id
                  WHERE r.status = 'approved'
                  ORDER BY r.reserved_date DESC, r.reserved_time DESC"
-            );
-            $reservations = $reservationsStmt->fetchAll() ?: [];
-            $latestByTable = [];
-            foreach ($reservations as $reservation) {
-              $tableId = $reservation['table_id'] ?? null;
-              if ($tableId && !isset($latestByTable[$tableId])) {
-                $latestByTable[$tableId] = $reservation;
+              );
+              $reservations = $reservationsStmt->fetchAll() ?: [];
+              $latestByTable = [];
+              foreach ($reservations as $reservation) {
+                $tableId = $reservation['table_id'] ?? null;
+                if ($tableId && !isset($latestByTable[$tableId])) {
+                  $latestByTable[$tableId] = $reservation;
+                }
               }
-            }
 
-            $positionLabels = [
-              'window' => 'Window',
-              'center' => 'Center',
-              'corner' => 'Corner',
-              'outdoor' => 'Outdoor',
-              'entrance' => 'Near Entrance',
-            ];
+              $positionLabels = [
+                'window' => 'Window',
+                'center' => 'Center',
+                'corner' => 'Corner',
+                'outdoor' => 'Outdoor',
+                'entrance' => 'Near Entrance',
+              ];
 
-            $normalizeTableImagePath = function ($path) {
-              if (!$path) {
-                return '../Images/Table/4_people table.jpg';
-              }
-              if (strpos($path, 'http') === 0 || strpos($path, '../') === 0) {
-                return $path;
-              }
-              return '../' . ltrim($path, '/');
-            };
-            ?>
+              $normalizeTableImagePath = function ($path) {
+                if (!$path) {
+                  return '../Images/Table/4_people table.jpg';
+                }
+                if (strpos($path, 'http') === 0 || strpos($path, '../') === 0) {
+                  return $path;
+                }
+                return '../' . ltrim($path, '/');
+              };
+              ?>
 
               <!-- Stats Bar -->
               <div class="tables-stats">
