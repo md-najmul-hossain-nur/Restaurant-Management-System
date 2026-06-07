@@ -71,12 +71,14 @@ body {
 }
 
 .brand {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 3px;
-  border: 1px solid #fefeff;
-  padding: 7px 18px;
+  letter-spacing: 2px;
   color: #fefeff;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 4px 12px;
+  border-radius: 4px;
 }
 
 .top-right {
@@ -136,7 +138,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: start;
-  gap: 90px;
+  gap: 30px;
   padding: 15px 30px;
   background: rgba(20,22,18,0.35);
   border: 1px solid #fefeff;
@@ -878,3 +880,139 @@ flex-shrink: 0;
 color: var(--accent);
 font-size: 13px;
 }
+
+/* ==========================================
+   Project Responsive Overrides (Profile Page)
+   ========================================== */
+
+/* ── Tablets (≤ 1100px) ── */
+@media (max-width: 1100px) {
+  .dashboard, .outer-wrapper {
+    height: auto;
+    min-height: 100svh;
+    overflow-y: auto;
+  }
+
+  .outer-wrapper {
+    margin: 20px;
+    padding: 12px;
+  }
+
+  .navbar {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    gap: 12px;
+    padding: 10px 12px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    height: 60px;
+    margin-bottom: 5px;
+  }
+
+  .nav-item {
+    padding: 6px 14px;
+    font-size: 14px;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  .main-content {
+    overflow: visible;
+  }
+
+  .profile-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .profile-left {
+    flex-direction: column;
+  }
+
+  .profile-contacts {
+    justify-content: center;
+  }
+
+  .stats-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .stat-card {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .recent-orders-card {
+    width: 100%;
+  }
+
+  .form-modal, .settings-modal {
+    width: min(94vw, 540px);
+  }
+}
+
+/* ── Small Devices (≤ 768px) ── */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 20px;
+    height: 70px;
+  }
+
+  .brand {
+    font-size: 18px;
+    padding: 5px 12px;
+  }
+
+  .dashboard-label {
+    display: none;
+  }
+
+  .profile-name {
+    font-size: 20px;
+  }
+
+  .avatar-wrap, .avatar {
+    width: 70px;
+    height: 70px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Tiny Devices (≤ 480px) ── */
+@media (max-width: 480px) {
+  .outer-wrapper {
+    margin: 10px;
+    padding: 8px;
+  }
+
+  .nav-item {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+
+  .settings-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  .recent-thumb {
+    width: 50px;
+    height: 50px;
+  }
+
+  .recent-id {
+    font-size: 12px;
+  }
+}

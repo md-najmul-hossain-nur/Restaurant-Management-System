@@ -107,13 +107,14 @@ body {
 }
 
 .brand {
-  font-family: 'Poppins', sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 3px;
-  border: 1px solid #f5ede0;
-  padding: 7px 18px;
+  letter-spacing: 2px;
   color: #f5ede0;
+  text-transform: uppercase;
+  border: 1px solid rgba(245, 237, 224, 0.4);
+  padding: 4px 12px;
+  border-radius: 4px;
 }
 
 .top-right {
@@ -178,7 +179,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: start;
-  gap: 90px;
+  gap: 30px;
   padding: 15px 30px;
   background: rgba(20, 22, 18, 0.35);
   border: 1px solid #f5ede0;
@@ -1041,12 +1042,161 @@ body {
   transition: all 0.2s ease;
 }
 
-.payment-btn--primary {
-  background: var(--accent);
-  border-color: rgba(200, 169, 106, 0.45);
+/* ==========================================
+   Project Responsive Overrides (Customer Page)
+   ========================================== */
+
+/* ── Tablets (≤ 1100px) ── */
+@media (max-width: 1100px) {
+  .dashboard, .outer-wrapper {
+    height: auto;
+    min-height: 100svh;
+    overflow-y: auto;
+  }
+
+  .outer-wrapper {
+    margin: 20px;
+    padding: 12px;
+  }
+
+  .navbar {
+    position: relative !important; /* Override global absolute positioning from responsive.css */
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    gap: 12px;
+    padding: 10px 12px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    height: 60px;
+    margin-bottom: 5px;
+  }
+
+  .navbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-item {
+    padding: 6px 14px;
+    font-size: 14px;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  .main-layout {
+    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: visible;
+  }
+
+  .cart-panel {
+    width: 100%;
+    order: 2; /* Menu first, then cart */
+    position: static;
+    max-height: none;
+  }
+
+  .menu-section {
+    order: 1;
+    overflow: visible;
+  }
+
+  .menu-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    overflow: visible;
+  }
 }
 
-.payment-btn--primary:hover {
-  background: var(--accent-light);
-  border-color: var(--accent);
+/* ── Small Devices (≤ 768px) ── */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 20px;
+    height: 70px;
+  }
+
+  .brand {
+    font-size: 18px;
+    padding: 5px 12px;
+  }
+
+  .dashboard-label {
+    display: none; /* Hide label on mobile to save space */
+  }
+
+  .category-bar {
+    gap: 12px;
+    padding: 0 15px;
+  }
+
+  .cat-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+
+  .menu-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .customize-modal, .payment-modal {
+    width: 95vw;
+    padding: 15px;
+  }
 }
+
+/* ── Tiny Devices (≤ 480px) ── */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0 15px;
+  }
+
+  .brand {
+    font-size: 16px;
+    letter-spacing: 2px;
+  }
+
+  .outer-wrapper {
+    margin: 10px;
+    padding: 8px;
+  }
+
+  .navbar {
+    padding: 8px 10px;
+  }
+
+  .nav-item {
+    font-size: 13px;
+    padding: 6px 12px;
+    gap: 8px;
+  }
+
+  .category-bar {
+    height: 48px;
+  }
+
+  .menu-grid {
+    grid-template-columns: 1fr; /* Single column for best readability on tiny phones */
+    gap: 12px;
+  }
+
+  .menu-card {
+    min-height: auto;
+  }
+
+  .card-img {
+    height: 140px;
+  }
+
+  .card-name, .card-price {
+    font-size: 14px;
+  }
+
+  .add-btn {
+    width: 100%; /* Full width button on very small screens */
+  }
+}
