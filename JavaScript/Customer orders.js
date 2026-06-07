@@ -77,6 +77,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
+  // ── Load tables from DB ────────────────────────────
+  async function loadTables() {
+    const tableSelect = document.getElementById('orderTable');
+    if (!tableSelect) return;
+
+    try {
+      const res = await fetch('../api/get_tables.php');
+      if (!res.ok) throw new Error('Failed to load tables');
+      const tables = await res.json();
+
+      tableSelect.innerHTML = '<option value="">— No table / Takeaway —</option>';
+      tables.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `Table ${t.table_number} (${t.capacity} seats) — ${t.status}`;
+        if (t.status === 'occupied') opt.disabled = true;
+        tableSelect.appendChild(opt);
+      });
+    } catch (err) {
+      console.error(err);
+      tableSelect.innerHTML = '<option value="">Could not load tables</option>';
+    }
+  }
+
   // ── Render selected items list ─────────────────────────
   function renderItems() {
     itemsList.innerHTML = '';
@@ -251,6 +275,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (welcomeEl) {
       welcomeEl.classList.remove('hidden');
       welcomeEl.textContent = 'Ordering as guest';
+    }
+
+    // Guests can't choose tables (per user request)
+    const tableContainer = document.getElementById('tableFieldContainer');
+    if (tableContainer) tableContainer.classList.add('hidden');
+  }
+
+  // If customer or waiter, show and load tables
+  if (user && (user.role === 'customer' || user.role === 'waiter')) {
+    const tableContainer = document.getElementById('tableFieldContainer');
+    if (tableContainer) {
+      tableContainer.classList.remove('hidden');
+      await loadTables();
     }
   }
 

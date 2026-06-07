@@ -40,17 +40,25 @@ document.addEventListener('DOMContentLoaded', () => {
           body: JSON.stringify({ action: nextOut ? 'out' : 'in' }),
         });
       } catch {
-        showToast('Clock update failed');
+        showToast('Clock update failed', true);
       }
     });
   }
 
   // ── Toast ─────────────────────────────────────────────────
-  function showToast(msg) {
+  function showToast(msg, isError = false) {
     const toast   = document.getElementById('successToast');
     const msgSpan = toast?.querySelector('.toast-msg');
     if (!toast) return;
     if (msgSpan) msgSpan.textContent = msg;
+    const icon    = toast?.querySelector('.toast-icon i');
+    if (isError) {
+      toast.classList.add('error');
+      if (icon) icon.className = 'fas fa-exclamation-triangle';
+    } else {
+      toast.classList.remove('error');
+      if (icon) icon.className = 'fas fa-check';
+    }
     toast.classList.add('show');
     clearTimeout(toast._t);
     toast._t = setTimeout(() => toast.classList.remove('show'), 2500);
@@ -153,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
       updateTableCounts();
       ensureEmptyCard(myTablesGrid, 'No assigned tables');
       ensureEmptyCard(availTablesGrid, 'No available tables');
-      showToast('Table release failed');
+      showToast('Table release failed', true);
       return;
     }
 
@@ -196,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
       updateTableCounts();
       ensureEmptyCard(myTablesGrid, 'No assigned tables');
       ensureEmptyCard(availTablesGrid, 'No available tables');
-      showToast('Table assign failed');
+      showToast('Table assign failed', true);
       return;
     }
 
@@ -424,10 +432,10 @@ document.addEventListener('DOMContentLoaded', () => {
           appendOrderCard(result.order_id, select.value, itemsSnapshot);
           updateOrderStats();
         } else {
-          showToast(result.error || 'Failed to place order');
+          showToast(result.error || 'Failed to place order', true);
         }
       } catch {
-        showToast('Network error. Try again.');
+        showToast('Network error. Try again.', true);
       } finally {
         placeBtn.disabled    = false;
         placeBtn.textContent = 'Place Order';
@@ -515,8 +523,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('displayLocation').textContent = address || '';
         closeOverlay('editProfile');
         showToast('Profile updated!');
-      } else { showToast(result.error || 'Failed'); }
-    } catch { showToast('Network error.'); }
+      } else { showToast(result.error || 'Failed', true); }
+    } catch { showToast('Network error.', true); }
   });
 
   // Change password
@@ -540,8 +548,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('inputConfirmPwd').value = '';
         closeOverlay('editPassword');
         showToast('Password changed!');
-      } else { showToast(result.error || 'Failed'); }
-    } catch { showToast('Network error.'); }
+      } else { showToast(result.error || 'Failed', true); }
+    } catch { showToast('Network error.', true); }
   });
 
   // Password toggles

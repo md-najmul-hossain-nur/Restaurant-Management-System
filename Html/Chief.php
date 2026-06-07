@@ -401,11 +401,11 @@ function formatOrderStatus($status) {
         </div>
       </div>
 
-      <img class="recipe-img-preview" id="recipeImagePreview" alt="Recipe preview" hidden />
+      <img class="recipe-preview" id="recipeImagePreview" alt="Recipe preview" style="display: none;" />
 
       <div class="recipe-form-footer">
-        <button class="recipe-btn-add" type="submit">Add Recipe</button>
-        <button class="recipe-btn-cancel" type="button" data-recipe-close>Cancel</button>
+        <button class="order-place-btn recipe-btn-add" type="submit">Add Recipe</button>
+        <button class="order-cancel-btn recipe-btn-cancel" type="button" data-recipe-close>Cancel</button>
       </div>
 
     </form>

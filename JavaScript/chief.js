@@ -166,7 +166,13 @@ document.addEventListener('DOMContentLoaded', () => {
     recipeModal.setAttribute('inert', '');
     editingCard = null;
     addRecipeForm?.reset();
-    if (previewImg) { previewImg.src = ''; previewImg.hidden = true; }
+    if (previewImg) {
+      if (previewImg.src && previewImg.src.startsWith('blob:')) {
+        URL.revokeObjectURL(previewImg.src);
+      }
+      previewImg.src = '';
+      previewImg.style.display = 'none';
+    }
     const heading = recipeModal.querySelector('.recipe-modal-heading');
     if (heading) heading.innerHTML = '<i class="fas fa-bowl-food"></i> Add Recipe';
     const submitBtn = recipeModal.querySelector('[type="submit"]');
@@ -187,8 +193,12 @@ document.addEventListener('DOMContentLoaded', () => {
   imageFileInput?.addEventListener('change', () => {
     const file = imageFileInput.files[0];
     if (!file || !previewImg) return;
-    previewImg.src    = URL.createObjectURL(file);
-    previewImg.hidden = false;
+    if (previewImg.src && previewImg.src.startsWith('blob:')) {
+      URL.revokeObjectURL(previewImg.src);
+    }
+    const url = URL.createObjectURL(file);
+    previewImg.src    = url;
+    previewImg.style.display = 'block';
   });
 
   // ★ Edit button on existing recipe cards
@@ -202,10 +212,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleEl = card.querySelector('.card-title');
     const descEl  = card.querySelector('.recipe-desc');
     const priceEl = card.querySelector('.recipe-price');
+    const imgEl   = card.querySelector('.order-image');
 
     document.getElementById('recipeName').value    = titleEl?.textContent || '';
     document.getElementById('recipeDetails').value = (descEl?.textContent || '').replace('Details: ', '');
-    document.getElementById('recipePrice').value   = parseFloat(priceEl?.textContent) || '';
+    document.getElementById('recipePrice').value   = parseFloat(priceEl?.textContent.replace('$', '')) || '';
+
+    // Show current image in preview
+    if (imgEl && previewImg) {
+      previewImg.src = imgEl.src;
+      previewImg.style.display = 'block';
+    }
 
     const heading = recipeModal.querySelector('.recipe-modal-heading');
     if (heading) heading.innerHTML = '<i class="fas fa-bowl-food"></i> Edit Recipe';

@@ -77,8 +77,13 @@ try {
 
     // Mark table occupied if selected
     if ($tableId !== null) {
+        $role = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+        // If it's a customer, set active_customer_id to their ID.
+        // If it's a waiter, active_customer_id remains null (guest or walk-in).
+        $activeCustId = ($role === 'customer') ? $userId : null;
+
         $pdo->prepare("UPDATE restaurant_tables SET status = 'occupied', active_customer_id = ? WHERE id = ?")
-            ->execute([$userId ?: null, $tableId]);
+            ->execute([$activeCustId, $tableId]);
     }
 
     $pdo->commit();

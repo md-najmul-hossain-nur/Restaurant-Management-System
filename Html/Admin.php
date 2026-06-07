@@ -41,10 +41,8 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
     <header class="topbar">
       <div class="brand">Feliciano</div>
       <div class="top-right">
-        <div class="admin-title">Admin<br>Dashboard</div>
-        <div class="logout" onclick="window.location.href='login.html'">
-          <img src="../Images/logout.png" alt="Logout" class="logout-icon">
-         </div>
+        <div class="admin-title">Admin Dashboard</div>
+        <div class="logout" onclick="window.location.href='login.html'"></div>
       </div>
     </header>
 
@@ -666,6 +664,11 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
     </div>
     <!-- /outer-wrapper -->
 
+    <div class="success-toast" id="adminToast" role="status" aria-live="polite">
+      <span class="toast-icon"><i class="fas fa-check"></i></span>
+      <span class="toast-msg">Action Successful</span>
+    </div>
+
   </div>
   <!-- Add Employee Modal -->
   <div class="modal" id="addEmployeeModal">
@@ -840,7 +843,7 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
     </div>
   </div>
 
-   
+
   <script src="../JavaScript/admin.js"></script>
 </body>
 </html>
