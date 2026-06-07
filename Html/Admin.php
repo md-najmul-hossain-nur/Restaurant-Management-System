@@ -26,28 +26,41 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Feliciano — Admin Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../CSS/admin.css" />
-  <link rel="stylesheet" href="../CSS/responsive.css">
 </head>
+
 <body>
   <div class="dashboard">
     <!-- Topbar -->
     <header class="topbar">
       <div class="brand">Feliciano</div>
       <div class="top-right">
-        <div class="admin-title">Admin Dashboard</div>
-        <div class="logout" onclick="window.location.href='login.html'"></div>
+        <div class="admin-title">Admin<br>Dashboard</div>
+        <div class="logout" onclick="window.location.href='login.html'">
+          <img src="../Images/logout.png" alt="Logout" class="logout-icon">
+        </div>
       </div>
     </header>
 
     <!-- Outer glass wrapper -->
     <div class="outer-wrapper">
+
+      <!-- Hero -->
+      <section class="panel hero">
+        <div>
+          <p class="eyebrow">Executive Control Center</p>
+          <h1 class="page-title" id="globalPageTitle">Overview</h1>
+          <p class="page-subtitle" id="globalPageSubtitle">Manage your restaurant performance, employees, and services
+            from one central dashboard.</p>
+        </div>
+      </section>
 
       <!-- Navbar / Tabs -->
       <nav class="navbar">
@@ -87,8 +100,7 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
         <!-- ===================== OVERVIEW ===================== -->
         <div class="section-content active" id="overview">
 
-          <h1 class="page-title">Overview</h1>
-          <p class="page-subtitle">Restaurant performance at a glance</p>
+          <!-- Global hero handles the title now -->
 
           <div class="stats">
             <div class="card">
@@ -121,36 +133,6 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
             </div>
           </div>
 
-          <section class="quick-actions">
-            <h2>Quick Actions</h2>
-            <div class="sub">Use the tabs above to manage different aspects of the restaurant</div>
-            <div class="actions-grid">
-              <div class="action-btn" onclick="switchTab('employees'); openModal('addEmployeeModal');">
-                <i class="fas fa-user-plus"></i>
-                <span>Add Employee</span>
-              </div>
-              <div class="action-btn" onclick="switchTab('customer')">
-                <i class="fas fa-user-check"></i>
-                <span>Approve Customer</span>
-              </div>
-              <div class="action-btn" onclick="switchTab('chat')">
-                <i class="fas fa-comments"></i>
-                <span>Chat</span>
-              </div>
-              <div class="action-btn" onclick="switchTab('reports')">
-                  <i class="fas fa-chart-bar"></i>
-                <span>View Reports</span>
-              </div>
-              <div class="action-btn" onclick="switchTab('tables'); openModal('addTableModal');">
-                <i class="fas fa-chair"></i>
-                <span>Manage Tables</span>
-              </div>
-              <div class="action-btn" onclick="switchTab('menu')">
-                <i class="fas fa-utensils"></i>
-                <span>Approve Menu Items</span>
-              </div>
-            </div>
-          </section>
         </div>
 
         <!-- ===================== EMPLOYEES ===================== -->
@@ -170,7 +152,7 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
             <?php
             // Fetch employees (chiefs and waiters) from DB
             $stmt = $pdo->prepare(
-                "SELECT u.id, u.name, u.email, u.role, COALESCE(u.created_at, NOW()) AS created_at,
+              "SELECT u.id, u.name, u.email, u.role, COALESCE(u.created_at, NOW()) AS created_at,
                   c.certificate_path, w.shift,
                   COALESCE(c.is_clocked_in, w.is_clocked_in, 0) AS is_clocked_in,
                   COALESCE(c.last_clock_in, w.last_clock_in) AS last_clock_in,
@@ -185,45 +167,50 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
             $employees = $stmt->fetchAll();
 
             if (!$employees) {
-                echo '<div class="employee-empty">No employees yet.</div>';
+              echo '<div class="employee-empty">No employees yet.</div>';
             } else {
-                foreach ($employees as $emp) {
-                  $addedTs = $emp['created_at'] ? strtotime($emp['created_at']) : time();
-                  $added = htmlspecialchars(date('c', $addedTs));
-                  $name  = htmlspecialchars($emp['name']);
-                  $email = htmlspecialchars($emp['email']);
-                  $role  = htmlspecialchars($emp['role']);
-                  $roleLabel = $role === 'chief' ? 'Chef' : 'Waiter';
-                  $isClocked = 0;
-                  $lastClock = null;
-                  $lastClockOut = null;
-                  if (!empty($emp['is_clocked_in'])) $isClocked = (int)$emp['is_clocked_in'];
-                  if (!empty($emp['last_clock_in'])) $lastClock = htmlspecialchars(date('c', strtotime($emp['last_clock_in'])));
-                  if (!empty($emp['last_clock_out'])) $lastClockOut = htmlspecialchars(date('c', strtotime($emp['last_clock_out'])));
+              foreach ($employees as $emp) {
+                $addedTs = $emp['created_at'] ? strtotime($emp['created_at']) : time();
+                $added = htmlspecialchars(date('c', $addedTs));
+                $name = htmlspecialchars($emp['name']);
+                $email = htmlspecialchars($emp['email']);
+                $role = htmlspecialchars($emp['role']);
+                $roleLabel = $role === 'chief' ? 'Chef' : 'Waiter';
+                $isClocked = 0;
+                $lastClock = null;
+                $lastClockOut = null;
+                if (!empty($emp['is_clocked_in']))
+                  $isClocked = (int) $emp['is_clocked_in'];
+                if (!empty($emp['last_clock_in']))
+                  $lastClock = htmlspecialchars(date('c', strtotime($emp['last_clock_in'])));
+                if (!empty($emp['last_clock_out']))
+                  $lastClockOut = htmlspecialchars(date('c', strtotime($emp['last_clock_out'])));
 
-                  $dataAttrs = "data-added=\"{$added}\"";
-                  if ($isClocked && $lastClock) $dataAttrs .= " data-clock-in=\"{$lastClock}\" data-clocked=\"1\"";
-                  if (!$isClocked && $lastClockOut) $dataAttrs .= " data-clock-out=\"{$lastClockOut}\" data-clocked=\"0\"";
+                $dataAttrs = "data-added=\"{$added}\"";
+                if ($isClocked && $lastClock)
+                  $dataAttrs .= " data-clock-in=\"{$lastClock}\" data-clocked=\"1\"";
+                if (!$isClocked && $lastClockOut)
+                  $dataAttrs .= " data-clock-out=\"{$lastClockOut}\" data-clocked=\"0\"";
 
-                  echo "<div class=\"employee-card\" {$dataAttrs}>";
-                  echo "  <div class=\"employee-info\">";
-                  echo "    <h4>{$name}</h4>";
-                  echo "    <p>{$email}</p>";
-                  echo "    <div class=\"status-badges\">";
-                  if ($isClocked) {
-                    echo "      <span class=\"badge clocked-in\"><i class=\"fas fa-check-circle\"></i> Working</span>";
-                  } else {
-                    echo "      <span class=\"badge clocked-out\"><i class=\"fas fa-clock\"></i> Clocked Out</span>";
-                  }
-                  echo "      <span class=\"badge approved\"><i class=\"fas fa-check\"></i> Approved</span>";
-                  echo "    </div>";
-                  echo "    <div class=\"employee-time\"><span class=\"time-label\"></span> <span class=\"time-value\"></span></div>";
-                  echo "  </div>";
-                  echo "  <div class=\"employee-actions\">";
-                  echo "    <span class=\"role-badge {$role}\">{$roleLabel}</span>";
-                  echo "  </div>";
-                  echo "</div>";
+                echo "<div class=\"employee-card\" {$dataAttrs}>";
+                echo "  <div class=\"employee-info\">";
+                echo "    <h4>{$name}</h4>";
+                echo "    <p>{$email}</p>";
+                echo "    <div class=\"status-badges\">";
+                if ($isClocked) {
+                  echo "      <span class=\"badge clocked-in\"><i class=\"fas fa-check-circle\"></i> Working</span>";
+                } else {
+                  echo "      <span class=\"badge clocked-out\"><i class=\"fas fa-clock\"></i> Clocked Out</span>";
                 }
+                echo "      <span class=\"badge approved\"><i class=\"fas fa-check\"></i> Approved</span>";
+                echo "    </div>";
+                echo "    <div class=\"employee-time\"><span class=\"time-label\"></span> <span class=\"time-value\"></span></div>";
+                echo "  </div>";
+                echo "  <div class=\"employee-actions\">";
+                echo "    <span class=\"role-badge {$role}\">{$roleLabel}</span>";
+                echo "  </div>";
+                echo "</div>";
+              }
             }
             ?>
           </div>
@@ -237,7 +224,7 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
               <p class="sub">Approve or reject customer account requests</p>
             </div>
 
-            <div class="customer-block">
+            <div class="customer-block panel">
               <h3>Pending Approvals (<span id="pendingCount">0</span>)</h3>
               <div class="customer-requests" id="pendingCustomers">
                 <div class="customer-request empty-state">
@@ -246,7 +233,7 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
               </div>
             </div>
 
-            <div class="customer-block">
+            <div class="customer-block panel">
               <h3>Approved Customers (<span id="approvedCount">0</span>)</h3>
               <div class="approved-customers" id="approvedCustomers">
                 <div class="customer-request approved empty-state">
@@ -293,101 +280,103 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
 
         <!-- ===================== TABLES ===================== -->
         <div class="section-content" id="tables">
-          <div class="tables-panel">
-            <div class="tables-header">
-              <div>
-                <h2>Table Management</h2>
-                <p class="sub">Add and manage restaurant tables</p>
+          <div class="tables-dashboard">
+            <div class="tables-header-section">
+              <div class="tables-header">
+                <div>
+                  <h2>Table Management</h2>
+                  <p class="sub">Add and manage restaurant tables</p>
+                </div>
+                <button type="button" class="add-btn" id="openAddTable">
+                  <i class="fas fa-plus"></i> Add Table
+                </button>
               </div>
-              <button type="button" class="add-table-btn" id="openAddTable">
-                <i class="fas fa-plus"></i> Add Table
-              </button>
-            </div>
 
-              <?php
-              require_once __DIR__ . '/../api/reservation_helpers.php';
-              ensureReservationsTable($pdo);
+            <?php
+            require_once __DIR__ . '/../api/reservation_helpers.php';
+            ensureReservationsTable($pdo);
 
-              $tablesStmt = $pdo->query(
-                "SELECT id, table_number, capacity, position, status, image_path
+            $tablesStmt = $pdo->query(
+              "SELECT id, table_number, capacity, position, status, image_path
                  FROM restaurant_tables
                  ORDER BY table_number"
-              );
-              $tables = $tablesStmt->fetchAll() ?: [];
+            );
+            $tables = $tablesStmt->fetchAll() ?: [];
 
-              $stats = [
-                'total' => count($tables),
-                'available' => 0,
-                'reserved' => 0,
-                'occupied' => 0,
-              ];
+            $stats = [
+              'total' => count($tables),
+              'available' => 0,
+              'reserved' => 0,
+              'occupied' => 0,
+            ];
 
-              foreach ($tables as $table) {
-                $status = $table['status'] ?? 'available';
-                if (isset($stats[$status])) {
-                  $stats[$status]++;
-                }
+            foreach ($tables as $table) {
+              $status = $table['status'] ?? 'available';
+              if (isset($stats[$status])) {
+                $stats[$status]++;
               }
+            }
 
-              $reservationsStmt = $pdo->query(
-                "SELECT r.table_id, r.guest_count, r.reserved_date, r.reserved_time, r.reserved_end_time,
+            $reservationsStmt = $pdo->query(
+              "SELECT r.table_id, r.guest_count, r.reserved_date, r.reserved_time, r.reserved_end_time,
                     u.name AS customer_name
                  FROM reservations r
                  LEFT JOIN users u ON u.id = r.customer_id
                  WHERE r.status = 'approved'
                  ORDER BY r.reserved_date DESC, r.reserved_time DESC"
-              );
-              $reservations = $reservationsStmt->fetchAll() ?: [];
-              $latestByTable = [];
-              foreach ($reservations as $reservation) {
-                $tableId = $reservation['table_id'] ?? null;
-                if ($tableId && !isset($latestByTable[$tableId])) {
-                  $latestByTable[$tableId] = $reservation;
-                }
+            );
+            $reservations = $reservationsStmt->fetchAll() ?: [];
+            $latestByTable = [];
+            foreach ($reservations as $reservation) {
+              $tableId = $reservation['table_id'] ?? null;
+              if ($tableId && !isset($latestByTable[$tableId])) {
+                $latestByTable[$tableId] = $reservation;
               }
+            }
 
-              $positionLabels = [
-                'window' => 'Window',
-                'center' => 'Center',
-                'corner' => 'Corner',
-                'outdoor' => 'Outdoor',
-                'entrance' => 'Near Entrance',
-              ];
+            $positionLabels = [
+              'window' => 'Window',
+              'center' => 'Center',
+              'corner' => 'Corner',
+              'outdoor' => 'Outdoor',
+              'entrance' => 'Near Entrance',
+            ];
 
-              $normalizeTableImagePath = function ($path) {
-                if (!$path) {
-                  return '../Images/Table/4_people table.jpg';
-                }
-                if (strpos($path, 'http') === 0 || strpos($path, '../') === 0) {
-                  return $path;
-                }
-                return '../' . ltrim($path, '/');
-              };
-              ?>
+            $normalizeTableImagePath = function ($path) {
+              if (!$path) {
+                return '../Images/Table/4_people table.jpg';
+              }
+              if (strpos($path, 'http') === 0 || strpos($path, '../') === 0) {
+                return $path;
+              }
+              return '../' . ltrim($path, '/');
+            };
+            ?>
 
-            <!-- Stats Bar -->
-            <div class="tables-stats">
-              <div class="stat-item">
-                <div class="stat-label">Total Tables</div>
-                <div class="stat-value" id="statTotal"><?php echo (int) $stats['total']; ?></div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">Available</div>
-                <div class="stat-value available" id="statAvailable"><?php echo (int) $stats['available']; ?></div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">Reserved</div>
-                <div class="stat-value reserved" id="statReserved"><?php echo (int) $stats['reserved']; ?></div>
-              </div>
-              <div class="stat-item">
-                <div class="stat-label">Occupied</div>
-                <div class="stat-value occupied" id="statOccupied"><?php echo (int) $stats['occupied']; ?></div>
+              <!-- Stats Bar -->
+              <div class="tables-stats">
+                <div class="stat-item">
+                  <div class="stat-label">Total Tables</div>
+                  <div class="stat-value" id="statTotal"><?php echo (int) $stats['total']; ?></div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Available</div>
+                  <div class="stat-value available" id="statAvailable"><?php echo (int) $stats['available']; ?></div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Reserved</div>
+                  <div class="stat-value reserved" id="statReserved"><?php echo (int) $stats['reserved']; ?></div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-label">Occupied</div>
+                  <div class="stat-value occupied" id="statOccupied"><?php echo (int) $stats['occupied']; ?></div>
+                </div>
               </div>
             </div>
 
-            <div class="reservation-approval-panel">
+            <div class="reservation-approval-panel panel">
               <div class="reservation-approval-header">
-                <h3>Reservation Requests</h3>
+                <h3><i class="fas fa-calendar-check"></i> Reservation Requests</h3>
                 <p class="sub">Approve or reject customer table bookings</p>
               </div>
               <div class="reservation-requests" id="reservationRequests"></div>
@@ -418,34 +407,32 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
                 </div>
               <?php } else { ?>
                 <?php foreach ($tables as $table) {
-                    $tableId = (int) $table['id'];
-                    $tableNumber = (int) $table['table_number'];
-                    $capacity = (int) $table['capacity'];
-                    $position = strtolower(trim($table['position'] ?? ''));
-                    $status = strtolower(trim($table['status'] ?? 'available'));
-                    $imageSrc = $normalizeTableImagePath($table['image_path'] ?? '');
-                    $posLabel = $positionLabels[$position] ?? ($position ? ucwords($position) : 'Unknown');
-                    $reservation = $latestByTable[$tableId] ?? null;
+                  $tableId = (int) $table['id'];
+                  $tableNumber = (int) $table['table_number'];
+                  $capacity = (int) $table['capacity'];
+                  $position = strtolower(trim($table['position'] ?? ''));
+                  $status = strtolower(trim($table['status'] ?? 'available'));
+                  $imageSrc = $normalizeTableImagePath($table['image_path'] ?? '');
+                  $posLabel = $positionLabels[$position] ?? ($position ? ucwords($position) : 'Unknown');
+                  $reservation = $latestByTable[$tableId] ?? null;
 
-                    $guestName = $reservation['customer_name'] ?? 'Customer';
-                    $guestCount = $reservation['guest_count'] ?? '';
-                    $timeText = '';
-                    if (!empty($reservation['reserved_time'])) {
-                        $timeText = date('g:i A', strtotime($reservation['reserved_time']));
-                        if (!empty($reservation['reserved_end_time'])) {
-                          $timeText .= ' - ' . date('g:i A', strtotime($reservation['reserved_end_time']));
-                        }
+                  $guestName = $reservation['customer_name'] ?? 'Customer';
+                  $guestCount = $reservation['guest_count'] ?? '';
+                  $timeText = '';
+                  if (!empty($reservation['reserved_time'])) {
+                    $timeText = date('g:i A', strtotime($reservation['reserved_time']));
+                    if (!empty($reservation['reserved_end_time'])) {
+                      $timeText .= ' - ' . date('g:i A', strtotime($reservation['reserved_end_time']));
                     }
-                ?>
-                  <div class="table-card"
-                       data-table-id="<?php echo $tableId; ?>"
-                       data-table-number="<?php echo $tableNumber; ?>"
-                       data-capacity="<?php echo $capacity; ?>"
-                       data-status="<?php echo htmlspecialchars($status); ?>"
-                       data-position="<?php echo htmlspecialchars($position); ?>"
-                       data-guest="<?php echo htmlspecialchars($guestName); ?>"
-                       data-time="<?php echo htmlspecialchars($timeText); ?>"
-                       data-guests="<?php echo htmlspecialchars((string) $guestCount); ?>">
+                  }
+                  ?>
+                  <div class="table-card" data-table-id="<?php echo $tableId; ?>"
+                    data-table-number="<?php echo $tableNumber; ?>" data-capacity="<?php echo $capacity; ?>"
+                    data-status="<?php echo htmlspecialchars($status); ?>"
+                    data-position="<?php echo htmlspecialchars($position); ?>"
+                    data-guest="<?php echo htmlspecialchars($guestName); ?>"
+                    data-time="<?php echo htmlspecialchars($timeText); ?>"
+                    data-guests="<?php echo htmlspecialchars((string) $guestCount); ?>">
                     <div class="table-header-row">
                       <span class="position-badge"><?php echo htmlspecialchars($posLabel); ?></span>
                       <div class="table-actions">
@@ -492,38 +479,39 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
               <p class="sub">Approve new menu items from chefs</p>
             </div>
 
-          <?php
-          $pendingStmt = $pdo->query(
-            "SELECT id, name, description, price, category, image_path
+            <?php
+            $pendingStmt = $pdo->query(
+              "SELECT id, name, description, price, category, image_path
              FROM recipes
              WHERE status = 'pending'
              ORDER BY created_at DESC"
-          );
-          $pendingMenu = $pendingStmt->fetchAll() ?: [];
+            );
+            $pendingMenu = $pendingStmt->fetchAll() ?: [];
 
-          $approvedStmt = $pdo->query(
-            "SELECT id, name, description, price, category, image_path
+            $approvedStmt = $pdo->query(
+              "SELECT id, name, description, price, category, image_path
              FROM recipes
              WHERE status = 'approved'
              ORDER BY created_at DESC"
-          );
-          $approvedMenu = $approvedStmt->fetchAll() ?: [];
+            );
+            $approvedMenu = $approvedStmt->fetchAll() ?: [];
 
-          $normalizeMenuImagePath = function ($path) {
-            if (!$path) {
-              return '../Images/food/main%20cross/pexels-campbell-downie-3549547-5317239.jpg';
-            }
-            if (strpos($path, 'http') === 0 || strpos($path, '../') === 0) {
-              return $path;
-            }
-            return '../' . ltrim($path, '/');
-          };
-          ?>
+            $normalizeMenuImagePath = function ($path) {
+              if (!$path) {
+                return '../Images/food/main%20cross/pexels-campbell-downie-3549547-5317239.jpg';
+              }
+              if (strpos($path, 'http') === 0 || strpos($path, '../') === 0) {
+                return $path;
+              }
+              return '../' . ltrim($path, '/');
+            };
+            ?>
 
             <div class="menu-block">
               <h3>
                 <span class="menu-dot" aria-hidden="true"></span>
-                <span class="menu-heading-text">Pending Approval (<span id="pendingMenuCount"><?php echo count($pendingMenu); ?></span>)</span>
+                <span class="menu-heading-text">Pending Approval (<span
+                    id="pendingMenuCount"><?php echo count($pendingMenu); ?></span>)</span>
               </h3>
               <div class="menu-grid" id="pendingMenuItems">
                 <?php if (!$pendingMenu) { ?>
@@ -534,13 +522,13 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
                   </div>
                 <?php } else { ?>
                   <?php foreach ($pendingMenu as $item) {
-                      $menuId = (int) $item['id'];
-                      $name = htmlspecialchars($item['name'] ?? '');
-                      $desc = htmlspecialchars($item['description'] ?? '');
-                      $price = number_format((float) ($item['price'] ?? 0), 2);
-                      $category = htmlspecialchars($item['category'] ?? '');
-                      $imageSrc = htmlspecialchars($normalizeMenuImagePath($item['image_path'] ?? ''));
-                  ?>
+                    $menuId = (int) $item['id'];
+                    $name = htmlspecialchars($item['name'] ?? '');
+                    $desc = htmlspecialchars($item['description'] ?? '');
+                    $price = number_format((float) ($item['price'] ?? 0), 2);
+                    $category = htmlspecialchars($item['category'] ?? '');
+                    $imageSrc = htmlspecialchars($normalizeMenuImagePath($item['image_path'] ?? ''));
+                    ?>
                     <div class="menu-card pending" data-menu-id="<?php echo $menuId; ?>">
                       <div class="menu-thumb">
                         <img src="<?php echo $imageSrc; ?>" alt="<?php echo $name; ?>" />
@@ -569,7 +557,8 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
             <div class="menu-block">
               <h3>
                 <span class="menu-check-icon" aria-hidden="true"><i class="fas fa-check"></i></span>
-                <span class="menu-heading-text">Approved Menu Items (<span id="approvedMenuCount"><?php echo count($approvedMenu); ?></span>)</span>
+                <span class="menu-heading-text">Approved Menu Items (<span
+                    id="approvedMenuCount"><?php echo count($approvedMenu); ?></span>)</span>
               </h3>
               <div class="menu-grid approved" id="approvedMenuItems">
                 <?php if (!$approvedMenu) { ?>
@@ -580,13 +569,13 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
                   </div>
                 <?php } else { ?>
                   <?php foreach ($approvedMenu as $item) {
-                      $menuId = (int) $item['id'];
-                      $name = htmlspecialchars($item['name'] ?? '');
-                      $desc = htmlspecialchars($item['description'] ?? '');
-                      $price = number_format((float) ($item['price'] ?? 0), 2);
-                      $category = htmlspecialchars($item['category'] ?? '');
-                      $imageSrc = htmlspecialchars($normalizeMenuImagePath($item['image_path'] ?? ''));
-                  ?>
+                    $menuId = (int) $item['id'];
+                    $name = htmlspecialchars($item['name'] ?? '');
+                    $desc = htmlspecialchars($item['description'] ?? '');
+                    $price = number_format((float) ($item['price'] ?? 0), 2);
+                    $category = htmlspecialchars($item['category'] ?? '');
+                    $imageSrc = htmlspecialchars($normalizeMenuImagePath($item['image_path'] ?? ''));
+                    ?>
                     <div class="menu-card approved" data-menu-id="<?php echo $menuId; ?>">
                       <div class="menu-thumb">
                         <img src="<?php echo $imageSrc; ?>" alt="<?php echo $name; ?>" />
@@ -664,11 +653,6 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
     </div>
     <!-- /outer-wrapper -->
 
-    <div class="success-toast" id="adminToast" role="status" aria-live="polite">
-      <span class="toast-icon"><i class="fas fa-check"></i></span>
-      <span class="toast-msg">Action Successful</span>
-    </div>
-
   </div>
   <!-- Add Employee Modal -->
   <div class="modal" id="addEmployeeModal">
@@ -677,7 +661,8 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
         <h3>Add New Employee</h3>
         <button type="button" class="modal-close" aria-label="Close">&times;</button>
       </div>
-          <form id="employeeForm" class="employee-form" action="../api/add_employee.php" method="post" enctype="multipart/form-data">
+      <form id="employeeForm" class="employee-form" action="../api/add_employee.php" method="post"
+        enctype="multipart/form-data">
         <div class="form-row-flex">
           <div class="form-group">
             <label for="fullName">Full Name</label>
@@ -688,13 +673,13 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
             <input type="email" id="email" name="email" placeholder="Enter email" required>
           </div>
         </div>
-          <div class="form-row-flex">
+        <div class="form-row-flex">
           <div class="form-group">
             <label for="employeeRole">Role</label>
             <select id="employeeRole" name="role">
               <option value="">Select Role</option>
               <option value="waiter">Waiter</option>
-                <option value="chief">Chef</option>
+              <option value="chief">Chef</option>
             </select>
           </div>
           <div class="form-group">
@@ -844,6 +829,13 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
   </div>
 
 
+  <!-- Success Toast -->
+  <div class="success-toast" id="adminToast">
+    <div class="toast-icon"><i class="fas fa-check"></i></div>
+    <div class="toast-msg">Action Completed!</div>
+  </div>
+
   <script src="../JavaScript/admin.js"></script>
 </body>
+
 </html>

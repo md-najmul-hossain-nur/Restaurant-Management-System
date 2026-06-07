@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   // ── Tab Navigation ────────────────────────────────────────
-  const tabs     = document.querySelectorAll('.tab[data-section]');
+  const tabs = document.querySelectorAll('.tab[data-section]');
   const sections = document.querySelectorAll('.section-content');
 
   function switchTab(sectionId) {
@@ -15,6 +15,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const sec = document.getElementById(sectionId);
     if (tab) tab.classList.add('active');
     if (sec) sec.classList.add('active');
+
+    // Update Global Hero
+    const globalTitle = document.getElementById('globalPageTitle');
+    const globalSubtitle = document.getElementById('globalPageSubtitle');
+    if (globalTitle) {
+      globalTitle.textContent = sectionId.charAt(0).toUpperCase() + sectionId.slice(1);
+    }
+    if (globalSubtitle) {
+      const descriptions = {
+        overview: 'Restaurant performance at a glance',
+        employees: 'Manage your staff, roles, and status',
+        customer: 'Review and approve customer account requests',
+        chat: 'Communicate with staff and customer support',
+        tables: 'Manage restaurant floor plan and table status',
+        menu: 'Approve and edit dish recipes and menu items',
+        reports: 'Detailed financial and performance metrics'
+      };
+      globalSubtitle.textContent = descriptions[sectionId] || '';
+    }
+
     if (sectionId === 'chat') {
       loadChatConversations();
     }
@@ -37,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let banner = document.getElementById('clockoutBanner');
     if (!banner && main) {
       banner = document.createElement('div');
-      banner.id        = 'clockoutBanner';
+      banner.id = 'clockoutBanner';
       banner.className = 'clockout-banner';
       banner.textContent = 'You are clocked out';
       main.prepend(banner);
@@ -79,11 +99,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Add Employee Modal ────────────────────────────────────
-  const openAddEmpBtn  = document.getElementById('openAddEmployee');
-  const employeeForm   = document.getElementById('employeeForm');
-  const roleSelect     = document.getElementById('employeeRole');
-  const certInput      = document.getElementById('certificate');
-  const certGroup      = certInput ? certInput.closest('.form-group') : null;
+  const openAddEmpBtn = document.getElementById('openAddEmployee');
+  const employeeForm = document.getElementById('employeeForm');
+  const roleSelect = document.getElementById('employeeRole');
+  const certInput = document.getElementById('certificate');
+  const certGroup = certInput ? certInput.closest('.form-group') : null;
 
   if (openAddEmpBtn) openAddEmpBtn.addEventListener('click', () => openModal('addEmployeeModal'));
 
@@ -113,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const certificateFile = certInput?.files?.[0] || null;
 
       const submitBtn = employeeForm.querySelector('[type="submit"]');
-      submitBtn.disabled    = true;
+      submitBtn.disabled = true;
       submitBtn.textContent = 'Adding…';
 
       try {
@@ -126,9 +146,9 @@ document.addEventListener('DOMContentLoaded', () => {
           formData.append('certificate', certificateFile, certificateFile.name);
         }
 
-        const res      = await fetch('../api/add_employee.php', {
+        const res = await fetch('../api/add_employee.php', {
           method: 'POST',
-          body:   formData,   // multipart for file upload
+          body: formData,   // multipart for file upload
         });
         const result = await res.json();
 
@@ -136,10 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
           // Add card to the employees grid
           const grid = document.querySelector('.employees-grid');
           if (grid) {
-            const role   = String(formData.get('role') || '').toLowerCase();
-            const name   = String(formData.get('fullName') || '').trim() || 'New Employee';
-            const email  = String(formData.get('email') || '').trim() || '—';
-            const card   = document.createElement('div');
+            const role = String(formData.get('role') || '').toLowerCase();
+            const name = String(formData.get('fullName') || '').trim() || 'New Employee';
+            const email = String(formData.get('email') || '').trim() || '—';
+            const card = document.createElement('div');
             card.className = 'employee-card';
             card.dataset.added = new Date().toISOString();
             card.dataset.clocked = '0';
@@ -175,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error(err);
         showAdminToast('Network error. Try again.', true);
       } finally {
-        submitBtn.disabled    = false;
+        submitBtn.disabled = false;
         submitBtn.textContent = 'Add Employee';
       }
     });
@@ -250,7 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Add Table Modal ───────────────────────────────────────
   const openAddTableBtn = document.getElementById('openAddTable');
-  const tableForm       = document.getElementById('tableForm');
+  const tableForm = document.getElementById('tableForm');
 
   if (openAddTableBtn) openAddTableBtn.addEventListener('click', () => openModal('addTableModal'));
 
@@ -258,13 +278,13 @@ document.addEventListener('DOMContentLoaded', () => {
     tableForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const submitBtn = tableForm.querySelector('[type="submit"]');
-      submitBtn.disabled    = true;
+      submitBtn.disabled = true;
       submitBtn.textContent = 'Adding…';
 
       try {
         const formData = new FormData(tableForm);
-        const res      = await fetch('../api/add_table.php', { method: 'POST', body: formData });
-        const result   = await res.json();
+        const res = await fetch('../api/add_table.php', { method: 'POST', body: formData });
+        const result = await res.json();
 
         if (result.success) {
           const grid = document.getElementById('tablesGrid');
@@ -339,7 +359,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch (err) {
         showAdminToast('Network error.', true);
       } finally {
-        submitBtn.disabled    = false;
+        submitBtn.disabled = false;
         submitBtn.textContent = 'Add Table';
       }
     });
@@ -369,14 +389,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!select) return;
 
       const tableId = select.dataset.tableId;
-      const status  = select.value;
-      const card    = select.closest('.table-card');
+      const status = select.value;
+      const card = select.closest('.table-card');
 
       try {
-        const res    = await fetch('../api/update_table_status.php', {
-          method:  'POST',
+        const res = await fetch('../api/update_table_status.php', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ table_id: tableId, status }),
+          body: JSON.stringify({ table_id: tableId, status }),
         });
         const result = await res.json();
         if (result.success) {
@@ -401,13 +421,13 @@ document.addEventListener('DOMContentLoaded', () => {
       currentTableCard = card;
 
       const tableId = card.dataset.tableId;
-      const pos     = card.dataset.position || '';
-      const cap     = card.dataset.capacity || '';
+      const pos = card.dataset.position || '';
+      const cap = card.dataset.capacity || '';
       const tableNumber = card.dataset.tableNumber || tableId;
 
-      const numEl  = document.getElementById('editTableNumber');
-      const posEl  = document.getElementById('editTablePosition');
-      const capEl  = document.getElementById('editTableCapacity');
+      const numEl = document.getElementById('editTableNumber');
+      const posEl = document.getElementById('editTablePosition');
+      const capEl = document.getElementById('editTableCapacity');
       const delBtn = document.getElementById('deleteTableBtn');
 
       if (numEl) numEl.value = tableNumber;
@@ -419,9 +439,9 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!confirm('Delete this table? This cannot be undone.')) return;
           try {
             const res = await fetch('../api/update_table_status.php', {
-              method:  'POST',
+              method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body:    JSON.stringify({ table_id: tableId, _delete: true }),
+              body: JSON.stringify({ table_id: tableId, _delete: true }),
             });
             const result = await res.json();
             if (result.success) {
@@ -503,10 +523,10 @@ document.addEventListener('DOMContentLoaded', () => {
       else if (c.dataset.status === 'occupied') occupied++;
     });
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    set('statTotal',     cards.length);
+    set('statTotal', cards.length);
     set('statAvailable', available);
-    set('statReserved',  reserved);
-    set('statOccupied',  occupied);
+    set('statReserved', reserved);
+    set('statOccupied', occupied);
   }
 
   function normalizeImagePath(path) {
@@ -534,10 +554,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const menuId = card.dataset.menuId;
       const action = btn.dataset.action; // 'approve' or 'reject'
       try {
-        const res    = await fetch('../api/approve_menu_item.php', {
-          method:  'POST',
+        const res = await fetch('../api/approve_menu_item.php', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ recipe_id: menuId, action }),
+          body: JSON.stringify({ recipe_id: menuId, action }),
         });
         const result = await res.json();
         if (result.success) {
@@ -554,7 +574,6 @@ document.addEventListener('DOMContentLoaded', () => {
               if (!approvedCard.querySelector('.menu-check')) {
                 const check = document.createElement('div');
                 check.className = 'menu-check';
-                check.setAttribute('aria-hidden', 'true');
                 check.innerHTML = '<i class="fas fa-check"></i>';
                 approvedCard.prepend(check);
               }
@@ -670,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Edit Menu Modal ───────────────────────────────────────
   const editMenuModal = document.getElementById('editMenuModal');
-  const editMenuForm  = document.getElementById('editMenuForm');
+  const editMenuForm = document.getElementById('editMenuForm');
   let currentMenuCard = null;
 
   document.querySelectorAll('.menu-edit-btn').forEach(btn => {
@@ -679,15 +698,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!card) return;
       currentMenuCard = card;
 
-      const nameEl  = card.querySelector('.menu-name');
+      const nameEl = card.querySelector('.menu-name');
       const priceEl = card.querySelector('.menu-price');
-      const descEl  = card.querySelector('.menu-desc');
-      const tagEl   = card.querySelector('.menu-tag');
+      const descEl = card.querySelector('.menu-desc');
+      const tagEl = card.querySelector('.menu-tag');
 
-      if (nameEl)  document.getElementById('editMenuName').value  = nameEl.textContent;
+      if (nameEl) document.getElementById('editMenuName').value = nameEl.textContent;
       if (priceEl) document.getElementById('editMenuPrice').value = priceEl.textContent.replace(/[^0-9.]/g, '');
-      if (descEl)  document.getElementById('editMenuDesc').value  = descEl.textContent;
-      if (tagEl)   document.getElementById('editMenuTag').value   = tagEl.textContent;
+      if (descEl) document.getElementById('editMenuDesc').value = descEl.textContent;
+      if (tagEl) document.getElementById('editMenuTag').value = tagEl.textContent;
       document.getElementById('editMenuImage').value = '';
 
       openModal('editMenuModal');
@@ -698,7 +717,7 @@ document.addEventListener('DOMContentLoaded', () => {
     editMenuForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const submitBtn = editMenuForm.querySelector('[type="submit"]');
-      submitBtn.disabled    = true;
+      submitBtn.disabled = true;
       submitBtn.textContent = 'Saving…';
 
       try {
@@ -706,7 +725,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Attach the recipe id from the card
         if (currentMenuCard) formData.append('recipe_id', currentMenuCard.dataset.menuId || '');
 
-        const res    = await fetch('../api/update_menu_item.php', { method: 'POST', body: formData });
+        const res = await fetch('../api/update_menu_item.php', { method: 'POST', body: formData });
         const result = await res.json();
 
         if (result.success) {
@@ -732,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch {
         showAdminToast('Network error.', true);
       } finally {
-        submitBtn.disabled    = false;
+        submitBtn.disabled = false;
         submitBtn.textContent = 'Save Changes';
         currentMenuCard = null;
       }
@@ -1105,32 +1124,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Toast ─────────────────────────────────────────────────
   function showAdminToast(msg, isError = false) {
-    let toast = document.getElementById('adminToast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.id = 'adminToast';
-      toast.style.cssText = `
-        position:fixed;bottom:24px;right:24px;z-index:9999;
-        padding:12px 20px;border-radius:10px;font-size:14px;
-        color:#fff;opacity:0;transition:opacity .3s;pointer-events:none;`;
-      document.body.appendChild(toast);
+    const toast = document.getElementById('adminToast');
+    if (!toast) return;
+
+    const msgEl = toast.querySelector('.toast-msg');
+    const iconEl = toast.querySelector('.toast-icon i');
+
+    if (msgEl) msgEl.textContent = msg;
+    if (iconEl) {
+      iconEl.className = isError ? 'fas fa-exclamation-triangle' : 'fas fa-check';
     }
-    toast.textContent       = msg;
-    toast.style.background  = isError ? '#c0392b' : '#27ae60';
-    toast.style.opacity     = '1';
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => toast.style.opacity = '0', 2800);
+
+    toast.classList.toggle('error', isError);
+    toast.classList.add('show');
+
+    clearTimeout(toast._timeout);
+    toast._timeout = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
   }
 
   // ── Order cards status (chief page uses admin.js too) ─────
   document.querySelectorAll('.order-card').forEach(card => {
-    const statusEl  = card.querySelector('.status-badge');
+    const statusEl = card.querySelector('.status-badge');
     const actionBtn = card.querySelector('[data-mark-ready]');
     if (!actionBtn || !statusEl) return;
 
     const status = (statusEl.textContent || '').trim().toLowerCase();
     if (status === 'ready' || status === 'served') {
-      actionBtn.hidden   = true;
+      actionBtn.hidden = true;
       actionBtn.disabled = true;
       return;
     }
@@ -1140,15 +1162,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (orderId) {
         try {
           await fetch('../api/update_order_status.php', {
-            method:  'POST',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ order_id: orderId, status: 'ready' }),
+            body: JSON.stringify({ order_id: orderId, status: 'ready' }),
           });
-        } catch {}
+        } catch { }
       }
       statusEl.textContent = 'Ready';
       actionBtn.textContent = '✓ Ready';
-      actionBtn.disabled    = true;
+      actionBtn.disabled = true;
       setTimeout(() => { actionBtn.hidden = true; }, 400);
     });
   });
