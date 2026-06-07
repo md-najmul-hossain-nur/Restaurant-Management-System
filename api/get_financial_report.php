@@ -34,6 +34,7 @@ $ordersStmt = $pdo->prepare(
         o.created_at,
         o.status,
         o.total_amount,
+        o.payment_method,
         COALESCE(o.guest_name, u.name) AS customer_name,
         COALESCE(o.guest_phone, u.phone, '') AS customer_contact,
         GROUP_CONCAT(DISTINCT oi.name ORDER BY oi.id SEPARATOR ', ') AS item_names
@@ -49,7 +50,8 @@ $orders = $ordersStmt->fetchAll() ?: [];
 
 if (in_array($format, ['csv', 'xls'], true)) {
     $isExcel = $format === 'xls';
-    $filename = sprintf('financial-report-%s-to-%s.%s', $start, $end, $isExcel ? 'xls' : 'csv');
+    $filename = sprintf('feliciano-financial-report-%s-to-%s.%s', $start, $end, $isExcel ? 'xls' : 'csv');
+    
     header('Content-Type: ' . ($isExcel ? 'application/vnd.ms-excel' : 'text/csv') . '; charset=utf-8');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
     header('Pragma: no-cache');
@@ -57,17 +59,55 @@ if (in_array($format, ['csv', 'xls'], true)) {
 
     $out = fopen('php://output', 'w');
     $delimiter = $isExcel ? "\t" : ',';
-    fputcsv($out, ['Order ID', 'Created At', 'Customer', 'Contact', 'Status', 'Total Amount', 'Items'], $delimiter);
 
+    // 1. Report Header
+    fputcsv($out, ['FELICIANO RESTAURANT - FINANCIAL REPORT'], $delimiter);
+    fputcsv($out, ['Report Range:', $start . ' to ' . $end], $delimiter);
+    fputcsv($out, ['Generated At:', date('Y-m-d H:i:s')], $delimiter);
+    fputcsv($out, [], $delimiter); // Empty line
+
+    // 2. Summary Section
+    fputcsv($out, ['SUMMARY STATS'], $delimiter);
+    fputcsv($out, ['Total Orders', (int)$summary['total_orders']], $delimiter);
+    fputcsv($out, ['Total Revenue', '$' . number_format((float)$summary['total_revenue'], 2)], $delimiter);
+    fputcsv($out, ['Avg Order Value', '$' . number_format((float)$summary['avg_order_value'], 2)], $delimiter);
+    fputcsv($out, [], $delimiter); // Empty line
+
+    // 3. Detailed Data Header
+    fputcsv($out, ['ORDER DETAILS'], $delimiter);
+    fputcsv($out, [
+        'Order ID', 
+        'Date', 
+        'Time', 
+        'Customer', 
+        'Contact', 
+        'Status', 
+        'Items', 
+        'Payment', 
+        'Base Amount', 
+        'Tax (10%)', 
+        'Grand Total'
+    ], $delimiter);
+
+    // 4. Data Rows
     foreach ($orders as $order) {
+        $timestamp = strtotime($order['created_at']);
+        $total = (float)$order['total_amount'];
+        $base  = round($total / 1.10, 2);
+        $tax   = round($total - $base, 2);
+
         fputcsv($out, [
-            $order['id'],
-            $order['created_at'],
+            '#' . $order['id'],
+            date('Y-m-d', $timestamp),
+            date('H:i:s', $timestamp),
             $order['customer_name'] ?: 'Guest',
-            $order['customer_contact'] ?: '',
-            $order['status'],
-            number_format((float)$order['total_amount'], 2, '.', ''),
-            $order['item_names'] ?: '',
+            $order['customer_contact'] ?: '—',
+            strtoupper($order['status']),
+            $order['item_names'] ?: '—',
+            $order['payment_method'] ?? 'Cash',
+            number_format($base, 2, '.', ''),
+            number_format($tax, 2, '.', ''),
+            number_format($total, 2, '.', ''),
         ], $delimiter);
     }
 

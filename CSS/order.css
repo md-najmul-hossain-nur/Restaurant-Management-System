@@ -728,6 +728,11 @@ body {
 }
 
 /* Also hide it when the hidden class is applied */
+/* Hide elements */
+.hidden {
+  display: none !important;
+}
+
 .logged-in-note.hidden {
   display: none !important;
 }

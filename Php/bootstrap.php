@@ -132,13 +132,16 @@ function ensureOrderCustomerColumn($pdo) {
          FROM INFORMATION_SCHEMA.COLUMNS
          WHERE TABLE_SCHEMA = DATABASE()
            AND TABLE_NAME = 'orders'
-           AND COLUMN_NAME = 'customer_id'"
+           AND COLUMN_NAME IN ('customer_id', 'payment_method')"
     );
     $stmt->execute();
-    $hasCustomerId = (bool) $stmt->fetchColumn();
+    $existing = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-    if (!$hasCustomerId) {
+    if (!in_array('customer_id', $existing, true)) {
         $pdo->exec("ALTER TABLE orders ADD COLUMN customer_id INT DEFAULT NULL AFTER id");
+    }
+    if (!in_array('payment_method', $existing, true)) {
+        $pdo->exec("ALTER TABLE orders ADD COLUMN payment_method VARCHAR(50) DEFAULT 'Cash' AFTER total_amount");
     }
 }
 

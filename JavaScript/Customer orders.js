@@ -262,32 +262,36 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Boot ───────────────────────────────────────────────
   const user = await checkLogin();
+  const guestFieldsNote = document.getElementById('loggedInNote');
+  const tableContainer = document.getElementById('tableFieldContainer');
 
-  if (user) {
-    // Logged in — hide guest fields, show welcome
+  if (user && user.role === 'customer') {
+    // Current customer identity
     if (guestFields) guestFields.classList.add('hidden');
-    const welcomeEl = document.getElementById('loggedInNote');
-    if (welcomeEl) { welcomeEl.classList.remove("hidden"); welcomeEl.textContent = `Ordering as: ${user.name}`; }
-  } else {
-    // Guest — show name + phone fields
-    if (guestFields) guestFields.classList.remove('hidden');
-    const welcomeEl = document.getElementById('loggedInNote');
-    if (welcomeEl) {
-      welcomeEl.classList.remove('hidden');
-      welcomeEl.textContent = 'Ordering as guest';
+    if (guestFieldsNote) {
+      guestFieldsNote.classList.remove('hidden');
+      guestFieldsNote.textContent = user.name;
     }
-
-    // Guests can't choose tables (per user request)
-    const tableContainer = document.getElementById('tableFieldContainer');
-    if (tableContainer) tableContainer.classList.add('hidden');
-  }
-
-  // If customer or waiter, show and load tables
-  if (user && (user.role === 'customer' || user.role === 'waiter')) {
-    const tableContainer = document.getElementById('tableFieldContainer');
     if (tableContainer) {
       tableContainer.classList.remove('hidden');
       await loadTables();
+    }
+  } else {
+    // Guest OR Staff (Admin/Waiter) ordering for a guest
+    if (guestFields) guestFields.classList.remove('hidden');
+    if (guestFieldsNote) {
+      guestFieldsNote.classList.remove('hidden');
+      guestFieldsNote.textContent = 'Guest';
+    }
+    
+    // Guests can't choose tables (manual), but Staff can
+    if (user && (user.role === 'admin' || user.role === 'waiter')) {
+      if (tableContainer) {
+        tableContainer.classList.remove('hidden');
+        await loadTables();
+      }
+    } else {
+      if (tableContainer) tableContainer.classList.add('hidden');
     }
   }
 

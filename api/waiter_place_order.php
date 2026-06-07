@@ -27,12 +27,13 @@ if ((int) $assignedWaiter !== (int) $waiterId) {
 $total = 0;
 foreach ($items as $item) $total += $item['price'] * $item['quantity'];
 $grandTotal = round($total * 1.10, 2); // 10% tax
+$paymentMethod = $data['payment_method'] ?? 'Cash';
 
 $pdo->beginTransaction();
 try {
     $pdo->prepare(
-        'INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount) VALUES (NULL, ?, ?, ?, ?)'
-    )->execute([$tableId, $waiterId, 'queued', $grandTotal]);
+        'INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, payment_method) VALUES (NULL, ?, ?, ?, ?, ?)'
+    )->execute([$tableId, $waiterId, 'queued', $grandTotal, $paymentMethod]);
     $orderId = $pdo->lastInsertId();
 
     $itemStmt = $pdo->prepare(

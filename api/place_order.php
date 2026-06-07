@@ -52,10 +52,10 @@ try {
 
     // Insert order
     $stmt = $pdo->prepare(
-        "INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, guest_name, guest_phone, notes)
-         VALUES (?, ?, ?, 'queued', ?, ?, ?, ?)"
+        "INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, payment_method, guest_name, guest_phone, notes)
+         VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?)"
     );
-    $stmt->execute([$userId, $tableId, $assignedWaiterId, $grandTotal, $guestName ?: null, $guestPhone ?: null, $notes]);
+    $stmt->execute([$userId, $tableId, $assignedWaiterId, $grandTotal, $paymentMethod, $guestName ?: null, $guestPhone ?: null, $notes]);
     $orderId = $pdo->lastInsertId();
 
     // Insert items

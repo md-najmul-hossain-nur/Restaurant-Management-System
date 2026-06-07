@@ -621,6 +621,13 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
                 <label for="reportEnd">End Date</label>
                 <input type="date" id="reportEnd" name="reportEnd" value="<?php echo date('Y-m-d'); ?>">
               </div>
+              <div class="date-field">
+                <label for="reportFormat">Format</label>
+                <select id="reportFormat" class="report-select">
+                  <option value="csv">CSV (Spreadsheet)</option>
+                  <option value="xls">XLS (Excel)</option>
+                </select>
+              </div>
             </div>
 
             <div class="reports-cards">

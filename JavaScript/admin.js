@@ -1077,11 +1077,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const reportTotalOrders = document.getElementById('reportTotalOrders');
   const reportAvgOrderValue = document.getElementById('reportAvgOrderValue');
   const downloadReportBtn = document.getElementById('downloadReportBtn');
+  const reportFormat = document.getElementById('reportFormat');
 
-  function getReportRange() {
+  function getReportSettings() {
     const start = reportStart?.value || '';
     const end = reportEnd?.value || '';
-    return { start, end };
+    const format = reportFormat?.value || 'csv';
+    return { start, end, format };
   }
 
   function setReportSummary(summary) {
@@ -1098,7 +1100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!reportStart || !reportEnd) return;
 
     try {
-      const { start, end } = getReportRange();
+      const { start, end } = getReportSettings();
       const url = `../api/get_financial_report.php?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
       const res = await fetch(url);
       const data = await res.json();
@@ -1114,8 +1116,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (reportEnd) reportEnd.addEventListener('change', loadFinancialReport);
   if (downloadReportBtn) {
     downloadReportBtn.addEventListener('click', () => {
-      const { start, end } = getReportRange();
-      const url = `../api/get_financial_report.php?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&format=xls`;
+      const { start, end, format } = getReportSettings();
+      const url = `../api/get_financial_report.php?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}&format=${format}`;
       window.location.href = url;
     });
   }

@@ -4,7 +4,7 @@ require_once __DIR__ . '/../Php/db.php';
 header('Content-Type: application/json');
 
 $role = strtolower(trim((string) ($_SESSION['role'] ?? '')));
-if (!isset($_SESSION['user_id']) || !in_array($role, ['customer', 'waiter'], true)) {
+if (!isset($_SESSION['user_id']) || !in_array($role, ['customer', 'waiter', 'admin'], true)) {
     respond(['error' => 'Login required'], 401);
 }
 
