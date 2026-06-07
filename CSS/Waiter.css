@@ -73,13 +73,14 @@ body {
 }
 
 .brand {
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: 3.5px;
-  border: 1.5px solid #fefeff;
-  padding: 6px 16px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
   color: #fefeff;
   text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 4px 12px;
+  border-radius: 4px;
 }
 
 .top-right {

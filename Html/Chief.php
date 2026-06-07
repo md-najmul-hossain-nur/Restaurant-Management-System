@@ -80,7 +80,7 @@ function formatOrderStatus($status) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Feliciano — Chief Dashboard</title>
+  <title>Feliciano — Chef Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="../CSS/chief.css" />
@@ -92,7 +92,7 @@ function formatOrderStatus($status) {
     <header class="topbar">
       <div class="brand">Feliciano</div>
       <div class="top-right">
-        <div class="admin-title">Chief<br>Dashboard</div>
+        <div class="admin-title">Chef<br>Dashboard</div>
         <div class="logout" onclick="window.location.href='login.html'">
           <img src="../Images/logout.png" alt="Logout" class="logout-icon">
          </div>
