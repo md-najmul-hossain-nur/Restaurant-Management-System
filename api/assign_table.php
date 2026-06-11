@@ -24,7 +24,7 @@ try {
                  status = 'occupied',
                  active_customer_id = COALESCE(active_customer_id, reserved_customer_id)
              WHERE id = ?
-               AND status = 'available'
+               AND status IN ('available', 'reserved')
                AND (assigned_waiter_id IS NULL OR assigned_waiter_id = 0)"
         );
         $stmt->execute([$userId, $tableId]);

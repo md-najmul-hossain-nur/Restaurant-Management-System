@@ -87,6 +87,14 @@ try {
     $reservationId = $pdo->lastInsertId();
     $_SESSION['customer_reservation_ids'][] = (int) $reservationId;
 
+    // Immediately reserve the table physically so waiters do not assign it to walk-ins
+    $pdo->prepare(
+        "UPDATE restaurant_tables
+         SET status = CASE WHEN status = 'occupied' THEN 'occupied' ELSE 'reserved' END,
+             reserved_customer_id = ?
+         WHERE id = ?"
+    )->execute([$customerId ?: null, $tableId]);
+
     $pdo->commit();
 
     respond([

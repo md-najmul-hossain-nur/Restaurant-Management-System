@@ -2773,3 +2773,47 @@ body.is-clocked-out .panel.hero .btn.btn-primary[data-clock-out] {
   border-radius: 10px;
 }
 .outer-wrapper::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* New Order Modal Layout */
+.order-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.order-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.order-input-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(254,254,255,0.85);
+}
+
+.order-input-group input.order-select,
+.order-input-group textarea.order-select {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #fefeff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  width: 100%;
+}
+
+.order-input-group input::placeholder,
+.order-input-group textarea::placeholder {
+  color: rgba(254,254,255,0.3);
+}
+
+.order-input-group input:focus,
+.order-input-group textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: rgba(255,255,255,0.12);
+}

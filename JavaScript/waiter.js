@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
 
   // ── Tab Navigation ────────────────────────────────────────
-  const tabs     = document.querySelectorAll('.tab[data-section]');
+  const tabs = document.querySelectorAll('.tab[data-section]');
   const sections = document.querySelectorAll('.section-content');
 
   tabs.forEach(tab => {
@@ -47,11 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Toast ─────────────────────────────────────────────────
   function showToast(msg, isError = false) {
-    const toast   = document.getElementById('successToast');
+    const toast = document.getElementById('successToast');
     const msgSpan = toast?.querySelector('.toast-msg');
     if (!toast) return;
     if (msgSpan) msgSpan.textContent = msg;
-    const icon    = toast?.querySelector('.toast-icon i');
+    const icon = toast?.querySelector('.toast-icon i');
     if (isError) {
       toast.classList.add('error');
       if (icon) icon.className = 'fas fa-exclamation-triangle';
@@ -65,15 +65,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Table Take / Release (DB-connected) ──────────────────
-  const myTablesGrid    = document.getElementById('myTablesGrid');
+  const myTablesGrid = document.getElementById('myTablesGrid');
   const availTablesGrid = document.getElementById('availTablesGrid');
-  const myTableCount    = document.getElementById('myTableCount');
+  const myTableCount = document.getElementById('myTableCount');
   const availTableCount = document.getElementById('availTableCount');
 
   function updateTableCounts() {
     const myCount = myTablesGrid?.querySelectorAll('.waiter-table-card[data-table-id]').length || 0;
     const availCount = availTablesGrid?.querySelectorAll('.waiter-table-card[data-table-id]').length || 0;
-    if (myTableCount)    myTableCount.textContent    = myCount;
+    if (myTableCount) myTableCount.textContent = myCount;
     if (availTableCount) availTableCount.textContent = availCount;
   }
 
@@ -120,9 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
   async function assignTableDB(tableId, action) {
     try {
       const res = await fetch('../api/assign_table.php', {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ table_id: tableId, action }),
+        body: JSON.stringify({ table_id: tableId, action }),
       });
       const result = await res.json();
       if (!res.ok || !result.success) {
@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
   myTablesGrid?.addEventListener('click', async e => {
     const releaseBtn = e.target.closest('[data-release]');
     if (!releaseBtn || !availTablesGrid) return;
-    const card    = releaseBtn.closest('.waiter-table-card');
+    const card = releaseBtn.closest('.waiter-table-card');
     const tableId = releaseBtn.dataset.release;
     const tableNumber = card?.dataset.tableNumber || tableId;
 
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
   availTablesGrid?.addEventListener('click', async e => {
     const takeBtn = e.target.closest('[data-take]');
     if (!takeBtn || !myTablesGrid) return;
-    const card    = takeBtn.closest('.waiter-table-card');
+    const card = takeBtn.closest('.waiter-table-card');
     const tableId = takeBtn.dataset.take;
     const tableNumber = card?.dataset.tableNumber || tableId;
 
@@ -216,21 +216,21 @@ document.addEventListener('DOMContentLoaded', () => {
   ensureEmptyCard(availTablesGrid, 'No available tables');
 
   // ── Order Stats ───────────────────────────────────────────
-  const orderList       = document.querySelector('#order .order-list') ||
-                          document.querySelector('#order');
-  const statPending     = document.getElementById('statPending');
-  const statProgress    = document.getElementById('statProgress');
-  const statCompleted   = document.getElementById('statCompleted');
-  const orderCountEl    = document.getElementById('orderCount');
+  const orderList = document.querySelector('#order .order-list') ||
+    document.querySelector('#order');
+  const statPending = document.getElementById('statPending');
+  const statProgress = document.getElementById('statProgress');
+  const statCompleted = document.getElementById('statCompleted');
+  const orderCountEl = document.getElementById('orderCount');
 
   function updateOrderStats() {
     if (!orderList) return;
-    const cards    = orderList.querySelectorAll('.order-card[data-order-id]');
-    const ready    = orderList.querySelectorAll('.order-status--ready').length;
-    const kitchen  = orderList.querySelectorAll('.order-status--kitchen').length;
-    if (orderCountEl) orderCountEl.textContent  = cards.length;
-    if (statPending)  statPending.textContent   = ready;
-    if (statProgress) statProgress.textContent  = kitchen;
+    const cards = orderList.querySelectorAll('.order-card[data-order-id]');
+    const ready = orderList.querySelectorAll('.order-status--ready').length;
+    const kitchen = orderList.querySelectorAll('.order-status--kitchen').length;
+    if (orderCountEl) orderCountEl.textContent = cards.length;
+    if (statPending) statPending.textContent = ready;
+    if (statProgress) statProgress.textContent = kitchen;
   }
   updateOrderStats();
 
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
   orderList?.addEventListener('click', async e => {
     const deliverBtn = e.target.closest('[data-deliver-order]');
     if (!deliverBtn) return;
-    const card     = deliverBtn.closest('.order-card');
+    const card = deliverBtn.closest('.order-card');
     const statusEl = card?.querySelector('.order-status');
     if (!statusEl) return;
 
@@ -301,11 +301,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (orderId) {
       try {
         await fetch('../api/update_order_status.php', {
-          method:  'POST',
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ order_id: parseInt(orderId), status: 'served' }),
+          body: JSON.stringify({ order_id: parseInt(orderId), status: 'served' }),
         });
-      } catch {}
+      } catch { }
     }
 
     statusEl.classList.remove('order-status--ready', 'order-status--kitchen');
@@ -319,19 +319,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── New Order Modal (DB-connected) ────────────────────────
-  const modal   = document.getElementById('newOrderModal');
+  const modal = document.getElementById('newOrderModal');
   const openBtn = document.querySelector('[data-new-order]');
 
   if (modal && openBtn) {
-    const closeEls           = modal.querySelectorAll('[data-order-close]');
-    const placeBtn           = modal.querySelector('[data-order-place]');
-    const itemButtons        = modal.querySelectorAll('[data-menu-item]');
-    const selectedItemsList  = document.getElementById('selectedItemsList');
+    const closeEls = modal.querySelectorAll('[data-order-close]');
+    const placeBtn = modal.querySelector('[data-order-place]');
+    const itemButtons = modal.querySelectorAll('[data-menu-item]');
+    const selectedItemsList = document.getElementById('selectedItemsList');
     const selectedItemsTotal = document.getElementById('selectedItemsTotal');
-    const EMPTY              = '<span style="color:rgba(254,254,255,.45);font-style:italic">No items selected</span>';
+    const EMPTY = '<span style="color:rgba(254,254,255,.45);font-style:italic">No items selected</span>';
 
     const selectedItems = new Map();
-    const formatMoney   = n => `$${(+n || 0).toFixed(2)}`;
+    const formatMoney = n => `$${(+n || 0).toFixed(2)}`;
 
     function updateSelectedUI() {
       if (!selectedItemsList) return;
@@ -385,7 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     itemButtons.forEach(btn => {
       btn.addEventListener('click', () => {
-        const name  = btn.dataset.name  || 'Item';
+        const name = btn.dataset.name || 'Item';
         const price = parseFloat(btn.dataset.price) || 0;
         const recipeId = btn.dataset.recipeId ? parseInt(btn.dataset.recipeId) : null;
         const existing = selectedItems.get(name);
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ★ Place Order → saves to DB
     placeBtn?.addEventListener('click', async () => {
-      const select  = document.getElementById('orderTableSelect');
+      const select = document.getElementById('orderTableSelect');
       if (!select?.value) {
         if (select) { select.style.outline = '2px solid rgba(224,115,59,.8)'; setTimeout(() => select.style.outline = '', 1200); }
         return;
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      placeBtn.disabled    = true;
+      placeBtn.disabled = true;
       placeBtn.textContent = 'Placing…';
 
       const items = [];
@@ -418,10 +418,10 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
       try {
-        const res    = await fetch('../api/waiter_place_order.php', {
-          method:  'POST',
+        const res = await fetch('../api/waiter_place_order.php', {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ table_id: parseInt(select.value), items }),
+          body: JSON.stringify({ table_id: parseInt(select.value), items }),
         });
         const result = await res.json();
 
@@ -437,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } catch {
         showToast('Network error. Try again.', true);
       } finally {
-        placeBtn.disabled    = false;
+        placeBtn.disabled = false;
         placeBtn.textContent = 'Place Order';
       }
     });
@@ -447,18 +447,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Profile Modals ────────────────────────────────────────
   const overlays = {
-    settings:     document.getElementById('settingsOverlay'),
-    editProfile:  document.getElementById('editProfileOverlay'),
+    settings: document.getElementById('settingsOverlay'),
+    editProfile: document.getElementById('editProfileOverlay'),
     editPassword: document.getElementById('editPasswordOverlay'),
   };
 
-  function openOverlay(key)  { overlays[key]?.classList.add('active');    }
+  function openOverlay(key) { overlays[key]?.classList.add('active'); }
   function closeOverlay(key) { overlays[key]?.classList.remove('active'); }
 
-  document.getElementById('openSettingsBtn')?.addEventListener('click',  () => openOverlay('settings'));
-  document.getElementById('closeSettings')?.addEventListener('click',    () => closeOverlay('settings'));
+  document.getElementById('openSettingsBtn')?.addEventListener('click', () => openOverlay('settings'));
+  document.getElementById('closeSettings')?.addEventListener('click', () => closeOverlay('settings'));
   document.getElementById('closeEditProfile')?.addEventListener('click', () => closeOverlay('editProfile'));
-  document.getElementById('closeEditPassword')?.addEventListener('click',() => closeOverlay('editPassword'));
+  document.getElementById('closeEditPassword')?.addEventListener('click', () => closeOverlay('editPassword'));
 
   document.getElementById('openEditProfile')?.addEventListener('click', () => {
     closeOverlay('settings'); openOverlay('editProfile');
@@ -481,43 +481,43 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load profile
   async function loadProfile() {
     try {
-      const res  = await fetch('../api/profile.php');
+      const res = await fetch('../api/profile.php');
       if (!res.ok) return;
       const data = await res.json();
       if (!data.user) return;
       const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-      set('displayName',  data.user.name);
+      set('displayName', data.user.name);
       set('displayEmail', data.user.email);
       set('displayPhone', data.user.phone || '');
       set('displayLocation', data.user.address || '');
-      const nameInp  = document.getElementById('inputName');
+      const nameInp = document.getElementById('inputName');
       const emailInp = document.getElementById('inputEmail');
       const phoneInp = document.getElementById('inputPhone');
-      const addrInp  = document.getElementById('inputAddress');
-      if (nameInp)  nameInp.value  = data.user.name || '';
+      const addrInp = document.getElementById('inputAddress');
+      if (nameInp) nameInp.value = data.user.name || '';
       if (emailInp) emailInp.value = data.user.email || '';
       if (phoneInp) phoneInp.value = data.user.phone || '';
-      if (addrInp)  addrInp.value  = data.user.address || '';
-    } catch {}
+      if (addrInp) addrInp.value = data.user.address || '';
+    } catch { }
   }
   loadProfile();
 
   // Save profile
   document.getElementById('saveProfile')?.addEventListener('click', async () => {
-    const name  = document.getElementById('inputName')?.value.trim();
+    const name = document.getElementById('inputName')?.value.trim();
     const email = document.getElementById('inputEmail')?.value.trim();
     const phone = document.getElementById('inputPhone')?.value.trim();
     const address = document.getElementById('inputAddress')?.value.trim();
     if (!name || !email) return;
     try {
-      const res    = await fetch('../api/profile.php', {
-        method:  'POST',
+      const res = await fetch('../api/profile.php', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ action: 'update_profile', name, email, phone, address }),
+        body: JSON.stringify({ action: 'update_profile', name, email, phone, address }),
       });
       const result = await res.json();
       if (result.success) {
-        document.getElementById('displayName').textContent  = name;
+        document.getElementById('displayName').textContent = name;
         document.getElementById('displayEmail').textContent = email;
         document.getElementById('displayPhone').textContent = phone || '';
         document.getElementById('displayLocation').textContent = address || '';
@@ -529,22 +529,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Change password
   document.getElementById('savePassword')?.addEventListener('click', async () => {
-    const cur  = document.getElementById('inputCurrentPwd')?.value;
+    const cur = document.getElementById('inputCurrentPwd')?.value;
     const newP = document.getElementById('inputNewPwd')?.value;
     const conf = document.getElementById('inputConfirmPwd')?.value;
     if (!cur || !newP || !conf) return;
     if (newP.length < 8) { showToast('Password must be at least 8 characters'); return; }
-    if (newP !== conf)   { showToast('Passwords do not match'); return; }
+    if (newP !== conf) { showToast('Passwords do not match'); return; }
     try {
-      const res    = await fetch('../api/profile.php', {
-        method:  'POST',
+      const res = await fetch('../api/profile.php', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ action: 'change_password', current_password: cur, new_password: newP }),
+        body: JSON.stringify({ action: 'change_password', current_password: cur, new_password: newP }),
       });
       const result = await res.json();
       if (result.success) {
         document.getElementById('inputCurrentPwd').value = '';
-        document.getElementById('inputNewPwd').value     = '';
+        document.getElementById('inputNewPwd').value = '';
         document.getElementById('inputConfirmPwd').value = '';
         closeOverlay('editPassword');
         showToast('Password changed!');
@@ -555,10 +555,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Password toggles
   document.querySelectorAll('.pw-toggle-cp').forEach(btn => {
     btn.addEventListener('click', () => {
-      const inp  = document.getElementById(btn.dataset.target);
+      const inp = document.getElementById(btn.dataset.target);
       const icon = btn.querySelector('i');
       if (!inp) return;
-      inp.type       = inp.type === 'password' ? 'text' : 'password';
+      inp.type = inp.type === 'password' ? 'text' : 'password';
       icon.className = inp.type === 'password' ? 'far fa-eye' : 'far fa-eye-slash';
     });
   });

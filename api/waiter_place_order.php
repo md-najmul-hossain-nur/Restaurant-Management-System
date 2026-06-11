@@ -1,5 +1,5 @@
 <?php
-// api/waiter_place_order.php
+// api/waiter_place_order.html
 // Called by waiter.js when waiter places an order for a table
 // Method: POST JSON
 

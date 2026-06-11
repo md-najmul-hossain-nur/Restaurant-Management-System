@@ -1,6 +1,6 @@
 <?php
 /**
- * api/place_order.php
+ * api/place_order.html
  * Option C: linked to account if logged in, guest if not
  */
 
