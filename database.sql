@@ -132,7 +132,7 @@ INSERT INTO users (name, email, password, role, approval_status, approval_decide
 VALUES (
   'Admin',
   'admin@gmail.com',
-  '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
+  '$2y$10$QNBABC7dn3LLwGqmL/WaRe3iNT3ectI5Buka96Q8TBZaih2i6l9.S',
   'admin',
   'approved',
   NOW()

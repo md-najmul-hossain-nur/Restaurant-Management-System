@@ -22,6 +22,13 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
   header('Location: login.html');
   exit;
 }
+
+// Fetch real-time stats
+$empCount = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE role IN ('chief', 'waiter')")->fetchColumn();
+$tableCount = (int)$pdo->query("SELECT COUNT(*) FROM restaurant_tables WHERE status = 'available'")->fetchColumn();
+$menuCount = (int)$pdo->query("SELECT COUNT(*) FROM recipes WHERE status = 'approved'")->fetchColumn();
+$rev = $pdo->query("SELECT SUM(total_amount) FROM orders WHERE status = 'served' AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn();
+$monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
 ?>
 
 <!DOCTYPE html>
@@ -34,6 +41,7 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../CSS/admin.css" />
+  <link rel="stylesheet" href="../CSS/responsive.css">
 </head>
 
 <body>
@@ -107,28 +115,28 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'admin') {
               <div class="icon-box blue">
                 <i class="fas fa-users"></i>
               </div>
-              <h3 class="blue">122</h3>
+              <h3 class="blue"><?php echo $empCount; ?></h3>
               <p>Total Employees</p>
             </div>
             <div class="card">
               <div class="icon-box green">
                 <i class="fas fa-chair"></i>
               </div>
-              <h3 class="green">8</h3>
+              <h3 class="green"><?php echo $tableCount; ?></h3>
               <p>Available Tables</p>
             </div>
             <div class="card">
               <div class="icon-box orange">
                 <i class="fas fa-utensils"></i>
               </div>
-              <h3 class="orange">45</h3>
+              <h3 class="orange"><?php echo $menuCount; ?></h3>
               <p>Menu Items</p>
             </div>
             <div class="card">
               <div class="icon-box gold">
                 <i class="fas fa-dollar-sign"></i>
               </div>
-              <h3 class="gold">$12.5K</h3>
+              <h3 class="gold">$<?php echo $monthlyRevenue; ?></h3>
               <p>Monthly Revenue</p>
             </div>
           </div>

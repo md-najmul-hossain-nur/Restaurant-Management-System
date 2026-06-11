@@ -209,10 +209,16 @@ body {
 }
 
 .panel.hero .btn-primary {
-  padding: 12px 22px;
-  border-radius: 10px;
-  font-size: 14px;
+  padding: 16px 36px;
+  margin: 10px 0 10px 20px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 800;
   white-space: nowrap;
+  color: white;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .panel.hero .btn.btn-primary[data-clock-out] {

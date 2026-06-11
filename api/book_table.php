@@ -31,9 +31,9 @@ $table = $stmt->fetch();
 if (!$table) {
     respond(['error' => 'Table not found'], 404);
 }
-if ($table['status'] === 'occupied' || !empty($table['assigned_waiter_id'])) {
-    respond(['error' => 'Table is currently occupied'], 409);
-}
+// We no longer block booking based on current table status or assigned_waiter_id.
+// A table can be occupied NOW but available for a future reservation.
+// The overlap check below handles time conflicts properly.
 if ($guests > $table['capacity']) {
     respond(['error' => 'Too many guests for this table'], 400);
 }
