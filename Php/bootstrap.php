@@ -49,7 +49,7 @@ function ensureDefaultAdminAccount($pdo) {
     $initialized = true;
 
     $adminEmail = 'admin@gmail.com';
-    $adminPasswordHash = '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
+    $adminPasswordHash = '$2y$10$AKB.xXH4tl4Q16zWmrxfE.ed74H8tCEu5pPR6RgVHvZ0ARYakHM4.';
 
     $stmt = $pdo->prepare("SELECT id, password, role FROM users WHERE email = ? LIMIT 1");
     $stmt->execute([$adminEmail]);
