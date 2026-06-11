@@ -34,7 +34,8 @@ $certPath = null;
 if ($role === 'chief' && !empty($_FILES['certificate']['name'])) {
     $certificate = $_FILES['certificate'];
     $extension = strtolower(pathinfo($certificate['name'], PATHINFO_EXTENSION));
-    if ($extension === 'pdf') {
+    $actualMime = mime_content_type($certificate['tmp_name']);
+    if ($extension === 'pdf' && $actualMime === 'application/pdf') {
         $uploadDir = __DIR__ . '/../uploads/certificates/';
         if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
             respond(['error' => 'Unable to create certificate upload folder'], 500);

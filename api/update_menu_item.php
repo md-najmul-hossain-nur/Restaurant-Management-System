@@ -25,7 +25,13 @@ if (!empty($_FILES['editMenuImage']['name'])) {
     if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
         respond(['error' => 'Unable to create upload folder'], 500);
     }
-    $ext      = pathinfo($_FILES['editMenuImage']['name'], PATHINFO_EXTENSION);
+    $ext = strtolower(pathinfo($_FILES['editMenuImage']['name'], PATHINFO_EXTENSION));
+    $allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    $actualMime = mime_content_type($_FILES['editMenuImage']['tmp_name']);
+    $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!in_array($ext, $allowedExts) || !in_array($actualMime, $allowedMimes)) {
+        respond(['error' => 'Invalid image format'], 400);
+    }
     $safeName = 'menu_' . $recipeId . '_' . uniqid() . '.' . $ext;
     if (move_uploaded_file($_FILES['editMenuImage']['tmp_name'], $uploadDir . $safeName)) {
         $imagePath = 'uploads/menu/' . $safeName;

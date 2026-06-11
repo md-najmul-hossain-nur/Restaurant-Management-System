@@ -24,8 +24,8 @@ $email = $_SESSION['email'] ?? null;
 $role = $_SESSION['role'] ?? null;
 $sessionIdentifier = session_id();
 
-// Allow the client to provide the session identifier for guest chat persistence.
-if (!empty($input['session_id'])) {
+// Only allow admins to provide the session identifier for chat persistence.
+if ($role === 'admin' && !empty($input['session_id'])) {
     $sessionIdentifier = trim($input['session_id']);
 }
 

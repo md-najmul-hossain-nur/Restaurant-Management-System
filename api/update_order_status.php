@@ -6,6 +6,9 @@
 if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../Php/db.php';
 requireLogin(); // both chief and waiter can call this
+if (!in_array($_SESSION['role'] ?? '', ['chief', 'waiter', 'admin'])) {
+    respond(['error' => 'Forbidden'], 403);
+}
 
 $data    = json_decode(file_get_contents('php://input'), true);
 $orderId = (int)  ($data['order_id'] ?? 0);

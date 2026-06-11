@@ -3,6 +3,9 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 require_once __DIR__ . '/../Php/db.php';
 require_once __DIR__ . '/../Php/bootstrap.php';
 requireLogin();
+if (!in_array($_SESSION['role'] ?? '', ['chief', 'waiter'])) {
+    respond(['error' => 'Forbidden'], 403);
+}
 
 // Expect JSON { action: 'in'|'out' }
 $payload = json_decode(file_get_contents('php://input'), true) ?: [];

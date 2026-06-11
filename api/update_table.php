@@ -23,7 +23,13 @@ if (!empty($_FILES['tableImageFile']['name']) || !empty($_FILES['editTableImageF
         respond(['error' => 'Unable to create upload folder'], 500);
     }
 
-    $ext = pathinfo($_FILES[$fileKey]['name'], PATHINFO_EXTENSION);
+    $ext = strtolower(pathinfo($_FILES[$fileKey]['name'], PATHINFO_EXTENSION));
+    $allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    $actualMime = mime_content_type($_FILES[$fileKey]['tmp_name']);
+    $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!in_array($ext, $allowedExts) || !in_array($actualMime, $allowedMimes)) {
+        respond(['error' => 'Invalid image format'], 400);
+    }
     $safeName = 'table_' . $tableId . '_' . uniqid() . '.' . $ext;
     if (move_uploaded_file($_FILES[$fileKey]['tmp_name'], $uploadDir . $safeName)) {
         $imagePath = 'uploads/tables/' . $safeName;

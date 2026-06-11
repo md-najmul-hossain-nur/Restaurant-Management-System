@@ -20,9 +20,11 @@ try {
     if ($action === 'take') {
         $stmt = $pdo->prepare(
             "UPDATE restaurant_tables
-             SET assigned_waiter_id = ?, status = 'occupied'
+             SET assigned_waiter_id = ?, 
+                 status = 'occupied',
+                 active_customer_id = COALESCE(active_customer_id, reserved_customer_id)
              WHERE id = ?
-               AND status IN ('available','reserved')
+               AND status IN ('available','reserved','occupied')
                AND (assigned_waiter_id IS NULL OR assigned_waiter_id = 0)"
         );
         $stmt->execute([$userId, $tableId]);

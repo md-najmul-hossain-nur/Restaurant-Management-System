@@ -240,18 +240,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const user = await checkLogin();
 
   if (user) {
-    // Logged in — hide guest fields, show welcome
+    // Logged in — hide guest fields
     if (guestFields) guestFields.classList.add('hidden');
-    const welcomeEl = document.getElementById('loggedInNote');
-    if (welcomeEl) { welcomeEl.classList.remove("hidden"); welcomeEl.textContent = `Ordering as: ${user.name}`; }
   } else {
     // Guest — show name + phone fields
     if (guestFields) guestFields.classList.remove('hidden');
-    const welcomeEl = document.getElementById('loggedInNote');
-    if (welcomeEl) {
-      welcomeEl.classList.remove('hidden');
-      welcomeEl.textContent = 'Ordering as guest';
-    }
   }
 
   await loadMenuItems();

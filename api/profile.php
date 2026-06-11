@@ -64,14 +64,19 @@ if ($method === 'POST') {
         $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
         $maxSize = 5 * 1024 * 1024; // 5MB
 
-        if (!in_array($file['type'], $allowed)) {
+        $actualMime = mime_content_type($file['tmp_name']);
+        if (!in_array($actualMime, $allowed)) {
             respond(['error' => 'Only JPG, PNG, WEBP or GIF allowed'], 400);
         }
         if ($file['size'] > $maxSize) {
             respond(['error' => 'Image must be under 5MB'], 400);
         }
 
-        $ext      = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $ext      = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        if (!in_array($ext, $allowedExts)) {
+            respond(['error' => 'Invalid file extension'], 400);
+        }
         $filename = 'avatar_' . $userId . '_' . time() . '.' . $ext;
         $uploadDir = '../Images/avatars/';
 

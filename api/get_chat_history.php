@@ -15,11 +15,8 @@ if ($userRole === 'admin') {
         exit;
     }
 } else {
-    // Guest/customer: use current session identifier or explicit session_id from the client.
-    $sessionIdentifier = trim($_GET['session_id'] ?? '');
-    if ($sessionIdentifier === '') {
-        $sessionIdentifier = session_id();
-    }
+    // Guest/customer: strictly use current session identifier.
+    $sessionIdentifier = session_id();
 }
 
 try {

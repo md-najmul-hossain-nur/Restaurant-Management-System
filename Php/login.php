@@ -28,13 +28,8 @@ if (!$user) {
 }
 
 if (!password_verify($password, $user['password'])) {
-    $isAdminFallback = ($user['role'] ?? '') === 'admin'
-        && hash('sha256', $password) === strtolower(trim($user['password'] ?? ''));
-
-    if (!$isAdminFallback) {
-        header('Location: ../Html/login.html?error=bad_password');
-        exit;
-    }
+    header('Location: ../Html/login.html?error=bad_password');
+    exit;
 }
 
 if (($user['role'] ?? '') === 'customer' && ($user['approval_status'] ?? 'approved') !== 'approved') {

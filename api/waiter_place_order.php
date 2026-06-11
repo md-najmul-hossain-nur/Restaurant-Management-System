@@ -16,13 +16,14 @@ if (!$tableId)   respond(['error' => 'No table selected'], 400);
 if (!$items)     respond(['error' => 'No items selected'], 400);
 
 $tableCheck = $pdo->prepare(
-    "SELECT assigned_waiter_id FROM restaurant_tables WHERE id = ?"
+    "SELECT assigned_waiter_id, active_customer_id FROM restaurant_tables WHERE id = ?"
 );
 $tableCheck->execute([$tableId]);
-$assignedWaiter = $tableCheck->fetchColumn();
-if ((int) $assignedWaiter !== (int) $waiterId) {
+$tableInfo = $tableCheck->fetch();
+if (!$tableInfo || (int) $tableInfo['assigned_waiter_id'] !== (int) $waiterId) {
     respond(['error' => 'Table is not assigned to you'], 403);
 }
+$customerId = $tableInfo['active_customer_id'] ?: null;
 
 $total = 0;
 foreach ($items as $item) $total += $item['price'] * $item['quantity'];
@@ -31,8 +32,8 @@ $grandTotal = round($total * 1.10, 2); // 10% tax
 $pdo->beginTransaction();
 try {
     $pdo->prepare(
-        'INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount) VALUES (NULL, ?, ?, ?, ?)'
-    )->execute([$tableId, $waiterId, 'queued', $grandTotal]);
+        'INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount) VALUES (?, ?, ?, ?, ?)'
+    )->execute([$customerId, $tableId, $waiterId, 'queued', $grandTotal]);
     $orderId = $pdo->lastInsertId();
 
     $itemStmt = $pdo->prepare(
