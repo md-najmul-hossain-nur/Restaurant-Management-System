@@ -6,123 +6,123 @@
 ========================================== */
 const tableData = [
   {
-    key:      'table1',
-    name:     'Table 1',
-    title:    'Intimate Duo Table',
+    key: 'table1',
+    name: 'Table 1',
+    title: 'Intimate Duo Table',
     subtitle: 'Ground Floor · Cozy Corner',
-    image:    'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=900&q=80',
-    desc:     'A snug two-seater tucked in a warm corner, perfect for an intimate dinner for two. Soft candlelight and a quiet ambiance make this table ideal for date nights or private conversations.',
+    image: 'https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=900&q=80',
+    desc: 'A snug two-seater tucked in a warm corner, perfect for an intimate dinner for two. Soft candlelight and a quiet ambiance make this table ideal for date nights or private conversations.',
     capacity: 2, floor: 'GF', rating: '★ 4.7', setting: 'Corner',
     pills: [
-      { icon: 'fas fa-heart',       label: 'Romantic'   },
-      { icon: 'fas fa-users',       label: '2 Seats'    },
-      { icon: 'fas fa-moon',        label: 'Candlelit'  },
+      { icon: 'fas fa-heart', label: 'Romantic' },
+      { icon: 'fas fa-users', label: '2 Seats' },
+      { icon: 'fas fa-moon', label: 'Candlelit' },
       { icon: 'fas fa-volume-mute', label: 'Quiet Zone' },
     ],
   },
   {
-    key:      'table2',
-    name:     'Table 2',
-    title:    'Garden View Table',
+    key: 'table2',
+    name: 'Table 2',
+    title: 'Garden View Table',
     subtitle: 'Ground Floor · Garden Side',
-    image:    'https://images.unsplash.com/photo-1592861956120-e524fc739696?w=900&q=80',
-    desc:     'Beside a large glass panel overlooking our lush herb garden, Table 2 floods with natural light during the day and warm ambient glow at night. A favourite for brunch and relaxed lunches.',
+    image: 'https://images.unsplash.com/photo-1592861956120-e524fc739696?w=900&q=80',
+    desc: 'Beside a large glass panel overlooking our lush herb garden, Table 2 floods with natural light during the day and warm ambient glow at night. A favourite for brunch and relaxed lunches.',
     capacity: 2, floor: 'GF', rating: '★ 4.6', setting: 'Garden Side',
     pills: [
-      { icon: 'fas fa-seedling', label: 'Garden View'     },
-      { icon: 'fas fa-users',    label: '2 Seats'         },
-      { icon: 'fas fa-sun',      label: 'Natural Light'   },
-      { icon: 'fas fa-coffee',   label: 'Brunch Favourite'},
+      { icon: 'fas fa-seedling', label: 'Garden View' },
+      { icon: 'fas fa-users', label: '2 Seats' },
+      { icon: 'fas fa-sun', label: 'Natural Light' },
+      { icon: 'fas fa-coffee', label: 'Brunch Favourite' },
     ],
   },
   {
-    key:      'table3',
-    name:     'Table 3',
-    title:    'Classic Centre Table',
+    key: 'table3',
+    name: 'Table 3',
+    title: 'Classic Centre Table',
     subtitle: 'Ground Floor · Main Dining',
-    image:    'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=900&q=80',
-    desc:     'Sitting at the heart of the main dining room, Table 3 gives guests the full atmosphere of Feliciano — the hum of conversation, the aroma of the kitchen, and an unobstructed view of the entire floor.',
+    image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=900&q=80',
+    desc: 'Sitting at the heart of the main dining room, Table 3 gives guests the full atmosphere of Feliciano — the hum of conversation, the aroma of the kitchen, and an unobstructed view of the entire floor.',
     capacity: 4, floor: 'GF', rating: '★ 4.8', setting: 'Main Hall',
     pills: [
-      { icon: 'fas fa-star',     label: 'Most Popular'    },
-      { icon: 'fas fa-users',    label: '4 Seats'         },
-      { icon: 'fas fa-utensils', label: 'Kitchen View'    },
-      { icon: 'fas fa-globe',    label: 'Full Atmosphere' },
+      { icon: 'fas fa-star', label: 'Most Popular' },
+      { icon: 'fas fa-users', label: '4 Seats' },
+      { icon: 'fas fa-utensils', label: 'Kitchen View' },
+      { icon: 'fas fa-globe', label: 'Full Atmosphere' },
     ],
   },
   {
-    key:      'table4',
-    name:     'Table 4',
-    title:    'Bay Window Booth',
+    key: 'table4',
+    name: 'Table 4',
+    title: 'Bay Window Booth',
     subtitle: 'Ground Floor · Street Side',
-    image:    'https://images.unsplash.com/photo-1567521464027-f127ff144326?w=900&q=80',
-    desc:     'A cosy booth framed by a wide bay window facing the street. Upholstered bench seating and a private feel make it a go-to for small family gatherings or a relaxed group meal.',
+    image: 'https://images.unsplash.com/photo-1567521464027-f127ff144326?w=900&q=80',
+    desc: 'A cosy booth framed by a wide bay window facing the street. Upholstered bench seating and a private feel make it a go-to for small family gatherings or a relaxed group meal.',
     capacity: 4, floor: 'GF', rating: '★ 4.7', setting: 'Booth',
     pills: [
-      { icon: 'fas fa-eye',   label: 'Street View'    },
-      { icon: 'fas fa-users', label: '4 Seats'        },
-      { icon: 'fas fa-couch', label: 'Booth Seating'  },
-      { icon: 'fas fa-child', label: 'Family Friendly'},
+      { icon: 'fas fa-eye', label: 'Street View' },
+      { icon: 'fas fa-users', label: '4 Seats' },
+      { icon: 'fas fa-couch', label: 'Booth Seating' },
+      { icon: 'fas fa-child', label: 'Family Friendly' },
     ],
   },
   {
-    key:      'table5',
-    name:     'Table 5',
-    title:    'Signature Window Table',
+    key: 'table5',
+    name: 'Table 5',
+    title: 'Signature Window Table',
     subtitle: 'Ground Floor · Panoramic View',
-    image:    'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=900&q=80',
-    desc:     'Positioned at the heart of our dining floor, Table 5 offers a sweeping panoramic view through floor-to-ceiling windows overlooking the garden courtyard.',
+    image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=900&q=80',
+    desc: 'Positioned at the heart of our dining floor, Table 5 offers a sweeping panoramic view through floor-to-ceiling windows overlooking the garden courtyard.',
     capacity: 4, floor: 'GF', rating: '★ 4.9', setting: 'Indoor',
     pills: [
-      { icon: 'fas fa-eye',        label: 'Window View'      },
-      { icon: 'fas fa-users',      label: '4 Seats'          },
-      { icon: 'fas fa-leaf',       label: 'Garden Facing'    },
-      { icon: 'fas fa-lightbulb',  label: 'Ambient Lighting' },
+      { icon: 'fas fa-eye', label: 'Window View' },
+      { icon: 'fas fa-users', label: '4 Seats' },
+      { icon: 'fas fa-leaf', label: 'Garden Facing' },
+      { icon: 'fas fa-lightbulb', label: 'Ambient Lighting' },
     ],
   },
   {
-    key:      'table6',
-    name:     'Table 6',
-    title:    'Terrace Round Table',
+    key: 'table6',
+    name: 'Table 6',
+    title: 'Terrace Round Table',
     subtitle: 'First Floor · Open Terrace',
-    image:    'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=900&q=80',
-    desc:     'Set on our open-air terrace on the first floor, Table 6 is a round six-seater with a beautiful city skyline backdrop.',
+    image: 'https://images.unsplash.com/photo-1533777857889-4be7c70b33f7?w=900&q=80',
+    desc: 'Set on our open-air terrace on the first floor, Table 6 is a round six-seater with a beautiful city skyline backdrop.',
     capacity: 6, floor: 'F1', rating: '★ 4.8', setting: 'Outdoor',
     pills: [
-      { icon: 'fas fa-cloud-sun',   label: 'Open Air'        },
-      { icon: 'fas fa-users',       label: '6 Seats'         },
-      { icon: 'fas fa-city',        label: 'Skyline View'    },
-      { icon: 'fas fa-glass-cheers',label: 'Events Friendly' },
+      { icon: 'fas fa-cloud-sun', label: 'Open Air' },
+      { icon: 'fas fa-users', label: '6 Seats' },
+      { icon: 'fas fa-city', label: 'Skyline View' },
+      { icon: 'fas fa-glass-cheers', label: 'Events Friendly' },
     ],
   },
   {
-    key:      'table7',
-    name:     'Table 7',
-    title:    'Private Corner Alcove',
+    key: 'table7',
+    name: 'Table 7',
+    title: 'Private Corner Alcove',
     subtitle: 'Mezzanine Level · Quiet Corner',
-    image:    'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&q=80',
-    desc:     'Tucked into a quiet alcove on our mezzanine level, Table 7 is our most requested table for couples and intimate groups seeking privacy.',
+    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&q=80',
+    desc: 'Tucked into a quiet alcove on our mezzanine level, Table 7 is our most requested table for couples and intimate groups seeking privacy.',
     capacity: 6, floor: 'M1', rating: '★ 4.8', setting: 'Alcove',
     pills: [
-      { icon: 'fas fa-lock',        label: 'Private Setting'   },
-      { icon: 'fas fa-users',       label: '6 Seats'           },
+      { icon: 'fas fa-lock', label: 'Private Setting' },
+      { icon: 'fas fa-users', label: '6 Seats' },
       { icon: 'fas fa-wine-bottle', label: 'Wine Shelf Nearby' },
-      { icon: 'fas fa-volume-mute', label: 'Quiet Zone'        },
+      { icon: 'fas fa-volume-mute', label: 'Quiet Zone' },
     ],
   },
   {
-    key:      'table8',
-    name:     'Table 8',
-    title:    'Grand Banquet Table',
+    key: 'table8',
+    name: 'Table 8',
+    title: 'Grand Banquet Table',
     subtitle: 'First Floor · Private Dining Room',
-    image:    'https://images.unsplash.com/photo-1544148103-0773bf10d330?w=900&q=80',
-    desc:     'Our largest table, housed in a semi-private dining room on the first floor. Perfect for corporate events, large family celebrations, or group dinners.',
+    image: 'https://images.unsplash.com/photo-1544148103-0773bf10d330?w=900&q=80',
+    desc: 'Our largest table, housed in a semi-private dining room on the first floor. Perfect for corporate events, large family celebrations, or group dinners.',
     capacity: 8, floor: 'F1', rating: '★ 5.0', setting: 'Private Room',
     pills: [
-      { icon: 'fas fa-crown',          label: 'Premium Table'   },
-      { icon: 'fas fa-users',          label: '8 Seats'         },
-      { icon: 'fas fa-concierge-bell', label: 'Dedicated Server'},
-      { icon: 'fas fa-door-closed',    label: 'Semi-Private'    },
+      { icon: 'fas fa-crown', label: 'Premium Table' },
+      { icon: 'fas fa-users', label: '8 Seats' },
+      { icon: 'fas fa-concierge-bell', label: 'Dedicated Server' },
+      { icon: 'fas fa-door-closed', label: 'Semi-Private' },
     ],
   },
 ];
@@ -192,7 +192,9 @@ function getDisplayTables() {
 
 async function loadTableStatuses() {
   try {
-    const res    = await fetch('../api/get_tables.php');
+    const res = await fetch('../api/get_tables.php', {
+      credentials: 'same-origin',
+    });
     const tables = await res.json();
 
     dbTables = Array.isArray(tables) ? tables : [];
@@ -229,15 +231,13 @@ function renderBrowserGrid() {
   const grid = document.getElementById('tableBrowserGrid');
   grid.innerHTML = getDisplayTables().map(t => {
     const tableNum = t.tableNumber || parseInt(t.key.replace('table', ''));
-    const status   = t.status || dbTableStatuses[tableNum] || 'available';
-    const isBlocked = status !== 'available';
+    const status = t.status || dbTableStatuses[tableNum] || 'available';
     const badgeHTML = status !== 'available'
       ? `<span class="browser-card-status-badge ${status}">${status}</span>`
       : '';
 
     return `
-      <div class="browser-card ${isBlocked ? 'blocked' : ''}"
-           onclick="${isBlocked ? '' : `openTablePreview('${t.key}')`}">
+      <div class="browser-card" onclick="openTablePreview('${t.key}')">
         <div class="browser-card-img-wrap">
           <img src="${t.image}" alt="${t.name}" loading="lazy"/>
           <span class="browser-card-badge">${t.name}</span>
@@ -250,14 +250,13 @@ function renderBrowserGrid() {
           <p class="browser-card-desc">${t.desc}</p>
           <div class="browser-card-pills">
             ${t.pills.slice(0, 3).map(p =>
-              `<span class="pill"><i class="${p.icon}"></i>${p.label}</span>`
-            ).join('')}
+      `<span class="pill"><i class="${p.icon}"></i>${p.label}</span>`
+    ).join('')}
           </div>
           <button class="browser-select-btn"
-                  ${isBlocked ? 'disabled' : ''}
                   onclick="event.stopPropagation(); selectAndBook('${t.key}')">
             <i class="fas fa-calendar-plus"></i>
-            ${isBlocked ? 'Not Available' : 'Reserve This Table'}
+            ${status === 'available' ? 'Reserve This Table' : 'Check Availability'}
           </button>
         </div>
       </div>
@@ -291,22 +290,29 @@ function selectAndBook(tableKey) {
 function openBookingForm(tableKey) {
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('bookDate').value = today;
-  // set sensible default time: next 30-min slot or keep 19:00
+  // set sensible default range: next 30-min slot for 1 hour
   const timeInput = document.getElementById('bookTime');
+  const endTimeInput = document.getElementById('bookEndTime');
   try {
     const step = parseInt(timeInput.step || '1800', 10);
 
     const now = new Date();
     // round up to next 30-minute slot
     const nextSlot = new Date(Math.ceil(now.getTime() / (step * 1000)) * (step * 1000));
+    const endSlot = new Date(nextSlot.getTime() + (60 * 60 * 1000));
     const hh = String(nextSlot.getHours()).padStart(2, '0');
     const mm = String(nextSlot.getMinutes()).padStart(2, '0');
+    const endHh = String(endSlot.getHours()).padStart(2, '0');
+    const endMm = String(endSlot.getMinutes()).padStart(2, '0');
     const candidate = `${hh}:${mm}`;
+    const endCandidate = `${endHh}:${endMm}`;
     // set next slot as default (fallback to 19:00 if something fails)
     timeInput.value = candidate || timeInput.value || '19:00';
+    if (endTimeInput) endTimeInput.value = endCandidate || endTimeInput.value || '20:00';
   } catch (e) {
     // fallback
     timeInput.value = timeInput.value || '19:00';
+    if (endTimeInput) endTimeInput.value = endTimeInput.value || '20:00';
   }
 
   document.querySelectorAll('.table-chip').forEach(c => {
@@ -331,20 +337,83 @@ function selectTable(el) {
 /* ==========================================
    Capacity Warning Logic  (unchanged)
 ========================================== */
-let tableCapacities = { 1:2, 2:2, 3:4, 4:4, 5:4, 6:6, 7:6, 8:8 };
-// occupiedTimesCache: { '<tableNum>|<date>': ['19:00','19:30'] }
-let occupiedTimesCache = {};
+let tableCapacities = { 1: 2, 2: 2, 3: 4, 4: 4, 5: 4, 6: 6, 7: 6, 8: 8 };
+// availabilityCache: { '<tableNum>|<date>': [{ start:'18:00', end:'19:00' }] }
+let availabilityCache = {};
+const reservationStorageKey = 'felicianoReservationIds';
 
-async function fetchOccupiedTimes(tableNum, date) {
+function timeToMinutes(value) {
+  const [h, m] = String(value || '').split(':').map(Number);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return null;
+  return h * 60 + m;
+}
+
+function addMinutesToTime(value, minutes) {
+  const start = timeToMinutes(value);
+  if (start === null) return '';
+  const total = (start + minutes + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+}
+
+function rangesOverlap(startA, endA, startB, endB) {
+  const aStart = timeToMinutes(startA);
+  const aEnd = timeToMinutes(endA);
+  const bStart = timeToMinutes(startB);
+  const bEnd = timeToMinutes(endB);
+  if ([aStart, aEnd, bStart, bEnd].some(v => v === null)) return false;
+  return aStart < bEnd && aEnd > bStart;
+}
+
+function formatSlotTime(value) {
+  const minutes = timeToMinutes(value);
+  if (minutes === null) return value || '';
+  const h24 = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  const suffix = h24 >= 12 ? 'PM' : 'AM';
+  const h12 = h24 % 12 || 12;
+  return `${h12}:${String(m).padStart(2, '0')} ${suffix}`;
+}
+
+function formatSlotRange(slot) {
+  return `${formatSlotTime(slot.start)} - ${formatSlotTime(slot.end)}`;
+}
+
+function getStoredReservationIds() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(reservationStorageKey) || '[]');
+    return Array.isArray(parsed)
+      ? parsed.map(id => parseInt(id, 10)).filter(Number.isFinite)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function rememberReservationId(id) {
+  const reservationId = parseInt(id, 10);
+  if (!Number.isFinite(reservationId)) return;
+
+  const ids = getStoredReservationIds();
+  if (!ids.includes(reservationId)) {
+    ids.push(reservationId);
+    localStorage.setItem(reservationStorageKey, JSON.stringify(ids.slice(-25)));
+  }
+}
+
+async function fetchAvailabilitySlots(tableNum, date) {
   const key = `${tableNum}|${date}`;
-  if (occupiedTimesCache[key]) return occupiedTimesCache[key];
+  if (availabilityCache[key]) return availabilityCache[key];
   try {
     const tableId = parseInt(dbTableByNumber[tableNum]?.id || tableNum);
-    const res = await fetch(`../api/get_table_availability.php?table_id=${tableId}&date=${encodeURIComponent(date)}`);
+    const res = await fetch(`../api/get_table_availability.php?table_id=${tableId}&date=${encodeURIComponent(date)}`, {
+      credentials: 'same-origin',
+    });
     if (!res.ok) return [];
     const data = await res.json();
-    occupiedTimesCache[key] = Array.isArray(data.occupied) ? data.occupied : [];
-    return occupiedTimesCache[key];
+    availabilityCache[key] = Array.isArray(data.slots)
+      ? data.slots
+      : (Array.isArray(data.occupied) ? data.occupied.map(start => ({ start, end: addMinutesToTime(start, 60) })) : []);
+    return availabilityCache[key];
   } catch (e) {
     console.error('Could not fetch availability', e);
     return [];
@@ -357,14 +426,33 @@ async function refreshAvailabilityForSelection() {
   const tableNum = parseInt(selectedChip.dataset.table);
   const date = document.getElementById('bookDate').value || new Date().toISOString().split('T')[0];
   const time = document.getElementById('bookTime').value;
+  const endTimeInput = document.getElementById('bookEndTime');
+  const endTime = endTimeInput?.value || addMinutesToTime(time, 60);
 
-  const occupied = await fetchOccupiedTimes(tableNum, date);
+  const slots = await fetchAvailabilitySlots(tableNum, date);
   const warnEl = document.getElementById('availabilityWarning');
   const warnMsg = document.getElementById('availabilityWarningMsg');
   const submitBtn = document.getElementById('bookingSubmitBtn');
+  const slotsEl = document.getElementById('availabilitySlots');
 
-  if (occupied.includes(time)) {
-    warnMsg.textContent = `Time ${time} is already occupied for Table ${tableNum}. Please choose another slot.`;
+  if (slotsEl) {
+    slotsEl.innerHTML = slots.length
+      ? `<strong>Reserved times:</strong> ${slots.map(slot => `<span>${formatSlotRange(slot)}</span>`).join('')}`
+      : '<strong>Reserved times:</strong> No reservations for this table/date.';
+  }
+
+  if (!time || !endTime || timeToMinutes(endTime) <= timeToMinutes(time)) {
+    warnMsg.textContent = 'End time must be after start time.';
+    warnEl.style.display = 'block';
+    submitBtn.disabled = true;
+    submitBtn.classList.add('disabled');
+    return;
+  }
+
+  const conflict = slots.find(slot => rangesOverlap(time, endTime, slot.start, slot.end));
+
+  if (conflict) {
+    warnMsg.textContent = `Table ${tableNum} is already reserved from ${formatSlotRange(conflict)}. Please choose another time.`;
     warnEl.style.display = 'block';
     submitBtn.disabled = true;
     submitBtn.classList.add('disabled');
@@ -404,15 +492,15 @@ function getSelectedGuests() {
 
 function checkCapacity() {
   const selectedChip = document.querySelector('.table-chip.selected');
-  const warning      = document.getElementById('capacityWarning');
-  const msgEl        = document.getElementById('capacityWarningMsg');
-  const submitBtn    = document.getElementById('bookingSubmitBtn');
+  const warning = document.getElementById('capacityWarning');
+  const msgEl = document.getElementById('capacityWarningMsg');
+  const submitBtn = document.getElementById('bookingSubmitBtn');
 
   if (!selectedChip) { warning.classList.remove('show'); return; }
 
   const tableNum = parseInt(selectedChip.dataset.table);
   const capacity = tableCapacities[tableNum];
-  const guests   = getSelectedGuests();
+  const guests = getSelectedGuests();
 
   if (guests > capacity) {
     msgEl.textContent =
@@ -442,18 +530,21 @@ async function submitBooking() {
   }
 
   const tableNum = parseInt(selectedChip.dataset.table);
-  const date     = document.getElementById('bookDate').value;
-  const time     = document.getElementById('bookTime').value;
-  const guests   = getSelectedGuests();
-  const special  = document.querySelector('.form-group .form-input[placeholder]')?.value || '';
+  const date = document.getElementById('bookDate').value;
+  const time = document.getElementById('bookTime').value;
+  const endTime = document.getElementById('bookEndTime')?.value || addMinutesToTime(time, 60);
+  const guests = getSelectedGuests();
+  const special = document.querySelector('.form-group .form-input[placeholder]')?.value || '';
 
   if (!date) {
     showToast('Please select a date.');
     return;
   }
 
-  // no hard min/max range enforced by UI; server will still prevent conflicts
-  const timeInput = document.getElementById('bookTime');
+  if (!time || !endTime || timeToMinutes(endTime) <= timeToMinutes(time)) {
+    showToast('Please choose a valid start and end time.', true);
+    return;
+  }
 
   const tableId = parseInt(dbTableByNumber[tableNum]?.id || tableNum);
   if (!tableId) {
@@ -462,17 +553,19 @@ async function submitBooking() {
   }
 
   const submitBtn = document.getElementById('bookingSubmitBtn');
-  submitBtn.disabled    = true;
+  submitBtn.disabled = true;
   submitBtn.textContent = 'Booking…';
 
   try {
-    const res    = await fetch('../api/book_table.php', {
-      method:  'POST',
+    const res = await fetch('../api/book_table.php', {
+      method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        table_id:         tableId,
+        table_id: tableId,
         date,
         time,
+        end_time: endTime,
         guests,
         special_requests: special,
       }),
@@ -480,15 +573,13 @@ async function submitBooking() {
     const result = await res.json();
 
     if (result.success) {
-      // Save table id to sessionStorage so order page can use it
+      rememberReservationId(result.reservation_id);
       sessionStorage.setItem('selectedTableId', tableId);
       closeModal('bookingOverlay');
       showToast("Reservation request sent! We'll confirm shortly.");
-      // Refresh status badges
-      // clear cached occupied times for this table/date so UI updates
       const tableNum = parseInt(document.querySelector('.table-chip.selected')?.dataset.table || tableId);
       const key = `${tableNum}|${date}`;
-      delete occupiedTimesCache[key];
+      delete availabilityCache[key];
       await loadTableStatuses();
       await loadReservations();
     } else {
@@ -498,34 +589,35 @@ async function submitBooking() {
     console.error(err);
     showToast('Network error. Please try again.');
   } finally {
-    submitBtn.disabled    = false;
-    submitBtn.innerHTML   = '<i class="fas fa-check"></i> Confirm Reservation';
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-check"></i> Confirm Reservation';
   }
 }
 
 /* ==========================================
-   View Table Details — Reservation Cards  (unchanged)
+   View Table Details — Reservation Cards 
 ========================================== */
-function formatReservationDate(date, time) {
+function formatReservationDate(date, time, endTime = '') {
   if (!date) return 'Date not set';
   const safeTime = time || '00:00';
   const d = new Date(`${date}T${safeTime}`);
   if (Number.isNaN(d.getTime())) return `${date} at ${safeTime}`;
+  const timeText = endTime ? `${safeTime.slice(0, 5)} - ${endTime.slice(0, 5)}` : safeTime.slice(0, 5);
   return d.toLocaleDateString(undefined, {
     month: '2-digit',
     day: '2-digit',
     year: 'numeric',
-  }) + ` at ${safeTime.slice(0, 5)}`;
+  }) + ` at ${timeText}`;
 }
 
 function getReservationStatus(status) {
   const normalized = (status || 'pending').toLowerCase();
   const data = {
-    pending:   { cls: 'pending',   icon: 'fas fa-clock',        label: 'Pending',   msg: 'Waiting for admin approval.' },
-    approved:  { cls: 'approved',  icon: 'fas fa-check-circle', label: 'Approved',  msg: 'Your reservation is approved. See you soon.' },
+    pending: { cls: 'pending', icon: 'fas fa-clock', label: 'Pending', msg: 'Waiting for admin approval.' },
+    approved: { cls: 'approved', icon: 'fas fa-check-circle', label: 'Approved', msg: 'Your reservation is approved. See you soon.' },
     confirmed: { cls: 'confirmed', icon: 'fas fa-check-circle', label: 'Confirmed', msg: 'Your reservation is confirmed. See you soon.' },
-    rejected:  { cls: 'rejected',  icon: 'fas fa-times-circle', label: 'Rejected',  msg: 'This reservation was not approved.' },
-    cancelled: { cls: 'cancelled', icon: 'fas fa-ban',          label: 'Cancelled', msg: 'This reservation was cancelled.' },
+    rejected: { cls: 'rejected', icon: 'fas fa-times-circle', label: 'Rejected', msg: 'This reservation was not approved.' },
+    cancelled: { cls: 'cancelled', icon: 'fas fa-ban', label: 'Cancelled', msg: 'This reservation was cancelled.' },
   };
   return data[normalized] || data.pending;
 }
@@ -553,7 +645,7 @@ function renderReservations(reservations) {
           </span>
         </div>
         <div class="card-meta">
-          <span><i class="far fa-calendar"></i> ${formatReservationDate(r.reserved_date, r.reserved_time)}</span>
+          <span><i class="far fa-calendar"></i> ${formatReservationDate(r.reserved_date, r.reserved_time, r.reserved_end_time)}</span>
           <span><i class="fas fa-users"></i> ${r.guest_count} guests</span>
         </div>
         <div class="confirmation-msg">
@@ -580,7 +672,21 @@ async function loadReservations() {
   if (list) list.innerHTML = '<div class="reservations-empty">Loading reservations...</div>';
 
   try {
-    const res = await fetch('../api/get_my_reservations.php');
+    const storedIds = getStoredReservationIds();
+    const params = new URLSearchParams();
+    if (storedIds.length) {
+      params.set('ids', storedIds.join(','));
+    }
+
+    const selectedTableId = parseInt(sessionStorage.getItem('selectedTableId') || '', 10);
+    if (Number.isFinite(selectedTableId)) {
+      params.set('table_id', String(selectedTableId));
+    }
+
+    const query = params.toString() ? `?${params.toString()}` : '';
+    const res = await fetch(`../api/get_my_reservations.php${query}`, {
+      credentials: 'same-origin',
+    });
     const result = await res.json();
 
     if (res.ok && Array.isArray(result)) {
@@ -604,6 +710,7 @@ async function cancelReservation(reservationId) {
   try {
     const res = await fetch('../api/cancel_reservation.php', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reservation_id: reservationId }),
     });
@@ -611,6 +718,7 @@ async function cancelReservation(reservationId) {
 
     if (result.success) {
       showToast('Reservation cancelled.');
+      availabilityCache = {};
       await loadReservations();
       await loadTableStatuses();
     } else {
@@ -632,24 +740,24 @@ function viewReservationTable(tableKey) {
 }
 
 /* ==========================================
-   Populate Detail Modal  (unchanged)
+   Populate Detail Modal  
 ========================================== */
 function populateDetailModal(t) {
-  document.getElementById('modalImage').src            = t.image;
-  document.getElementById('modalBadge').textContent    = t.name;
-  document.getElementById('modalTitle').textContent    = t.title;
+  document.getElementById('modalImage').src = t.image;
+  document.getElementById('modalBadge').textContent = t.name;
+  document.getElementById('modalTitle').textContent = t.title;
   document.getElementById('modalSubtitle').textContent = t.subtitle;
-  document.getElementById('modalDesc').textContent     = t.desc;
+  document.getElementById('modalDesc').textContent = t.desc;
 
   document.getElementById('modalPills').innerHTML = t.pills.map(p =>
     `<span class="pill"><i class="${p.icon}"></i>${p.label}</span>`
   ).join('');
 
   document.getElementById('modalStats').innerHTML = [
-    { value: t.capacity, label: 'Seats'        },
-    { value: t.floor,    label: 'Floor'        },
-    { value: t.rating,   label: 'Guest Rating' },
-    { value: t.setting,  label: 'Setting'      },
+    { value: t.capacity, label: 'Seats' },
+    { value: t.floor, label: 'Floor' },
+    { value: t.rating, label: 'Guest Rating' },
+    { value: t.setting, label: 'Setting' },
   ].map(s =>
     `<div class="stat-item">
       <div class="stat-value">${s.value}</div>
@@ -662,9 +770,9 @@ function populateDetailModal(t) {
 }
 
 /* ==========================================
-   Modal Helpers  (unchanged)
+   Modal Helpers 
 ========================================== */
-function openModal(id)  { document.getElementById(id)?.classList.add('open');    }
+function openModal(id) { document.getElementById(id)?.classList.add('open'); }
 function closeModal(id) { document.getElementById(id)?.classList.remove('open'); }
 
 function handleOverlayClick(e, id) {
@@ -678,7 +786,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ==========================================
-   Toast  (unchanged)
+   Toast  
 ========================================== */
 function showToast(msg, isError = false) {
   const t = document.getElementById('toast');
@@ -686,18 +794,15 @@ function showToast(msg, isError = false) {
   t.style.background = isError ? 'rgba(127,29,29,0.92)' : 'rgba(46,125,50,0.90)';
   t.style.borderColor = isError ? 'rgba(252,165,165,0.42)' : 'rgba(129,199,132,0.40)';
   t.style.color = isError ? '#fee2e2' : '#c8f5cb';
+
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3800);
+  setTimeout(() => t.classList.remove('show'), 3500);
 }
 
 /* ==========================================
-   Boot
+   Initialize
 ========================================== */
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('bookGuests').addEventListener('change', checkCapacity);
-  document.getElementById('bookDate').addEventListener('change', refreshAvailabilityForSelection);
-  document.getElementById('bookTime').addEventListener('change', refreshAvailabilityForSelection);
-  renderTableChips();
-  loadTableStatuses(); // ★ load real availability on page load
+  loadTableStatuses();
   loadReservations();
 });

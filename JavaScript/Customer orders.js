@@ -6,14 +6,14 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
 
-  const form         = document.getElementById('orderForm');
-  const itemSelect   = document.getElementById('orderItem');
-  const addItemBtn   = document.getElementById('addItemBtn');
-  const itemsList    = document.getElementById('itemsList');
-  const submitBtn    = document.getElementById('submitOrderBtn');
-  const toast        = document.getElementById('orderToast');
-  const toastMsg     = document.getElementById('toastMsg');
-  const guestFields  = document.getElementById('guestFields');
+  const form = document.getElementById('orderForm');
+  const itemSelect = document.getElementById('orderItem');
+  const addItemBtn = document.getElementById('addItemBtn');
+  const itemsList = document.getElementById('itemsList');
+  const submitBtn = document.getElementById('submitOrderBtn');
+  const toast = document.getElementById('orderToast');
+  const toastMsg = document.getElementById('toastMsg');
+  const guestFields = document.getElementById('guestFields');
 
   let menuItems = [];
   let selectedItems = []; // { recipe_id, name, price, quantity }
@@ -58,22 +58,46 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Load menu items from DB ────────────────────────────
   async function loadMenuItems() {
     try {
-      const res   = await fetch('../api/get_menu.php');
+      const res = await fetch('../api/get_menu.php');
       if (!res.ok) throw new Error('Failed to load menu');
-      menuItems   = await res.json();
+      menuItems = await res.json();
 
       itemSelect.innerHTML = '<option value="">— Select an item —</option>';
       menuItems.forEach(item => {
-        const opt   = document.createElement('option');
-        opt.value   = item.id;
-        opt.dataset.name  = item.name;
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.dataset.name = item.name;
         opt.dataset.price = item.price;
-        opt.textContent   = `${item.name} — $${parseFloat(item.price).toFixed(2)}`;
+        opt.textContent = `${item.name} — $${parseFloat(item.price).toFixed(2)}`;
         itemSelect.appendChild(opt);
       });
     } catch (err) {
       console.error(err);
       itemSelect.innerHTML = '<option>Could not load menu</option>';
+    }
+  }
+
+  // ── Load tables from DB ────────────────────────────
+  async function loadTables() {
+    const tableSelect = document.getElementById('orderTable');
+    if (!tableSelect) return;
+
+    try {
+      const res = await fetch('../api/get_tables.php');
+      if (!res.ok) throw new Error('Failed to load tables');
+      const tables = await res.json();
+
+      tableSelect.innerHTML = '<option value="">— No table / Takeaway —</option>';
+      tables.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = `Table ${t.table_number} (${t.capacity} seats) — ${t.status}`;
+        if (t.status === 'occupied') opt.disabled = true;
+        tableSelect.appendChild(opt);
+      });
+    } catch (err) {
+      console.error(err);
+      tableSelect.innerHTML = '<option value="">Could not load tables</option>';
     }
   }
 
@@ -117,8 +141,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const id    = parseInt(selected.value);
-    const name  = selected.dataset.name;
+    const id = parseInt(selected.value);
+    const name = selected.dataset.name;
     const price = parseFloat(selected.dataset.price);
 
     addSelectedItem({ recipe_id: id, name, price });
@@ -129,13 +153,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Qty / remove buttons (delegated) ──────────────────
   itemsList.addEventListener('click', (e) => {
-    const qtyBtn    = e.target.closest('.qty-btn');
+    const qtyBtn = e.target.closest('.qty-btn');
     const removeBtn = e.target.closest('.remove-btn');
 
     if (qtyBtn) {
-      const index  = parseInt(qtyBtn.dataset.index);
+      const index = parseInt(qtyBtn.dataset.index);
       const action = qtyBtn.dataset.action;
-      if (action === 'plus')  selectedItems[index].quantity++;
+      if (action === 'plus') selectedItems[index].quantity++;
       if (action === 'minus') selectedItems[index].quantity--;
       if (selectedItems[index].quantity <= 0) selectedItems.splice(index, 1);
       renderItems();
@@ -158,7 +182,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const icon = toast.querySelector('i');
     toastMsg.textContent = msg;
     icon.className = isError ? 'fas fa-times-circle' : 'fas fa-check-circle';
-    icon.style.color   = isError ? '#c0392b' : '#c8a96a';
+    icon.style.color = isError ? '#c0392b' : '#c8a96a';
     toast.classList.add('show');
     backdrop.classList.add('show');
     clearTimeout(toastTimer);
@@ -183,36 +207,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     const tableVal = document.getElementById('orderTable')?.value.trim();
-    const notes    = document.getElementById('orderNotes')?.value.trim();
+    const notes = document.getElementById('orderNotes')?.value.trim();
 
     // Guest fields (only sent if not logged in)
-    const guestName  = document.getElementById('orderName')?.value.trim();
+    const guestName = document.getElementById('orderName')?.value.trim();
     const guestPhone = document.getElementById('orderPhone')?.value.trim();
 
     // Validate guest fields if shown
     if (guestFields && !guestFields.classList.contains('hidden')) {
-      if (!guestName)  { showToast('Please enter your name.', true);  return; }
+      if (!guestName) { showToast('Please enter your name.', true); return; }
       if (!guestPhone) { showToast('Please enter your phone.', true); return; }
     }
 
-    submitBtn.disabled    = true;
+    submitBtn.disabled = true;
     submitBtn.textContent = 'Placing order…';
 
     try {
       const res = await fetch('../api/place_order.php', {
-        method:  'POST',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          table_id:       tableVal ? parseInt(tableVal) : null,
+          table_id: tableVal ? parseInt(tableVal) : null,
           payment_method: 'Cash',
-          guest_name:     guestName  || null,
-          guest_phone:    guestPhone || null,
-          notes:          notes      || null,
-          items:          selectedItems.map(i => ({
+          guest_name: guestName || null,
+          guest_phone: guestPhone || null,
+          notes: notes || null,
+          items: selectedItems.map(i => ({
             recipe_id: i.recipe_id,
-            name:      i.name,
-            price:     i.price,
-            quantity:  i.quantity,
+            name: i.name,
+            price: i.price,
+            quantity: i.quantity,
           })),
         }),
       });
@@ -231,20 +255,44 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error(err);
       showToast('Network error. Please try again.', true);
     } finally {
-      submitBtn.disabled    = false;
+      submitBtn.disabled = false;
       submitBtn.textContent = 'Confirm Order';
     }
   });
 
   // ── Boot ───────────────────────────────────────────────
   const user = await checkLogin();
+  const guestFieldsNote = document.getElementById('loggedInNote');
+  const tableContainer = document.getElementById('tableFieldContainer');
 
-  if (user) {
-    // Logged in — hide guest fields
+  if (user && user.role === 'customer') {
+    // Current customer identity
     if (guestFields) guestFields.classList.add('hidden');
+    if (guestFieldsNote) {
+      guestFieldsNote.classList.remove('hidden');
+      guestFieldsNote.textContent = user.name;
+    }
+    if (tableContainer) {
+      tableContainer.classList.remove('hidden');
+      await loadTables();
+    }
   } else {
-    // Guest — show name + phone fields
+    // Guest OR Staff (Admin/Waiter) ordering for a guest
     if (guestFields) guestFields.classList.remove('hidden');
+    if (guestFieldsNote) {
+      guestFieldsNote.classList.remove('hidden');
+      guestFieldsNote.textContent = 'Guest';
+    }
+
+    // Guests can't choose tables (manual), but Staff can
+    if (user && (user.role === 'admin' || user.role === 'waiter')) {
+      if (tableContainer) {
+        tableContainer.classList.remove('hidden');
+        await loadTables();
+      }
+    } else {
+      if (tableContainer) tableContainer.classList.add('hidden');
+    }
   }
 
   await loadMenuItems();

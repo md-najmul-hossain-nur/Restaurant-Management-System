@@ -1,26 +1,18 @@
 <?php
 
-require_once '../PHP/db.php';
+require_once __DIR__ . '/../PHP/db.php';
 require_once __DIR__ . '/reservation_helpers.php';
 header('Content-Type: application/json');
 
-requireLogin();
+requireLogin('customer');
 ensureReservationsTable($pdo);
 
-$userId = (int) ($_SESSION['user_id'] ?? 0);
-$roleStmt = $pdo->prepare('SELECT role FROM users WHERE id = ? LIMIT 1');
-$roleStmt->execute([$userId]);
-$role = strtolower(trim((string) $roleStmt->fetchColumn()));
-$sessionRole = strtolower(trim((string) ($_SESSION['role'] ?? '')));
-if ($role === '' && $sessionRole !== '') {
-    $role = $sessionRole;
-}
-if ($role !== 'customer') {
-    respond(['error' => 'Access denied'], 403);
-}
-$_SESSION['role'] = $role;
-
+$customerId = (int) ($_SESSION['user_id'] ?? 0);
 $data = json_decode(file_get_contents('php://input'), true);
+
+if (!is_array($data)) {
+    respond(['error' => 'Invalid booking request'], 400);
+}
 
 $tableId = (int) ($data['table_id'] ?? 0);
 $guests  = (int) ($data['guests']   ?? 1);
@@ -31,7 +23,7 @@ if (!$tableId) {
 
 // Check the table exists and is available
 $stmt = $pdo->prepare(
-    "SELECT id, capacity, status FROM restaurant_tables WHERE id = ?"
+    "SELECT id, capacity, status, assigned_waiter_id FROM restaurant_tables WHERE id = ?"
 );
 $stmt->execute([$tableId]);
 $table = $stmt->fetch();
@@ -39,7 +31,7 @@ $table = $stmt->fetch();
 if (!$table) {
     respond(['error' => 'Table not found'], 404);
 }
-if ($table['status'] === 'occupied') {
+if ($table['status'] === 'occupied' || !empty($table['assigned_waiter_id'])) {
     respond(['error' => 'Table is currently occupied'], 409);
 }
 if ($guests > $table['capacity']) {
@@ -47,33 +39,53 @@ if ($guests > $table['capacity']) {
 }
 
 $date            = $data['date']             ?? date('Y-m-d');
-$time            = $data['time']             ?? '19:00';
+$time            = normalizeReservationTime($data['time'] ?? '19:00');
+$endTime         = normalizeReservationTime($data['end_time'] ?? '');
 $specialRequests = $data['special_requests'] ?? '';
 
-// Get the logged-in customer's ID from session
-$customerId = $userId ?: null;
+if (!$time) {
+    respond(['error' => 'Please choose a valid start time'], 400);
+}
 
-// Check for conflicting reservations (same table, same date & time)
+if (!$endTime) {
+    $endTime = (new DateTime($time))->modify('+1 hour')->format('H:i');
+}
+
+if ($endTime <= $time) {
+    respond(['error' => 'End time must be after start time'], 400);
+}
+
+// Check for conflicting reservations (same table, same date, overlapping start/end time)
 $conflictStmt = $pdo->prepare(
-    "SELECT id FROM reservations WHERE table_id = ? AND reserved_date = ? AND TIME_FORMAT(reserved_time, '%H:%i') = ? AND status NOT IN ('cancelled','rejected') LIMIT 1"
+    "SELECT id, TIME_FORMAT(reserved_time, '%H:%i') AS reserved_time, TIME_FORMAT(reserved_end_time, '%H:%i') AS reserved_end_time
+     FROM reservations
+     WHERE table_id = ?
+       AND reserved_date = ?
+       AND status NOT IN ('cancelled','rejected')
+       AND ? < TIME_FORMAT(reserved_end_time, '%H:%i')
+       AND ? > TIME_FORMAT(reserved_time, '%H:%i')
+     LIMIT 1"
 );
-$conflictStmt->execute([$tableId, $date, $time]);
+$conflictStmt->execute([$tableId, $date, $time, $endTime]);
 $conflict = $conflictStmt->fetch();
 
 if ($conflict) {
-    respond(['error' => 'Selected time slot is already occupied for this table. Please choose another time.'], 409);
+    respond([
+        'error' => 'Selected time overlaps an existing reservation: ' . formatReservationRange($conflict['reserved_time'], $conflict['reserved_end_time']) . '. Please choose another time.'
+    ], 409);
 }
 
 try {
     $pdo->beginTransaction();
 
-    // Insert reservation record (time-based)
+    // Insert reservation record (time-range based)
     $stmt = $pdo->prepare(
-        "INSERT INTO reservations (table_id, customer_id, reserved_date, reserved_time, guest_count, special_requests, status)
-         VALUES (?, ?, ?, ?, ?, ?, 'pending')"
+        "INSERT INTO reservations (table_id, customer_id, reserved_date, reserved_time, reserved_end_time, guest_count, special_requests, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')"
     );
-    $stmt->execute([$tableId, $customerId, $date, $time, $guests, $specialRequests]);
+    $stmt->execute([$tableId, $customerId, $date, $time, $endTime, $guests, $specialRequests]);
     $reservationId = $pdo->lastInsertId();
+    $_SESSION['customer_reservation_ids'][] = (int) $reservationId;
 
     $pdo->commit();
 

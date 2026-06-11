@@ -11,6 +11,12 @@ let pendingItem = null;
 // Utilities
 const formatMoney = (amount) => `$${amount.toFixed(2)}`;
 
+const normalizeImagePath = (path) => {
+  if (!path) return '../Images/food/default.png';
+  if (path.startsWith('http') || path.startsWith('..')) return path;
+  return `../${path.replace(/^\/+/, '')}`;
+};
+
 const getSelectedOptions = () => {
   return Array.from(document.querySelectorAll('.customize-option input:checked'))
     .map(input => input.closest('.customize-option').querySelector('span').textContent.trim());
@@ -181,12 +187,14 @@ async function loadMenu(category = 'All') {
       return;
     }
 
-    grid.innerHTML = recipes.map(recipe => `
+    grid.innerHTML = recipes.map(recipe => {
+      const normalizedPath = normalizeImagePath(recipe.image_path);
+      return `
       <div class="menu-card"
            data-recipe-id="${recipe.id}"
-           data-image="${recipe.image_path || ''}">
+           data-image="${normalizedPath}">
         <div class="card-img"
-             style="background-image:url('${recipe.image_path || '../Images/food/default.png'}')">
+             style="background-image:url('${normalizedPath}')">
           <span class="card-tag">${recipe.category || 'Other'}</span>
         </div>
         <div class="card-body">
@@ -200,7 +208,8 @@ async function loadMenu(category = 'All') {
           </div>
         </div>
       </div>
-    `).join('');
+      `;
+    }).join('');
 
     attachAddToCartListeners();
 

@@ -91,13 +91,14 @@ body {
 }
 
 .brand {
-  font-family: 'Poppins', sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 3px;
-  border: 1px solid #fefeff;
-  padding: 7px 18px;
+  letter-spacing: 2px;
   color: #fefeff;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 4px 12px;
+  border-radius: 4px;
 }
 
 .top-right {
@@ -158,7 +159,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: start;
-  gap: 90px;
+  gap: 30px;
   padding: 15px 30px;
   background: rgba(20,22,18,0.35);
   border: 1px solid #fefeff;
@@ -332,30 +333,30 @@ body {
 
 .progress-bar-wrap {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  margin-top: 10px;
 }
 
 .progress-steps {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 .progress-line {
-  width: 100%;
-  height: 3px;
-  background-color: rgba(254,254,255,0.12);
-  border-radius: 3px;
+  position: absolute;
+  top: 13px; /* Center of the 26px circle */
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: rgba(254, 254, 255, 0.1);
+  z-index: 1;
 }
 
 .progress-fill {
   height: 100%;
   background-color: var(--accent);
-  border-radius: 3px;
   transition: width 0.4s ease;
 }
 
@@ -433,3 +434,123 @@ body {
   font-weight: 700;
   color: #fefeff;
 }
+
+/* ==========================================
+   Project Responsive Overrides (Orders Page)
+   ========================================== */
+
+/* ── Tablets (≤ 1100px) ── */
+@media (max-width: 1100px) {
+  .dashboard, .outer-wrapper {
+    height: auto;
+    min-height: 100svh;
+    overflow-y: auto;
+  }
+
+  .outer-wrapper {
+    margin: 20px;
+    padding: 12px;
+  }
+
+  .navbar {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    gap: 12px;
+    padding: 10px 12px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    height: 60px;
+    margin-bottom: 5px;
+  }
+
+  .nav-item {
+    font-size: 14px;
+    padding: 6px 14px;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .main-content {
+    overflow: visible;
+    padding: 14px;
+  }
+}
+
+/* ── Small Devices (≤ 768px) ── */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 20px;
+    height: 70px;
+  }
+
+  .brand {
+    font-size: 18px;
+    padding: 5px 12px;
+  }
+
+  .dashboard-label {
+    display: none;
+  }
+
+  .order-top-row {
+    flex-direction: row; /* Keep row unless very tiny */
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .step-circle {
+    width: 20px;
+    height: 20px;
+    font-size: 8px;
+  }
+
+  .progress-line {
+    top: 10px;
+  }
+
+  .step-label {
+    font-size: 9px;
+  }
+}
+
+/* ── Tiny Devices (≤ 480px) ── */
+@media (max-width: 480px) {
+  .outer-wrapper {
+    margin: 10px;
+    padding: 8px;
+  }
+
+  .order-top-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .nav-item {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+
+  .order-card {
+    padding: 12px;
+  }
+
+  .step-label {
+    display: none;
+  }
+
+  .progress-bar-wrap {
+    padding: 0 10px;
+  }
+
+  .item-row span {
+    font-size: 11px;
+  }
+}
+

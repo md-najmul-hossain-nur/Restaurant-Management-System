@@ -52,10 +52,10 @@ try {
 
     // Insert order
     $stmt = $pdo->prepare(
-        "INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, guest_name, guest_phone, notes)
-         VALUES (?, ?, ?, 'queued', ?, ?, ?, ?)"
+        "INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, payment_method, guest_name, guest_phone, notes)
+         VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?)"
     );
-    $stmt->execute([$userId, $tableId, $assignedWaiterId, $grandTotal, $guestName ?: null, $guestPhone ?: null, $notes]);
+    $stmt->execute([$userId, $tableId, $assignedWaiterId, $grandTotal, $paymentMethod, $guestName ?: null, $guestPhone ?: null, $notes]);
     $orderId = $pdo->lastInsertId();
 
     // Insert items
@@ -77,8 +77,13 @@ try {
 
     // Mark table occupied if selected
     if ($tableId !== null) {
+        $role = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+        // If it's a customer, set active_customer_id to their ID.
+        // If it's a waiter, active_customer_id remains null (guest or walk-in).
+        $activeCustId = ($role === 'customer') ? $userId : null;
+
         $pdo->prepare("UPDATE restaurant_tables SET status = 'occupied', active_customer_id = ? WHERE id = ?")
-            ->execute([$userId ?: null, $tableId]);
+            ->execute([$activeCustId, $tableId]);
     }
 
     $pdo->commit();

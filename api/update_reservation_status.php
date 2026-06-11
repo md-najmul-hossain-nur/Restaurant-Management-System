@@ -15,7 +15,18 @@ if (!$reservationId || !in_array($status, ['approved', 'rejected', 'cancelled'],
     respond(['error' => 'Invalid reservation update'], 400);
 }
 
-$stmt = $pdo->prepare("SELECT id, table_id, customer_id FROM reservations WHERE id = ? LIMIT 1");
+$stmt = $pdo->prepare(
+    "SELECT
+        id,
+        table_id,
+        customer_id,
+        reserved_date,
+        TIME_FORMAT(reserved_time, '%H:%i') AS reserved_time,
+        TIME_FORMAT(reserved_end_time, '%H:%i') AS reserved_end_time
+     FROM reservations
+     WHERE id = ?
+     LIMIT 1"
+);
 $stmt->execute([$reservationId]);
 $reservation = $stmt->fetch();
 
@@ -25,6 +36,35 @@ if (!$reservation) {
 
 try {
     $pdo->beginTransaction();
+
+    if ($status === 'approved') {
+        $conflictStmt = $pdo->prepare(
+            "SELECT id, TIME_FORMAT(reserved_time, '%H:%i') AS reserved_time, TIME_FORMAT(reserved_end_time, '%H:%i') AS reserved_end_time
+             FROM reservations
+             WHERE table_id = ?
+               AND reserved_date = ?
+               AND status IN ('approved', 'confirmed')
+               AND id <> ?
+               AND ? < TIME_FORMAT(reserved_end_time, '%H:%i')
+               AND ? > TIME_FORMAT(reserved_time, '%H:%i')
+             LIMIT 1"
+        );
+        $conflictStmt->execute([
+            $reservation['table_id'],
+            $reservation['reserved_date'],
+            $reservationId,
+            $reservation['reserved_time'],
+            $reservation['reserved_end_time'],
+        ]);
+        $conflict = $conflictStmt->fetch();
+
+        if ($conflict) {
+            $pdo->rollBack();
+            respond([
+                'error' => 'This reservation overlaps an approved booking: ' . formatReservationRange($conflict['reserved_time'], $conflict['reserved_end_time'])
+            ], 409);
+        }
+    }
 
     $pdo->prepare("UPDATE reservations SET status = ? WHERE id = ?")
         ->execute([$status, $reservationId]);
@@ -40,7 +80,7 @@ try {
         $active = $pdo->prepare(
             "SELECT COUNT(*) FROM reservations
              WHERE table_id = ?
-               AND status IN ('pending', 'approved')
+               AND status IN ('pending', 'approved', 'confirmed')
                AND id <> ?"
         );
         $active->execute([$reservation['table_id'], $reservationId]);

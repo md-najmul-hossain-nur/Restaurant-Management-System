@@ -31,6 +31,16 @@
   color: #e0c28f;
   font-size: 18px;
   cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.logout:hover {
+  background: #e0c28f;
+  box-shadow: 0 0 15px rgba(224, 194, 143, 0.4);
+}
+
+.logout:hover::before {
+  background-color: #000;
 }
 
 .logout::before {
@@ -78,7 +88,7 @@ body {
 }
 
 /* ==========================================
-   Topbar — Glassmorphism
+   Topbar ÔÇö Glassmorphism
 ========================================== */
 .topbar {
   height: 85px;
@@ -96,13 +106,14 @@ body {
 }
 
 .brand {
-  font-family: 'Poppins', sans-serif;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 3px;
-  border: 1px solid #f5ede0;
-  padding: 7px 18px;
+  letter-spacing: 2px;
   color: #f5ede0;
+  text-transform: uppercase;
+  border: 1px solid rgba(245, 237, 224, 0.4);
+  padding: 4px 12px;
+  border-radius: 4px;
 }
 
 .top-right {
@@ -163,7 +174,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: start;
-  gap: 90px;
+  gap: 30px;
   padding: 15px 30px;
   background: rgba(20,22,18,0.35);
   border: 1px solid #e9e9e9;
@@ -199,8 +210,8 @@ body {
 }
 
 .nav-item:hover:not(.active) {
-  background: rgba(255,255,255,0.08);
-  border-color: rgba(255,255,255,0.30);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.30);
   color: #fff;
 }
 
@@ -242,6 +253,33 @@ body {
   font-weight: 300;
 }
 
+.page-header-left h1 {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.page-header-left p {
+  font-size: 14px;
+  color: #f0e8d8;
+  margin-top: 6px;
+  font-weight: 300;
+}
+
+/* ==========================================
+   Availability Slots
+========================================== */
+.availability-slots {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
 .book-btn {
   display: inline-flex;
   align-items: center;
@@ -261,7 +299,7 @@ body {
 }
 
 .book-btn:hover {
-  background: rgba(200,169,106,0.25);
+  background: rgba(200, 169, 106, 0.25);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -330,12 +368,7 @@ body {
   border-radius: 20px;
 }
 
-.status-badge.confirmed {
-  background-color: rgba(46,125,50,0.20);
-  color: #81c784;
-  border: 1px solid rgba(129,199,132,0.35);
-}
-
+.status-badge.confirmed,
 .status-badge.approved {
   background-color: rgba(46,125,50,0.20);
   color: #81c784;
@@ -346,25 +379,6 @@ body {
   background-color: rgba(154,117,0,0.20);
   color: #ffd54f;
   border: 1px solid rgba(255,213,79,0.35);
-}
-
-.status-badge.rejected,
-.status-badge.cancelled {
-  background-color: rgba(127,29,29,0.20);
-  color: #fca5a5;
-  border: 1px solid rgba(252,165,165,0.35);
-}
-
-.reservations-empty {
-  background: var(--card-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-card);
-  padding: 18px;
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .card-meta {
@@ -432,7 +446,7 @@ body {
 }
 
 .view-details-btn:hover {
-  background: rgba(200,169,106,0.22);
+  background: rgba(200, 169, 106, 0.22);
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -456,8 +470,8 @@ body {
 }
 
 .cancel-btn:hover {
-  background: rgba(255,80,80,0.18);
-  border-color: rgba(255,100,100,0.55);
+  background: rgba(255, 80, 80, 0.18);
+  border-color: rgba(255, 100, 100, 0.55);
   color: #ff6464;
 }
 
@@ -485,7 +499,7 @@ body {
 }
 
 /* ==========================================
-   STEP 1 — Table Browser Modal
+   STEP 1 ÔÇö Table Browser Modal
    (shown when "Book a Table" is clicked)
 ========================================== */
 .browser-panel {
@@ -510,19 +524,20 @@ body {
 
 .browser-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  padding: 24px 28px 20px;
+  padding: 24px 28px;
   border-bottom: 1px solid rgba(255,255,255,0.08);
   flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* Scrollable grid */
 .table-browser-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 18px;
-  padding: 22px 28px 28px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
+  padding: 25px;
   overflow-y: auto;
   flex: 1;
 }
@@ -533,30 +548,22 @@ body {
 
 /* Individual browser card */
 .browser-card {
-  background: rgba(40,42,38,0.55);
-  border: 1px solid rgba(255,255,255,0.09);
+  background: rgba(40,42,38,0.7);
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 12px;
-  overflow: hidden;
   cursor: pointer;
-  transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  transition: all 0.25s ease;
   display: flex;
   flex-direction: column;
+  height: auto; /* Ensure it grows with content */
+  min-height: 480px;
+  position: relative;
 }
 
 .browser-card:hover {
   border-color: rgba(200,169,106,0.40);
   box-shadow: 0 12px 36px rgba(0,0,0,0.45);
   transform: translateY(-3px);
-}
-
-.browser-card.blocked {
-  cursor: not-allowed;
-  opacity: 0.72;
-}
-
-.browser-card.blocked:hover {
-  transform: none;
-  border-color: rgba(255,255,255,0.09);
 }
 
 .browser-card-img-wrap {
@@ -582,61 +589,38 @@ body {
 .browser-card-badge {
   position: absolute;
   top: 10px;
-  left: 12px;
-  background: rgba(20,22,18,0.70);
-  border: 1px solid rgba(200,169,106,0.40);
-  backdrop-filter: blur(6px);
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent-light);
-  letter-spacing: 0.4px;
+  left: 10px;
+  background: rgba(20, 22, 18, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
 }
 
 .browser-card-cap {
   position: absolute;
-  bottom: 10px;
-  right: 12px;
-  background: rgba(20,22,18,0.70);
-  border: 1px solid rgba(255,255,255,0.12);
-  backdrop-filter: blur(4px);
-  border-radius: 6px;
-  padding: 3px 9px;
-  font-size: 12px;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: #fff;
   display: flex;
   align-items: center;
   gap: 5px;
-}
-
-.browser-card-status-badge {
-  position: absolute;
-  top: 10px;
-  right: 12px;
-  background: rgba(154,117,0,0.82);
-  border: 1px solid rgba(255,213,79,0.45);
-  backdrop-filter: blur(4px);
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #ffe08a;
-  text-transform: capitalize;
-}
-
-.browser-card-status-badge.occupied {
-  background: rgba(127,29,29,0.82);
-  border-color: rgba(252,165,165,0.45);
-  color: #fecaca;
+  z-index: 3;
 }
 
 .browser-card-body {
-  padding: 14px 16px 16px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   flex: 1;
 }
 
@@ -661,6 +645,7 @@ body {
   line-height: 1.65;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -669,7 +654,53 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 2px;
+  margin-top: 8px;
+}
+
+.browser-card-pills .pill {
+  padding: 3px 8px;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Status Badges in Browser */
+.browser-card-status-badge {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  z-index: 3;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.browser-card-status-badge.available {
+  background: var(--green);
+  color: #000;
+}
+
+.browser-card-status-badge.reserved {
+  background: var(--gold);
+  color: #000;
+}
+
+.browser-card-status-badge.occupied {
+  background: var(--orange);
+  color: #fff;
+}
+
+.browser-card.blocked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.browser-card.blocked:hover {
+  transform: none;
+  box-shadow: none;
 }
 
 /* Reserve button inside browser card */
@@ -699,7 +730,7 @@ body {
 }
 
 /* ==========================================
-   STEP 2 — Table Detail Modal
+   STEP 2 ÔÇö Table Detail Modal
    (full info + image; opens from browser or card)
 ========================================== */
 .modal-panel {
@@ -918,7 +949,7 @@ body {
 }
 
 /* ==========================================
-   STEP 3 — Booking Form Modal
+   STEP 3 ÔÇö Booking Form Modal
    (opens after table is chosen)
 ========================================== */
 .booking-modal-overlay {
@@ -1239,3 +1270,181 @@ body {
 .booking-submit i    { font-size: 17px; }
 .cancel-btn i        { font-size: 14px; }
 .view-details-btn i  { font-size: 14px; }
+
+/* ==========================================
+   RESPONSIVE — Tablet (≤ 1100px)
+========================================== */
+@media (max-width: 1100px) {
+  html, body {
+    overflow: auto;
+    height: auto;
+  }
+
+  .dashboard {
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .topbar {
+    padding: 0 30px;
+  }
+
+  .outer-wrapper {
+    margin: 20px;
+    overflow: visible;
+  }
+
+  .navbar {
+    gap: 20px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    height: auto;
+    padding: 12px 20px;
+  }
+
+  .main-content {
+    overflow: visible;
+  }
+}
+
+/* ==========================================
+   RESPONSIVE — Mobile (≤ 768px)
+========================================== */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 20px;
+    height: 70px;
+  }
+
+  .outer-wrapper {
+    margin: 15px;
+    padding: 10px;
+  }
+
+  .navbar {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    width: 100% !important;
+    gap: 12px;
+    padding: 10px 12px;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    height: 60px;
+    margin-bottom: 5px;
+  }
+
+  .nav-item {
+    font-size: 14px;
+    padding: 6px 14px;
+    gap: 8px;
+    flex: 0 0 auto;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-header-left h1 {
+    font-size: 24px;
+  }
+
+  .reservations-list {
+    gap: 14px;
+  }
+
+  .browser-panel {
+    width: 98vw;
+    max-height: 95vh;
+  }
+
+  .table-browser-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .modal-panel {
+    width: 96vw;
+  }
+
+  .booking-panel {
+    width: 96vw;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .table-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==========================================
+   RESPONSIVE — Small phone (≤ 480px)
+========================================== */
+@media (max-width: 480px) {
+  .topbar {
+    padding: 10px 14px;
+    height: auto;
+    min-height: 60px;
+  }
+
+  .brand {
+    font-size: 16px;
+    letter-spacing: 2px;
+    padding: 5px 12px;
+  }
+
+  .outer-wrapper {
+    margin: 8px;
+    padding: 6px;
+  }
+
+  .navbar {
+    gap: 8px;
+    padding: 8px 10px;
+  }
+
+  .nav-item {
+    font-size: 12px;
+    padding: 7px 12px;
+    gap: 5px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .page-header-left h1 {
+    font-size: 20px;
+  }
+
+  .modal-table-title {
+    font-size: 20px;
+  }
+
+  .booking-title {
+    font-size: 18px;
+  }
+
+  .table-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .modal-cta-row {
+    flex-direction: column;
+  }
+}

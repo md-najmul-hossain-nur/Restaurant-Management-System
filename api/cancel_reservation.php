@@ -28,7 +28,7 @@ if (!$reservation) {
     respond(['error' => 'Reservation not found'], 404);
 }
 
-if (!in_array($reservation['status'], ['pending', 'approved'], true)) {
+if (!in_array($reservation['status'], ['pending', 'approved', 'confirmed'], true)) {
     respond(['error' => 'This reservation cannot be cancelled'], 400);
 }
 
@@ -41,7 +41,7 @@ try {
     $active = $pdo->prepare(
         "SELECT COUNT(*) FROM reservations
          WHERE table_id = ?
-           AND status IN ('pending', 'approved')
+           AND status IN ('pending', 'approved', 'confirmed')
            AND id <> ?"
     );
     $active->execute([$reservation['table_id'], $reservationId]);
@@ -57,4 +57,3 @@ try {
     $pdo->rollBack();
     respond(['error' => 'Could not cancel reservation'], 500);
 }
-

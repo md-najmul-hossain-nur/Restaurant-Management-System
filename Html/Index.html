@@ -19,16 +19,21 @@
     <nav>
       <a href="Index.html" class="nav-logo" aria-label="Go to Home">Feliciano</a>
 
-      <ul class="nav-links">
+      <ul class="nav-links" id="navLinks">
         <li><a href="Index.html" class="active">Home</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="menu.html">Menu</a></li>
         <li><a href="contact.html">Contact</a></li>
       </ul>
 
-      <a href="login.html" class="btn-profile" aria-label="Go to Login">
-        <img src="../Images/profile.png" alt="Profile" class="nav-profile-img">
-      </a>
+      <div class="nav-right">
+        <a href="login.html" class="btn-profile" aria-label="Go to Login">
+          <img src="../Images/profile.png" alt="Profile" class="nav-profile-img">
+        </a>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </nav>
 
     <div class="hero-center" id="heroCenter">
@@ -129,7 +134,7 @@
           <span>$29</span>
         </div>
         <p>Meat, Potatoes, Rice, Tomato</p>
-        <a href="order.html" class="menu-order-btn">Order now</a>
+        <a href="order.html?item=Grilled%20Beef%20with%20potatoes&price=29" class="menu-order-btn">Order now</a>
       </div>
 
       <div class="menu-image-card"><img src="../Images/food/main%20cross/pexels-mohamed9380-36691316.jpg" alt="Food dish"></div>
@@ -140,7 +145,7 @@
           <span>$29</span>
         </div>
         <p>Salmon, Garlic Butter, Lemon, Herbs</p>
-        <a href="order.html" class="menu-order-btn">Order now</a>
+        <a href="order.html?item=Herb%20Roasted%20Salmon&price=29" class="menu-order-btn">Order now</a>
       </div>
 
       <div class="menu-info-card">
@@ -149,7 +154,7 @@
           <span>$29</span>
         </div>
         <p>Creamy Sauce, Chicken, Parmesan</p>
-        <a href="order.html" class="menu-order-btn">Order now</a>
+        <a href="order.html?item=Chicken%20Alfredo%20Pasta&price=29" class="menu-order-btn">Order now</a>
       </div>
 
       <div class="menu-image-card"><img src="../Images/food/main%20cross/pexels-mohamed9380-36734935.jpg" alt="Food dish"></div>
@@ -160,7 +165,7 @@
           <span>$29</span>
         </div>
         <p>Prime Steak, Garlic Mash, Jus</p>
-        <a href="order.html" class="menu-order-btn">Order now</a>
+        <a href="order.html?item=Steakhouse%20Special&price=29" class="menu-order-btn">Order now</a>
       </div>
 
       <div class="menu-image-card"><img src="../Images/food/main%20cross/pexels-valeriya-18058366.jpg" alt="Food dish"></div>
@@ -173,7 +178,7 @@
           <span>$29</span>
         </div>
         <p>Mixed Greens, Feta, Citrus Dressing</p>
-        <a href="order.html" class="menu-order-btn">Order now</a>
+        <a href="order.html?item=Garden%20Fresh%20Salad&price=29" class="menu-order-btn">Order now</a>
       </div>
 
       <div class="menu-image-card"><img src="../Images/food/main%20cross/pexels-vince-17568011.jpg" alt="Food dish"></div>
@@ -184,7 +189,7 @@
           <span>$29</span>
         </div>
         <p>Grilled Beef, Rice, Peppers, Sauce</p>
-        <a href="order.html" class="menu-order-btn">Order now</a>
+        <a href="order.html?item=Spicy%20Beef%20Bowl&price=29" class="menu-order-btn">Order now</a>
       </div>
     </div>
   </section>
@@ -196,55 +201,62 @@
     <div class="chef-grid">
 
       <div class="chef-card">
-      
-          <img src="../Images/Chief/Chef1.png" alt="John Smooth">
-        
-        <h4>Amelia Carter</h4>
-        <span>Executive Chef</span>
-        <div class="chef-social">
-          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <div class="chef-img-wrap">
+          <img src="../Images/Chief/Chef1.png" alt="Amelia Carter">
+          <div class="chef-social">
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        <div class="chef-info">
+          <h4>Amelia Carter</h4>
+          <span>Executive Chef</span>
         </div>
       </div>
 
       <div class="chef-card">
-  
-         
-      <img src="../Images/Chief/Chef2.png" alt="John Smooth">
-        
-        <h4>Rahim Hasan</h4>
-        <span>Sous Chef</span>
-        <div class="chef-social">
-          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <div class="chef-img-wrap">
+          <img src="../Images/Chief/Chef2.png" alt="Rahim Hasan">
+          <div class="chef-social">
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        <div class="chef-info">
+          <h4>Rahim Hasan</h4>
+          <span>Sous Chef</span>
         </div>
       </div>
 
       <div class="chef-card">
-
-        <img src="../Images/Chief/Chef3.png" alt="John Smooth">
-
-        <h4>Jamal Uddin</h4>
-        <span>Grill Specialist</span>
-        <div class="chef-social">
-          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <div class="chef-img-wrap">
+          <img src="../Images/Chief/Chef3.png" alt="Jamal Uddin">
+          <div class="chef-social">
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        <div class="chef-info">
+          <h4>Jamal Uddin</h4>
+          <span>Grill Specialist</span>
         </div>
       </div>
 
       <div class="chef-card">
-        <img src="../Images/Chief/Chef4.png" alt="John Smooth">
-        
-           <h4>Nabila Rahman</h4>
-        <span>Pastry Chef</span>
-
-        <div class="chef-social">
-          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <div class="chef-img-wrap">
+          <img src="../Images/Chief/Chef4.png" alt="Nabila Rahman">
+          <div class="chef-social">
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+        <div class="chef-info">
+          <h4>Nabila Rahman</h4>
+          <span>Pastry Chef</span>
         </div>
       </div>
 

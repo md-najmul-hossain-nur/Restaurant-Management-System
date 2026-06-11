@@ -3,7 +3,8 @@
 // Called by admin.js — Add Employee form
 // Method: POST multipart/form-data (certificate file upload)
 
-if (session_status() === PHP_SESSION_NONE) session_start();
+if (session_status() === PHP_SESSION_NONE)
+    session_start();
 require_once __DIR__ . '/../Php/db.php';
 requireLogin('admin');
 

@@ -24,7 +24,7 @@ try {
                  status = 'occupied',
                  active_customer_id = COALESCE(active_customer_id, reserved_customer_id)
              WHERE id = ?
-               AND status IN ('available','reserved','occupied')
+               AND status = 'available'
                AND (assigned_waiter_id IS NULL OR assigned_waiter_id = 0)"
         );
         $stmt->execute([$userId, $tableId]);
@@ -35,8 +35,8 @@ try {
         $futureApproved = $pdo->prepare(
             "SELECT COUNT(*) FROM reservations
              WHERE table_id = ?
-               AND status = 'approved'
-               AND CONCAT(reserved_date, ' ', reserved_time) >= NOW()"
+               AND status IN ('approved', 'confirmed')
+               AND CONCAT(reserved_date, ' ', reserved_end_time) >= NOW()"
         );
         $futureApproved->execute([$tableId]);
         $nextStatus = ((int) $futureApproved->fetchColumn() > 0) ? 'reserved' : 'available';
@@ -55,7 +55,12 @@ try {
         }
     }
 
-    respond(['success' => true, 'table_id' => $tableId, 'action' => $action]);
+    respond([
+        'success' => true,
+        'table_id' => $tableId,
+        'action' => $action,
+        'next_status' => $nextStatus ?? 'occupied',
+    ]);
 } catch (Exception $e) {
     respond(['error' => 'Failed: ' . $e->getMessage()], 500);
 }
