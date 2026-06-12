@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="divider"></div>
             <div class="actions recipe-actions">
               <span class="pill recipe-price">$${parseFloat(r.price).toFixed(2)}</span>
-              <button class="order-edit-btn" data-edit-recipe>Edit</button>
+              ${r.status === 'approved' ? '' : '<button class="order-edit-btn" data-edit-recipe>Edit</button>'}
             </div>
           </div>`;
         recipesGrid.appendChild(article);
@@ -424,6 +424,42 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error(err);
         pickBtn.disabled = false;
         pickBtn.textContent = 'Pick Order';
+      }
+      return;
+    }
+
+    // Check for reject order button
+    const rejectBtn = e.target.closest('[data-reject-order]');
+    if (rejectBtn) {
+      if (!confirm('Are you sure you want to reject this order?')) return;
+      
+      const card = rejectBtn.closest('.order-card');
+      const orderId = card?.dataset.orderId;
+      if (!orderId) return;
+
+      rejectBtn.disabled = true;
+      rejectBtn.textContent = 'Rejecting...';
+
+      try {
+        const res = await fetch('../api/update_order_status.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: parseInt(orderId), status: 'cancelled' }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          card.remove();
+          showToast('Order rejected.');
+          updateOrderStats();
+        } else {
+          alert(data.error || 'Failed to reject order');
+          rejectBtn.disabled = false;
+          rejectBtn.textContent = 'Reject';
+        }
+      } catch (err) {
+        console.error(err);
+        rejectBtn.disabled = false;
+        rejectBtn.textContent = 'Reject';
       }
       return;
     }
