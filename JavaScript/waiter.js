@@ -21,17 +21,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Clock Out ─────────────────────────────────────────────
   const clockBtn = document.querySelector('[data-clock-out]');
+  const timerEl = document.getElementById('shiftTimer');
+  let shiftTimerInterval = null;
+
+  const formatDuration = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const clearShiftTimer = () => {
+    if (shiftTimerInterval) {
+      clearInterval(shiftTimerInterval);
+      shiftTimerInterval = null;
+    }
+  };
+
+  const startShiftTimer = (startTime) => {
+    const startObj = new Date(startTime);
+    clearShiftTimer();
+    const tick = () => {
+      const diffInSeconds = Math.floor((Date.now() - startObj.getTime()) / 1000);
+      if (timerEl) timerEl.textContent = formatDuration(diffInSeconds >= 0 ? diffInSeconds : 0);
+    };
+    tick();
+    shiftTimerInterval = setInterval(tick, 1000);
+  };
+
   if (clockBtn) {
     const applyState = (out) => {
       document.body.classList.toggle('is-clocked-out', out);
       clockBtn.textContent = out ? 'Clock In' : 'Clock Out';
+      if (!out) {
+        const lastIn = document.body.dataset.lastClockIn;
+        if (lastIn) {
+          startShiftTimer(lastIn);
+        } else {
+          startShiftTimer(new Date().toISOString());
+        }
+      } else {
+        if (timerEl) timerEl.textContent = 'Not clocked in';
+        clearShiftTimer();
+      }
     };
 
     const initialClocked = document.body.dataset.clocked === '1';
-    applyState(!initialClocked);
+    document.body.classList.toggle('is-clocked-out', !initialClocked);
+    clockBtn.textContent = !initialClocked ? 'Clock In' : 'Clock Out';
+
+    if (initialClocked) {
+      const lastIn = document.body.dataset.lastClockIn;
+      if (lastIn) startShiftTimer(lastIn);
+    } else {
+      if (timerEl) timerEl.textContent = 'Not clocked in';
+    }
 
     clockBtn.addEventListener('click', async () => {
       const nextOut = !document.body.classList.contains('is-clocked-out');
+      // Optimistically update dataset if we are clocking in
+      if (!nextOut) {
+        document.body.dataset.lastClockIn = new Date().toISOString();
+      }
       applyState(nextOut);
       try {
         await fetch('../api/update_employee_clock.php', {

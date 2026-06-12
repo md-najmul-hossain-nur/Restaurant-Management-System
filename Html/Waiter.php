@@ -18,9 +18,12 @@ $userStmt = $pdo->prepare(
 $userStmt->execute([$userId]);
 $user = $userStmt->fetch() ?: [];
 
-$clockStmt = $pdo->prepare('SELECT is_clocked_in FROM waiters WHERE user_id = ?');
+$clockStmt = $pdo->prepare('SELECT is_clocked_in, last_clock_in, last_clock_out FROM waiters WHERE user_id = ?');
 $clockStmt->execute([$userId]);
-$isClockedIn = (int) ($clockStmt->fetchColumn() ?: 0);
+$clockData = $clockStmt->fetch() ?: [];
+$isClockedIn = (int) ($clockData['is_clocked_in'] ?? 0);
+$lastClockIn = $clockData['last_clock_in'] ?? '';
+$lastClockOut = $clockData['last_clock_out'] ?? '';
 
 $myTablesStmt = $pdo->prepare(
   "SELECT rt.id, rt.table_number, rt.capacity, rt.image_path
@@ -44,7 +47,7 @@ $orderStmt = $pdo->prepare(
             rt.table_number, rt.image_path
      FROM orders o
      LEFT JOIN restaurant_tables rt ON rt.id = o.table_id
-     WHERE o.waiter_id = ?
+     WHERE o.waiter_id = ? OR o.waiter_id IS NULL
      ORDER BY o.created_at DESC"
 );
 $orderStmt->execute([$userId]);
@@ -133,7 +136,7 @@ function waiterStatusClass($status)
   <link rel="stylesheet" href="../CSS/responsive.css">
 </head>
 
-<body data-clocked="<?php echo $isClockedIn ? '1' : '0'; ?>">
+<body data-clocked="<?php echo $isClockedIn ? '1' : '0'; ?>" data-last-clock-in="<?php echo htmlspecialchars($lastClockIn); ?>" data-last-clock-out="<?php echo htmlspecialchars($lastClockOut); ?>">
   <div class="dashboard">
 
     <!-- Topbar -->
@@ -157,6 +160,10 @@ function waiterStatusClass($status)
           <h1 class="page-title">Work Status</h1>
           <p class="page-subtitle">You're currently on shift. Track tables and orders, and keep service moving from one
             shared interface.</p>
+          <div class="shift-clock">
+            <span class="shift-clock-label">Shift timer</span>
+            <span class="shift-clock-value" id="shiftTimer">Not clocked in</span>
+          </div>
         </div>
         <button class="btn btn-primary" data-clock-out>Clock Out</button>
       </section>

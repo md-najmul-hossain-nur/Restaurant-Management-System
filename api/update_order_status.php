@@ -18,5 +18,10 @@ $allowed = ['queued', 'in_progress', 'ready', 'served', 'cancelled'];
 if (!$orderId || !in_array($status, $allowed))
     respond(['error' => 'Invalid input'], 400);
 
-$pdo->prepare('UPDATE orders SET status = ? WHERE id = ?')->execute([$status, $orderId]);
+if (($_SESSION['role'] ?? '') === 'waiter') {
+    $pdo->prepare('UPDATE orders SET status = ?, waiter_id = COALESCE(waiter_id, ?) WHERE id = ?')
+        ->execute([$status, $_SESSION['user_id'], $orderId]);
+} else {
+    $pdo->prepare('UPDATE orders SET status = ? WHERE id = ?')->execute([$status, $orderId]);
+}
 respond(['success' => true]);

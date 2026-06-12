@@ -179,76 +179,7 @@ function formatOrderStatus($status) {
             </div>
           </div>
 
-          <div class="section-grid">
-            <article class="card card-pad grid-6">
-              <div class="card-head">
-                <div>
-                  <h2 class="card-title">Shift Snapshot</h2>
-                  <p class="card-subtitle">A quick view of the kitchen rhythm for the current shift.</p>
-                </div>
-                <span class="status-badge">Live</span>
-              </div>
 
-              <div class="metrics-list">
-                <div class="list-row">
-                  <div>
-                    <strong>Queued tickets</strong>
-                    <p><?php echo $pendingCount; ?> waiting in queue</p>
-                  </div>
-                  <span class="pill">Queued</span>
-                </div>
-
-                <div class="list-row">
-                  <div>
-                    <strong>Active tickets</strong>
-                    <p><?php echo $progressCount; ?> in progress</p>
-                  </div>
-                  <span class="pill">Cooking</span>
-                </div>
-                <div class="list-row">
-                  <div>
-                    <strong>Completed</strong>
-                    <p><?php echo $completedToday; ?> served today</p>
-                  </div>
-                  <span class="pill">Served</span>
-                </div>
-              </div>
-            </article>
-
-            <article class="card card-pad grid-6">
-              <div class="card-head">
-                <div>
-                  <h2 class="card-title">Immediate Focus</h2>
-                  <p class="card-subtitle">The next actions the chief should watch closely.</p>
-                </div>
-              </div>
-              <div class="metrics-list">
-                <div class="list-row">
-                  <div>
-                    <strong>Next ready handoff</strong>
-                    <p>Monitor ready tickets for pickup</p>
-                  </div>
-                  <span class="pill">Ready</span>
-                </div>
-
-                <div class="list-row">
-                  <div>
-                    <strong>Recipe approvals</strong>
-                    <p>New recipes await admin review</p>
-                  </div>
-                  <span class="pill">Pending</span>
-                </div>
-
-                <div class="list-row">
-                  <div>
-                    <strong>Order queue</strong>
-                    <p>Keep prep aligned with queued tickets</p>
-                  </div>
-                  <span class="pill">Queue</span>
-                </div>
-              </div>
-            </article>
-          </div>
         </div>
         <!-- ===================== ORDER (CARDS) ===================== -->
         <div class="section-content" id="tables">

@@ -1,22 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Feliciano Restaurant - Log In</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;600;700;900&family=Great+Vibes&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Poppins:wght@300;400;600;700;900&family=Great+Vibes&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="../CSS/login.css">
   <link rel="stylesheet" href="../CSS/responsive.css">
 </head>
+
 <body>
 
   <div class="page-wrapper">
     <div class="bg-overlay"></div>
     <div class="top-logo"><a href="../Html/Index.html" aria-label="Go to Home">Feliciano</a></div>
     <div class="left-content">
-      <h1 class="hero-head" style="font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.8rem, 5vw, 5rem); font-weight: 700; text-transform: uppercase; color: var(--white); line-height: 1; letter-spacing: 2px; text-shadow: 2px 4px 20px rgba(0, 0, 0, 0.5);">
+      <h1 class="hero-head"
+        style="font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.8rem, 5vw, 5rem); font-weight: 700; text-transform: uppercase; color: var(--white); line-height: 1; letter-spacing: 2px; text-shadow: 2px 4px 20px rgba(0, 0, 0, 0.5);">
         From<br>Kitchen to<br>Customer,<br>Seamlessly.
       </h1>
     </div>
@@ -33,14 +38,14 @@
         Enjoy Delicious Food And Great Service.
       </p>
       <div id="login-message" class="signup-message" role="alert" aria-live="polite"></div>
-      
+
       <form class="login-form" method="post" action="../Php/login.php" novalidate>
         <div class="form-group">
           <label for="role">Role</label>
           <select id="role" name="role" required>
             <option value="" disabled selected>Select Role</option>
             <option value="customer">Customer</option>
-            <option value="chief">Chef</option>
+            <option value="chief">Cheif</option>
             <option value="waiter">Waiter</option>
             <option value="admin">Admin</option>
           </select>
@@ -69,4 +74,5 @@
 
   <script src="../JavaScript/auth.js"></script>
 </body>
+
 </html>

@@ -1,13 +1,3 @@
-<?php
-session_start();
-require_once __DIR__ . '/../Php/db.php';
-restoreRoleSession('customer');
-
-if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
-    header('Location: login.html');
-    exit;
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

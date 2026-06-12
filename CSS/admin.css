@@ -1071,11 +1071,19 @@ body {
   color: var(--text-muted);
 }
 
-.date-field input {
+.date-field input,
+.date-field select {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--glass-border);
-  padding: 8px;
+  padding: 8px 12px;
   border-radius: 8px;
+  color: #fff;
+  font-family: inherit;
+  outline: none;
+}
+
+.date-field select option {
+  background: #1a1c18;
   color: #fff;
 }
 
