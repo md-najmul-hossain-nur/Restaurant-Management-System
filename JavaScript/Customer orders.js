@@ -22,9 +22,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     const name = params.get('item');
     const price = parseFloat(params.get('price') || '');
+    const recipeId = parseInt(params.get('recipe_id') || '', 10);
 
     if (!name || Number.isNaN(price)) return null;
-    return { name, price };
+    return { recipe_id: Number.isNaN(recipeId) ? null : recipeId, name, price };
   }
 
   function addSelectedItem(item) {
@@ -63,6 +64,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       menuItems = await res.json();
 
       itemSelect.innerHTML = '<option value="">— Select an item —</option>';
+      if (menuItems.length === 0) {
+        itemSelect.innerHTML = '<option value="">No approved menu items yet</option>';
+        return;
+      }
       menuItems.forEach(item => {
         const opt = document.createElement('option');
         opt.value = item.id;
@@ -298,7 +303,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadMenuItems();
   const preselected = getPreselectedItem();
   if (preselected) {
-    const matched = menuItems.find(item => item.name.toLowerCase() === preselected.name.toLowerCase());
+    const matched = menuItems.find(item =>
+      (preselected.recipe_id && parseInt(item.id) === preselected.recipe_id)
+      || item.name.toLowerCase() === preselected.name.toLowerCase()
+    );
     addSelectedItem({
       recipe_id: matched?.id || null,
       name: matched?.name || preselected.name,

@@ -1284,3 +1284,90 @@ body>* {
     font-size: clamp(1.4rem, 7.5vw, 1.9rem);
   }
 }
+
+/* ==================================================
+   Global Scroll Safety
+   Keeps every page usable when content is taller than
+   the viewport on desktop, laptop, tablet, or phone.
+================================================== */
+html {
+  min-height: 100%;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.page-wrapper,
+.login-page,
+.signup-page,
+.order-page,
+.dashboard {
+  min-height: 100svh;
+}
+
+.dashboard {
+  height: auto !important;
+  overflow: visible !important;
+}
+
+.outer-wrapper {
+  max-height: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.main-content,
+.page-content,
+.customer-content {
+  min-height: 0;
+  overflow-x: hidden;
+}
+
+.navbar,
+.category-bar,
+.menu-tabs,
+.filter-row,
+.filters {
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal,
+.modal-overlay,
+.recipe-modal,
+.customize-overlay,
+.payment-overlay,
+.booking-modal-overlay,
+.toast-backdrop {
+  overscroll-behavior: contain;
+}
+
+.modal-content,
+.modal-panel,
+.settings-modal,
+.form-modal,
+.recipe-modal-box,
+.customize-modal,
+.payment-modal,
+.order-modal-content,
+.table-modal,
+.confirm-modal,
+.booking-modal,
+.table-details-modal {
+  max-height: min(90vh, 90svh);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (min-width: 901px) {
+  .outer-wrapper {
+    max-height: none;
+  }
+}

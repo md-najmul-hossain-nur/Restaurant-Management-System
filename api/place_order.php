@@ -10,12 +10,14 @@ header('Content-Type: application/json');
 
 $data = json_decode(file_get_contents('php://input'), true) ?: [];
 $userId = $_SESSION['user_id'] ?? null;
+$role = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+$customerId = ($userId && $role === 'customer') ? (int) $userId : null;
 
 $guestName  = trim($data['guest_name']  ?? '');
 $guestPhone = trim($data['guest_phone'] ?? '');
 
-// Guest must provide name + phone
-if (!$userId && (!$guestName || !$guestPhone)) {
+// Public guests and staff-entered guest orders must provide name + phone.
+if (!$customerId && (!$guestName || !$guestPhone)) {
     respond(['error' => 'Please provide your name and phone number.'], 400);
 }
 
@@ -70,7 +72,7 @@ try {
         "INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, payment_method, guest_name, guest_phone, notes, scheduled_time, total_prep_time)
          VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?)"
     );
-    $stmt->execute([$userId, $tableId, $assignedWaiterId, $grandTotal, $paymentMethod, $guestName ?: null, $guestPhone ?: null, $notes, $scheduledTime, $totalPrepTime]);
+    $stmt->execute([$customerId, $tableId, $assignedWaiterId, $grandTotal, $paymentMethod, $guestName ?: null, $guestPhone ?: null, $notes, $scheduledTime, $totalPrepTime]);
     $orderId = $pdo->lastInsertId();
 
     // Insert items
@@ -92,10 +94,9 @@ try {
 
     // Mark table occupied if selected
     if ($tableId !== null) {
-        $role = strtolower(trim((string) ($_SESSION['role'] ?? '')));
         // If it's a customer, set active_customer_id to their ID.
         // If it's a waiter, active_customer_id remains null (guest or walk-in).
-        $activeCustId = ($role === 'customer') ? $userId : null;
+        $activeCustId = $customerId;
 
         $pdo->prepare("UPDATE restaurant_tables SET status = 'occupied', active_customer_id = ? WHERE id = ?")
             ->execute([$activeCustId, $tableId]);

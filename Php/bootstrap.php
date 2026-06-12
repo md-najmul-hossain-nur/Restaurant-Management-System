@@ -145,6 +145,117 @@ function ensureOrderCustomerColumn($pdo) {
     }
 }
 
+function ensureOrderWorkflowColumns($pdo) {
+    static $initialized = false;
+    if ($initialized) {
+        return;
+    }
+    $initialized = true;
+
+    $stmt = $pdo->prepare(
+        "SELECT COLUMN_NAME
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'orders'
+           AND COLUMN_NAME IN ('chef_id', 'scheduled_time', 'total_prep_time')"
+    );
+    $stmt->execute();
+    $existing = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+    $alterParts = [];
+    if (!in_array('chef_id', $existing, true)) {
+        $alterParts[] = "ADD COLUMN chef_id INT DEFAULT NULL AFTER waiter_id";
+    }
+    if (!in_array('scheduled_time', $existing, true)) {
+        $alterParts[] = "ADD COLUMN scheduled_time DATETIME NULL AFTER notes";
+    }
+    if (!in_array('total_prep_time', $existing, true)) {
+        $alterParts[] = "ADD COLUMN total_prep_time INT NOT NULL DEFAULT 0 AFTER scheduled_time";
+    }
+
+    if ($alterParts) {
+        $pdo->exec('ALTER TABLE orders ' . implode(', ', $alterParts));
+    }
+
+    $stmt = $pdo->prepare(
+        "SELECT COLUMN_TYPE
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'orders'
+           AND COLUMN_NAME = 'status'"
+    );
+    $stmt->execute();
+    $statusType = (string) $stmt->fetchColumn();
+    if (strpos($statusType, "'paid'") === false) {
+        $pdo->exec(
+            "ALTER TABLE orders
+             MODIFY status ENUM('queued','in_progress','ready','served','cancelled','paid') NOT NULL DEFAULT 'queued'"
+        );
+    }
+}
+
+function ensureReservationStatusValues($pdo) {
+    static $initialized = false;
+    if ($initialized) {
+        return;
+    }
+    $initialized = true;
+
+    $stmt = $pdo->prepare(
+        "SELECT COLUMN_TYPE
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = 'reservations'
+           AND COLUMN_NAME = 'status'"
+    );
+    $stmt->execute();
+    $statusType = (string) $stmt->fetchColumn();
+
+    if (
+        strpos($statusType, "'confirmed'") === false
+        || strpos($statusType, "'completed'") === false
+    ) {
+        $pdo->exec(
+            "ALTER TABLE reservations
+             MODIFY status ENUM('pending','approved','confirmed','rejected','cancelled','completed') NOT NULL DEFAULT 'pending'"
+        );
+    }
+}
+
+function ensureDefaultApprovedMenu($pdo) {
+    static $initialized = false;
+    if ($initialized) {
+        return;
+    }
+    $initialized = true;
+
+    $count = (int) $pdo->query('SELECT COUNT(*) FROM recipes')->fetchColumn();
+    if ($count > 0) {
+        return;
+    }
+
+    $items = [
+        ['Grilled Beef with Potatoes', 'Meat, potatoes, rice, tomato, and house sauce.', 29.00, 'Dinner', 'Images/food/main cross/pexels-mohamed9380-36682995.jpg', '25'],
+        ['Herb Roasted Salmon', 'Salmon, garlic butter, lemon, and fresh herbs.', 29.00, 'Lunch', 'Images/food/main cross/pexels-mohamed9380-36691316.jpg', '20'],
+        ['Chicken Alfredo Pasta', 'Creamy sauce, chicken, parmesan, and parsley.', 24.00, 'Lunch', 'Images/food/chicken.jpg', '18'],
+        ['Steakhouse Special', 'Prime steak, garlic mash, pepper jus, and greens.', 34.00, 'Dinner', 'Images/food/main cross/pexels-mohamed9380-36734935.jpg', '30'],
+        ['Garden Fresh Salad', 'Mixed greens, feta, cucumber, and citrus dressing.', 16.00, 'Breakfast', 'Images/food/main cross/pexels-valeriya-19503815.jpg', '10'],
+        ['Berry Cheesecake', 'Creamy cheesecake with berry compote.', 12.00, 'Desserts', 'Images/menu/berrychessecake.jpg', '12'],
+        ['Tropical Fizz', 'Fresh tropical fruit cooler with soda.', 8.00, 'Drinks', 'Images/menu/tropicalfizz.jpg', '5'],
+        ['Chef Signature Seafood Trio', 'Seafood selection with seasonal vegetables.', 38.00, 'Special', 'Images/menu/Seafoodtrio.jpg', '28'],
+    ];
+
+    $stmt = $pdo->prepare(
+        "INSERT INTO recipes (chef_id, name, description, price, prep_time, category, image_path, status)
+         VALUES (NULL, ?, ?, ?, ?, ?, ?, 'approved')"
+    );
+
+    foreach ($items as $item) {
+        [$name, $description, $price, $category, $imagePath, $prepTime] = $item;
+        $stmt->execute([$name, $description, $price, $prepTime, $category, $imagePath]);
+    }
+}
+
 function ensureEmployeeClockColumns($pdo) {
     static $initialized = false;
     if ($initialized) {
@@ -237,9 +348,12 @@ ensureCustomerApprovalSchema($pdo);
 ensureDefaultAdminAccount($pdo);
 ensureOrderGuestColumns($pdo);
 ensureOrderCustomerColumn($pdo);
+ensureOrderWorkflowColumns($pdo);
+ensureReservationStatusValues($pdo);
 ensureEmployeeClockColumns($pdo);
 ensureTableAssignmentColumn($pdo);
 ensureTableCustomerColumns($pdo);
+ensureDefaultApprovedMenu($pdo);
 // Ensure chat messages table exists for chatbot logging
 function ensureChatMessagesTable($pdo) {
     static $initialized = false;

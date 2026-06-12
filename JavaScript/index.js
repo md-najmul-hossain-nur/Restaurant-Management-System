@@ -2,6 +2,62 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const heroSubtitle = document.getElementById("heroSubtitle");
   const heroHome = document.querySelector(".hero-home");
+  const homeMenuGrid = document.querySelector(".menu-showcase .menu-grid");
+
+  const escapeHtml = (value = "") => String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+  const normalizeImagePath = (path) => {
+    if (!path) return "../Images/menu/chefsign1.jpg";
+    if (/^(https?:)?\/\//i.test(path) || path.startsWith("../")) return path;
+    return `../${path.replace(/^\/+/, "").replace(/\\/g, "/")}`;
+  };
+
+  const splitMenuTitle = (name = "") => {
+    const words = String(name).trim().split(/\s+/);
+    if (words.length < 3) return escapeHtml(name);
+    const midpoint = Math.ceil(words.length / 2);
+    return `${escapeHtml(words.slice(0, midpoint).join(" "))}<br>${escapeHtml(words.slice(midpoint).join(" "))}`;
+  };
+
+  async function loadHomeMenu() {
+    if (!homeMenuGrid) return;
+
+    try {
+      const res = await fetch("../api/get_menu.php");
+      if (!res.ok) return;
+      const items = await res.json();
+      if (!Array.isArray(items) || items.length === 0) return;
+
+      homeMenuGrid.innerHTML = items.slice(0, 6).map((item, index) => {
+        const price = Number.parseFloat(item.price) || 0;
+        const orderUrl = new URL("order.html", window.location.href);
+        orderUrl.searchParams.set("item", item.name);
+        orderUrl.searchParams.set("price", price.toFixed(2));
+        if (item.id) orderUrl.searchParams.set("recipe_id", item.id);
+
+        return `
+          <div class="menu-image-card">
+            <img src="${escapeHtml(normalizeImagePath(item.image_path))}" alt="${escapeHtml(item.name)}" loading="${index === 0 ? "eager" : "lazy"}" decoding="async">
+          </div>
+          <div class="menu-info-card">
+            <div class="menu-item-top">
+              <h3>${splitMenuTitle(item.name)}</h3>
+              <span>$${price.toFixed(2)}</span>
+            </div>
+            <p>${escapeHtml(item.description || "Delicious freshly prepared dish.")}</p>
+            <a href="${escapeHtml(orderUrl.pathname.split("/").pop() + orderUrl.search)}" class="menu-order-btn">Order now</a>
+          </div>
+        `;
+      }).join("");
+    } catch (err) {
+      console.error("Could not load home menu:", err);
+    }
+  }
 
   const heroData = [
     {
@@ -143,4 +199,5 @@ document.addEventListener("DOMContentLoaded", function () {
   // Kick off auto-rotation
   goTo(0);
   resetAutoSlide();
+  loadHomeMenu();
 });
