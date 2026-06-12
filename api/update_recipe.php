@@ -14,9 +14,13 @@ $desc = trim($_POST['recipeDetails'] ?? '');
 $priceRaw = trim((string) ($_POST['recipePrice'] ?? ''));
 $priceRaw = ltrim($priceRaw, "$ ");
 $price = (float) $priceRaw;
+$prepTime = (int) ($_POST['recipePrepTime'] ?? 0);
 
 if (!$recipeId || !$name || !$desc || !$price) {
     respond(['error' => 'Name, details and price are required'], 400);
+}
+if ($prepTime < 1) {
+    respond(['error' => 'Prep time (minutes) is required'], 400);
 }
 
 $stmt = $pdo->prepare('SELECT id FROM recipes WHERE id = ? AND chef_id = ? LIMIT 1');
@@ -46,11 +50,11 @@ if (!empty($_FILES['recipeImageFile']['name'])) {
 }
 
 if ($imagePath) {
-    $pdo->prepare('UPDATE recipes SET name = ?, description = ?, price = ?, image_path = ? WHERE id = ?')
-        ->execute([$name, $desc, $price, $imagePath, $recipeId]);
+    $pdo->prepare('UPDATE recipes SET name = ?, description = ?, price = ?, prep_time = ?, image_path = ? WHERE id = ?')
+        ->execute([$name, $desc, $price, $prepTime, $imagePath, $recipeId]);
 } else {
-    $pdo->prepare('UPDATE recipes SET name = ?, description = ?, price = ? WHERE id = ?')
-        ->execute([$name, $desc, $price, $recipeId]);
+    $pdo->prepare('UPDATE recipes SET name = ?, description = ?, price = ?, prep_time = ? WHERE id = ?')
+        ->execute([$name, $desc, $price, $prepTime, $recipeId]);
 }
 
 respond([

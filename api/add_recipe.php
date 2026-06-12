@@ -11,9 +11,12 @@ $chefId = $_SESSION['user_id'];
 $name   = trim($_POST['recipeName']    ?? '');
 $desc   = trim($_POST['recipeDetails'] ?? '');
 $price  = (float)($_POST['recipePrice'] ?? 0);
+$prepTime = (int)($_POST['recipePrepTime'] ?? 0);
 
 if (!$name || !$desc || !$price)
     respond(['error' => 'Name, details and price are required'], 400);
+if ($prepTime < 1)
+    respond(['error' => 'Prep time (minutes) is required'], 400);
 
 // Image upload
 $imagePath = null;
@@ -36,8 +39,8 @@ if (!empty($_FILES['recipeImageFile']['name'])) {
 }
 
 $pdo->prepare(
-    'INSERT INTO recipes (chef_id, name, description, price, image_path, status) VALUES (?, ?, ?, ?, ?, ?)'
-)->execute([$chefId, $name, $desc, $price, $imagePath, 'pending']);
+    'INSERT INTO recipes (chef_id, name, description, price, prep_time, image_path, status) VALUES (?, ?, ?, ?, ?, ?, ?)'
+)->execute([$chefId, $name, $desc, $price, $prepTime, $imagePath, 'pending']);
 
 respond([
     'success' => true,

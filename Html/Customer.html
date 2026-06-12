@@ -314,6 +314,11 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
       </label>
     </div>
 
+    <div id="customerDeliveryField" style="margin: 1.5rem 0; text-align: left; display: none;">
+      <label style="color: #fff; font-size: 0.9rem; display: block; margin-bottom: 0.5rem;">Delivery Address <span style="color:#e74c3c;">*</span></label>
+      <input type="text" id="orderDeliveryAddress" placeholder="Street address, City, Zip Code" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px;">
+    </div>
+
     <div style="margin: 1.5rem 0; text-align: left;">
       <label style="color: #fff; font-size: 0.9rem; display: block; margin-bottom: 0.5rem;">Schedule Order (Optional)</label>
       <input type="datetime-local" id="orderScheduledTime" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px;">

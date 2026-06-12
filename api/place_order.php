@@ -67,12 +67,21 @@ try {
         }
     }
 
+    // Scheduled orders must surface to the chef ahead of time; if the recipes
+    // have no prep_time set, fall back to a 30-minute lead so the order is
+    // never revealed at the exact serving minute with zero cooking time.
+    if ($scheduledTime !== null && $totalPrepTime < 1) {
+        $totalPrepTime = 30;
+    }
+
+    $deliveryAddress = trim($data['delivery_address'] ?? '');
+
     // Insert order
     $stmt = $pdo->prepare(
-        "INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, payment_method, guest_name, guest_phone, notes, scheduled_time, total_prep_time)
-         VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?)"
+        "INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, payment_method, guest_name, guest_phone, notes, scheduled_time, total_prep_time, delivery_address)
+         VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?, ?)"
     );
-    $stmt->execute([$customerId, $tableId, $assignedWaiterId, $grandTotal, $paymentMethod, $guestName ?: null, $guestPhone ?: null, $notes, $scheduledTime, $totalPrepTime]);
+    $stmt->execute([$customerId, $tableId, $assignedWaiterId, $grandTotal, $paymentMethod, $guestName ?: null, $guestPhone ?: null, $notes, $scheduledTime, $totalPrepTime, $deliveryAddress ?: null]);
     $orderId = $pdo->lastInsertId();
 
     // Insert items

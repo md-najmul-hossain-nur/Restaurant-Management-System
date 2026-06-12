@@ -217,11 +217,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Guest fields (only sent if not logged in)
     const guestName = document.getElementById('orderName')?.value.trim();
     const guestPhone = document.getElementById('orderPhone')?.value.trim();
+    const deliveryAddress = document.getElementById('orderAddress')?.value.trim();
 
     // Validate guest fields if shown
     if (guestFields && !guestFields.classList.contains('hidden')) {
       if (!guestName) { showToast('Please enter your name.', true); return; }
       if (!guestPhone) { showToast('Please enter your phone.', true); return; }
+    }
+
+    const deliveryAddressField = document.getElementById('deliveryAddressField');
+    if (deliveryAddressField && !deliveryAddressField.classList.contains('hidden')) {
+      if (!deliveryAddress) { showToast('Please enter a delivery address.', true); return; }
     }
 
     submitBtn.disabled = true;
@@ -236,6 +242,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           payment_method: 'Cash',
           guest_name: guestName || null,
           guest_phone: guestPhone || null,
+          delivery_address: deliveryAddress || null,
           notes: notes || null,
           items: selectedItems.map(i => ({
             recipe_id: i.recipe_id,
@@ -298,6 +305,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
       if (tableContainer) tableContainer.classList.add('hidden');
     }
+  }
+
+  const orderTableSelect = document.getElementById('orderTable');
+  const deliveryAddressField = document.getElementById('deliveryAddressField');
+  if (orderTableSelect && deliveryAddressField) {
+    orderTableSelect.addEventListener('change', () => {
+      if (orderTableSelect.value) {
+        deliveryAddressField.classList.add('hidden');
+      } else {
+        deliveryAddressField.classList.remove('hidden');
+      }
+    });
   }
 
   await loadMenuItems();

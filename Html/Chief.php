@@ -37,7 +37,7 @@ $orderStmt = $pdo->prepare(
      LEFT JOIN restaurant_tables rt ON rt.id = o.table_id
      WHERE o.status IN ('queued','in_progress')
        AND (o.chef_id IS NULL OR o.chef_id = ?)
-       AND (o.scheduled_time IS NULL OR NOW() >= DATE_SUB(o.scheduled_time, INTERVAL o.total_prep_time MINUTE))
+       AND (o.scheduled_time IS NULL OR NOW() >= DATE_SUB(o.scheduled_time, INTERVAL COALESCE(o.total_prep_time, 30) MINUTE))
      ORDER BY o.created_at ASC"
 );
 $orderStmt->execute([$userId]);
@@ -52,7 +52,7 @@ foreach ($orders as $order) {
 }
 
 $recipesStmt = $pdo->prepare(
-    "SELECT id, name, description, price, image_path, status, created_at
+    "SELECT id, name, description, price, prep_time, image_path, status, created_at
      FROM recipes
      WHERE chef_id = ?
      ORDER BY created_at DESC"
@@ -348,7 +348,7 @@ function formatOrderStatus($status) {
                   $imageSrc = $normalizeImagePath($recipe['image_path'] ?? '', '../Images/food/default.png');
                   $status = strtolower($recipe['status'] ?? 'pending');
               ?>
-                <article class="card order-card recipe-card grid-6" data-recipe-id="<?php echo (int) $recipe['id']; ?>">
+                <article class="card order-card recipe-card grid-6" data-recipe-id="<?php echo (int) $recipe['id']; ?>" data-prep-time="<?php echo (int) ($recipe['prep_time'] ?? 0); ?>">
                   <span class="status-badge corner-badge"><?php echo htmlspecialchars(ucfirst($status)); ?></span>
                   <img class="order-image" src="<?php echo htmlspecialchars($imageSrc); ?>" alt="<?php echo htmlspecialchars($recipe['name'] ?? 'Recipe'); ?>" />
                   <div class="order-body">
@@ -360,6 +360,9 @@ function formatOrderStatus($status) {
                     </div>
                     <div class="order-meta">
                       <span class="pill"><?php echo $status === 'approved' ? 'Approved' : 'Pending'; ?></span>
+                      <?php if (!empty($recipe['prep_time'])) { ?>
+                        <span class="pill"><i class="far fa-clock"></i> <?php echo (int) $recipe['prep_time']; ?> min</span>
+                      <?php } ?>
                     </div>
                     <p class="recipe-desc">Details: <?php echo htmlspecialchars($recipe['description'] ?? ''); ?></p>
                     <div class="divider"></div>
@@ -413,6 +416,14 @@ function formatOrderStatus($status) {
           <span class="recipe-error" id="recipePriceError"></span>
         </div>
         <div class="recipe-field">
+          <label class="recipe-label" for="recipePrepTime">Prep Time (minutes)</label>
+          <input class="recipe-input" id="recipePrepTime" name="recipePrepTime" type="number" min="1" placeholder="e.g., 30" required />
+          <span class="recipe-error" id="recipePrepTimeError"></span>
+        </div>
+      </div>
+
+      <div class="recipe-row">
+        <div class="recipe-field recipe-field--full">
           <label class="recipe-label" for="recipeImageFile">Recipe Image</label>
           <input class="recipe-input recipe-file" id="recipeImageFile" name="recipeImageFile" type="file" accept="image/*" />
         </div>

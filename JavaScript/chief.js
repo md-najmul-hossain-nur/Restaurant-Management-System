@@ -217,6 +217,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('recipeName').value    = titleEl?.textContent || '';
     document.getElementById('recipeDetails').value = (descEl?.textContent || '').replace('Details: ', '');
     document.getElementById('recipePrice').value   = parseFloat(priceEl?.textContent.replace('$', '')) || '';
+    const prepInput = document.getElementById('recipePrepTime');
+    if (prepInput) prepInput.value = parseInt(card.dataset.prepTime) || '';
 
     // Show current image in preview
     if (imgEl && previewImg) {
@@ -256,6 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
             editingCard.querySelector('.card-title').textContent   = name;
             editingCard.querySelector('.recipe-desc').textContent  = 'Details: ' + desc;
             editingCard.querySelector('.recipe-price').textContent = '$' + parseFloat(price).toFixed(2);
+            editingCard.dataset.prepTime = document.getElementById('recipePrepTime')?.value || '';
 
             if (result.image_path) {
               const img = editingCard.querySelector('.order-image');
@@ -292,9 +295,11 @@ document.addEventListener('DOMContentLoaded', () => {
             ? previewImg.src
             : normalizeImagePath(result.image_path || '../Images/food/default.png');
 
+          const prepTime = parseInt(document.getElementById('recipePrepTime')?.value) || 0;
           const article = document.createElement('article');
           article.className = 'card order-card recipe-card grid-6';
           article.dataset.recipeId = result.recipe_id;
+          article.dataset.prepTime = prepTime;
           article.innerHTML = `
             <span class="status-badge corner-badge">Pending</span>
             <img class="order-image" src="${imgSrc}" alt="${name}" />
@@ -309,6 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <div class="divider"></div>
               <div class="actions recipe-actions">
                 <span class="pill recipe-price">$${price}</span>
+                ${prepTime ? `<span class="pill"><i class="far fa-clock"></i> ${prepTime} min</span>` : ''}
                 <button class="order-edit-btn" data-edit-recipe>Edit</button>
               </div>
             </div>`;
