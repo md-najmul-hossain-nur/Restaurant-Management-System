@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 $identifier = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
-$role = $_POST['role'] ?? '';
 
 if (!$identifier || !$password) {
     header('Location: ../Html/login.html?error=missing');
@@ -38,11 +37,7 @@ if (($user['role'] ?? '') === 'customer' && ($user['approval_status'] ?? 'approv
     exit;
 }
 
-// Role check (optional)
-if ($role && $role !== $user['role']) {
-    header('Location: ../Html/login.html?error=role_mismatch');
-    exit;
-}
+
 
 if (!empty($_SESSION['user_id']) && !empty($_SESSION['role'])) {
     rememberRoleSession([

@@ -36,20 +36,8 @@
       <p class="card-subtitle">
         Welcome To Feliciano Restaurant<br>
         Enjoy Delicious Food And Great Service.
-      </p>
-      <div id="login-message" class="signup-message" role="alert" aria-live="polite"></div>
-
       <form class="login-form" method="post" action="../Php/login.php" novalidate>
-        <div class="form-group">
-          <label for="role">Role</label>
-          <select id="role" name="role" required>
-            <option value="" disabled selected>Select Role</option>
-            <option value="customer">Customer</option>
-            <option value="chief">Chef</option>
-            <option value="waiter">Waiter</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
+
         <div class="form-group">
           <label for="email">Email</label>
           <input type="email" id="email" name="email" placeholder="Enter your email" required>
@@ -71,6 +59,8 @@
       </form>
     </div>
   </div>
+
+  <div id="login-message" class="signup-message" role="alert" aria-live="polite"></div>
 
   <script src="../JavaScript/auth.js"></script>
 </body>

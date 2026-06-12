@@ -557,7 +557,7 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                         <div class="menu-desc"><?php echo $desc; ?></div>
                         <div class="menu-bottom-row">
                           <span class="menu-tag"><?php echo $category; ?></span>
-                          <span class="menu-tag" style="background: rgba(0,0,0,0.2); color: var(--text-muted);"><i class="fas fa-user-chef" style="margin-right:4px;"></i><?php echo htmlspecialchars($item['chief_name'] ?? 'Unknown'); ?></span>
+                          <span class="menu-tag" style="background: rgba(0,0,0,0.2); color: var(--text-muted);"><i class="fas fa-user" style="margin-right:4px;"></i><?php echo htmlspecialchars($item['chief_name'] ?? 'Unknown'); ?></span>
                           <div class="menu-action-row">
                             <button type="button" class="menu-edit-btn" data-action="edit-menu">Edit</button>
                             <button type="button" class="menu-approve-btn" data-action="approve">Approve</button>
@@ -606,7 +606,7 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                         <div class="menu-desc"><?php echo $desc; ?></div>
                         <div class="menu-bottom-row">
                           <span class="menu-tag"><?php echo $category; ?></span>
-                          <span class="menu-tag" style="background: rgba(0,0,0,0.2); color: var(--text-muted);"><i class="fas fa-user-chef" style="margin-right:4px;"></i><?php echo htmlspecialchars($item['chief_name'] ?? 'Unknown'); ?></span>
+                          <span class="menu-tag" style="background: rgba(0,0,0,0.2); color: var(--text-muted);"><i class="fas fa-user" style="margin-right:4px;"></i><?php echo htmlspecialchars($item['chief_name'] ?? 'Unknown'); ?></span>
                         </div>
                       </div>
                     </div>
