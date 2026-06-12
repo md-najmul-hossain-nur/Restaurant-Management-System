@@ -228,10 +228,10 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    min-width: 500px;
-    max-width: 700px;
+    min-width: 0;
+    max-width: 100%;
     flex-shrink: 0;
-    margin-left: 178px; 
+    margin-left: 0; 
   }
   
   /* Left image */

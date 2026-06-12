@@ -179,10 +179,10 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
-    min-width: 620px;
-    max-width: 860px;
+    min-width: 0;
+    max-width: 100%;
     flex-shrink: 0;
-    margin-left: 140px;
+    margin-left: 0;
   }
   
   /* Left image */
