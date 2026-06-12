@@ -233,6 +233,13 @@ async function placeOrderInDB(paymentMethod) {
   const scheduledTimeEl = document.getElementById('orderScheduledTime');
   const scheduledTime = scheduledTimeEl ? scheduledTimeEl.value : null;
 
+  const deliveryAddressEl = document.getElementById('orderDeliveryAddress');
+  const deliveryAddress = (deliveryAddressEl && !tableId) ? deliveryAddressEl.value.trim() : null;
+
+  if (!tableId && !deliveryAddress) {
+    throw new Error('Please enter a delivery address.');
+  }
+
   const res = await fetch('../api/place_order.php', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -240,6 +247,7 @@ async function placeOrderInDB(paymentMethod) {
       table_id:       tableId,
       payment_method: paymentMethod,
       scheduled_time: scheduledTime,
+      delivery_address: deliveryAddress,
       items,
     }),
   });
@@ -464,7 +472,19 @@ document.addEventListener('DOMContentLoaded', () => {
       if (cart.size === 0) return;
       const paymentTotalEl = document.getElementById('paymentTotal');
       const paymentOverlay = document.getElementById('paymentOverlay');
+      const customerDeliveryField = document.getElementById('customerDeliveryField');
+      
       if (paymentTotalEl) paymentTotalEl.textContent = formatMoney(calculateTotals().total);
+      
+      const tableId = sessionStorage.getItem('selectedTableId');
+      if (customerDeliveryField) {
+        if (tableId) {
+          customerDeliveryField.style.display = 'none';
+        } else {
+          customerDeliveryField.style.display = 'block';
+        }
+      }
+
       if (paymentOverlay) paymentOverlay.classList.add('is-visible');
     });
   }

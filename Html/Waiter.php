@@ -76,14 +76,16 @@ foreach ($activeOrdersStmt->fetchAll() ?: [] as $ord) {
 }
 
 $orderStmt = $pdo->prepare(
-  "SELECT o.id, o.status, o.total_amount, o.created_at, o.table_id, o.guest_name,
-            rt.table_number, rt.image_path
+  "SELECT o.id, o.status, o.total_amount, o.created_at, o.table_id, o.guest_name, o.delivery_address,
+            rt.table_number, rt.image_path, u.name AS customer_name
      FROM orders o
      LEFT JOIN restaurant_tables rt ON rt.id = o.table_id
-     WHERE (o.waiter_id = ? OR o.waiter_id IS NULL) AND o.status != 'cancelled'
+     LEFT JOIN users u ON u.id = o.customer_id
+     WHERE (o.waiter_id = ? OR (o.table_id IS NOT NULL AND rt.assigned_waiter_id = ?)) 
+       AND o.status != 'cancelled'
      ORDER BY o.created_at DESC LIMIT 100"
 );
-$orderStmt->execute([$userId]);
+$orderStmt->execute([$userId, $userId]);
 $orders = $orderStmt->fetchAll() ?: [];
 
 $itemStmt = $pdo->prepare(
@@ -429,22 +431,29 @@ function waiterStatusClass($status)
                 $imageSrc = $normalizeImagePath($order['image_path'] ?? '', '../Images/Table/4_people table.jpg');
                 $status = $order['status'] ?? 'queued';
                 $tableNumber = $order['table_number'] ?? 'N/A';
-                $guestName = $order['guest_name'] ?? 'Walk-in';
+                $guestName = $order['guest_name'] ?: ($order['customer_name'] ?? 'Walk-in');
                 $statusLabel = formatWaiterStatusLabel($status);
                 $statusClass = waiterStatusClass($status);
+                $isDelivery = empty($order['table_id']);
                 ?>
                 <div class="order-card" data-order-id="<?php echo (int) $order['id']; ?>" data-table-id="<?php echo (int) $order['table_id']; ?>">
                   <div class="order-card-top">
                     <div class="order-left">
                       <div class="order-head">
-                        <div class="order-thumb">
-                          <img src="<?php echo htmlspecialchars($imageSrc); ?>"
-                            alt="Table <?php echo htmlspecialchars((string) $tableNumber); ?>" />
+                        <div class="order-thumb" <?php if ($isDelivery) echo 'style="display:flex; align-items:center; justify-content:center; background:#333; color:#c8a96a; font-size:20px;"'; ?>>
+                          <?php if ($isDelivery) { ?>
+                            <i class="fas fa-motorcycle"></i>
+                          <?php } else { ?>
+                            <img src="<?php echo htmlspecialchars($imageSrc); ?>" alt="Table <?php echo htmlspecialchars((string) $tableNumber); ?>" />
+                          <?php } ?>
                         </div>
                         <div>
-                          <div class="order-table">Table <?php echo htmlspecialchars((string) $tableNumber); ?></div>
+                          <div class="order-table"><?php echo $isDelivery ? "Delivery Order #" . $order['id'] : "Table " . htmlspecialchars((string) $tableNumber); ?></div>
                           <div class="order-muted"><?php echo htmlspecialchars($guestName); ?></div>
-                          <div class="order-muted"><?php echo date('g:i A', strtotime($order['created_at'] ?? 'now')); ?>
+                          <?php if ($isDelivery && !empty($order['delivery_address'])) { ?>
+                            <div class="order-muted"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($order['delivery_address']); ?></div>
+                          <?php } ?>
+                          <div class="order-muted"><?php echo date('g:i A', strtotime($order['created_at'] ?? 'now')); ?></div>
                           </div>
                         </div>
                       </div>
@@ -499,6 +508,26 @@ function waiterStatusClass($status)
                 </div>
               <?php } ?>
             <?php } ?>
+          </div>
+
+          <div class="order-header" style="margin-top: 40px;">
+            <div>
+              <h1 class="page-title">Ready Deliveries</h1>
+              <p class="page-subtitle">Unassigned delivery orders ready to be picked up</p>
+            </div>
+          </div>
+          <div class="order-list" id="readyDeliveriesList">
+            <div class="order-card">
+              <div class="order-card-top">
+                <div class="order-left">
+                  <div class="order-head">
+                    <div>
+                      <div class="order-table">Loading ready deliveries...</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- New Order Modal -->
@@ -583,22 +612,29 @@ function waiterStatusClass($status)
                 $imageSrc = $normalizeImagePath($order['image_path'] ?? '', '../Images/Table/4_people table.jpg');
                 $status = $order['status'] ?? 'served';
                 $tableNumber = $order['table_number'] ?? 'N/A';
-                $guestName = $order['guest_name'] ?? 'Walk-in';
+                $guestName = $order['guest_name'] ?: ($order['customer_name'] ?? 'Walk-in');
                 $statusLabel = formatWaiterStatusLabel($status);
                 $statusClass = waiterStatusClass($status);
+                $isDelivery = empty($order['table_id']);
                 ?>
                 <div class="order-card" data-order-id="<?php echo (int) $order['id']; ?>" data-table-id="<?php echo (int) $order['table_id']; ?>">
                   <div class="order-card-top">
                     <div class="order-left">
                       <div class="order-head">
-                        <div class="order-thumb">
-                          <img src="<?php echo htmlspecialchars($imageSrc); ?>"
-                            alt="Table <?php echo htmlspecialchars((string) $tableNumber); ?>" />
+                        <div class="order-thumb" <?php if ($isDelivery) echo 'style="display:flex; align-items:center; justify-content:center; background:#333; color:#c8a96a; font-size:20px;"'; ?>>
+                          <?php if ($isDelivery) { ?>
+                            <i class="fas fa-motorcycle"></i>
+                          <?php } else { ?>
+                            <img src="<?php echo htmlspecialchars($imageSrc); ?>" alt="Table <?php echo htmlspecialchars((string) $tableNumber); ?>" />
+                          <?php } ?>
                         </div>
                         <div>
-                          <div class="order-table">Table <?php echo htmlspecialchars((string) $tableNumber); ?></div>
+                          <div class="order-table"><?php echo $isDelivery ? "Delivery Order #" . $order['id'] : "Table " . htmlspecialchars((string) $tableNumber); ?></div>
                           <div class="order-muted"><?php echo htmlspecialchars($guestName); ?></div>
-                          <div class="order-muted"><?php echo date('M j, Y · g:i A', strtotime($order['created_at'] ?? 'now')); ?>
+                          <?php if ($isDelivery && !empty($order['delivery_address'])) { ?>
+                            <div class="order-muted"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($order['delivery_address']); ?></div>
+                          <?php } ?>
+                          <div class="order-muted"><?php echo date('M j, Y · g:i A', strtotime($order['created_at'] ?? 'now')); ?></div>
                           </div>
                         </div>
                       </div>

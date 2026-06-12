@@ -16,8 +16,8 @@ if (!$orderId) {
 }
 
 try {
-    // Only allow customer to accept their own order if it's currently 'ready'
-    $stmt = $pdo->prepare("UPDATE orders SET status = 'served' WHERE id = ? AND customer_id = ? AND status = 'ready'");
+    // Only allow customer to accept their own order if it's currently 'ready' or 'delivered'
+    $stmt = $pdo->prepare("UPDATE orders SET status = 'served' WHERE id = ? AND customer_id = ? AND status IN ('ready', 'delivered')");
     $stmt->execute([$orderId, $customerId]);
 
     if ($stmt->rowCount() > 0) {

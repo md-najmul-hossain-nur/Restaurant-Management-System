@@ -100,6 +100,10 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
           <i class="fas fa-comments"></i>
           <span>Chat</span>
         </div>
+        <div class="tab" data-section="orders">
+          <i class="fas fa-truck"></i>
+          <span>Delivery Orders</span>
+        </div>
         <div class="tab" data-section="tables">
           <i class="fas fa-chair"></i>
           <span>Tables</span>
@@ -331,6 +335,20 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                 <button type="submit">Send</button>
               </form>
             </div>
+          </div>
+        </div>
+
+        <!-- ===================== ORDERS ===================== -->
+        <div class="section-content" id="orders">
+          <div class="orders-header">
+            <div>
+              <h2>Delivery Orders</h2>
+              <p class="sub">Assign waiters to unassigned guest delivery orders</p>
+            </div>
+          </div>
+          
+          <div class="orders-grid" id="adminOrdersGrid" style="display: grid; gap: 20px; margin-top: 20px;">
+            <div class="empty-state"><p>Loading delivery orders...</p></div>
           </div>
         </div>
 

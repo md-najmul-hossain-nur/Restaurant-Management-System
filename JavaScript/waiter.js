@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
           await fetch('../api/update_order_status.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ order_id: parseInt(orderId), status: 'served' }),
+            body: JSON.stringify({ order_id: parseInt(orderId), status: 'delivered' }),
           });
         } catch { }
       }
@@ -685,5 +685,110 @@ document.addEventListener('DOMContentLoaded', () => {
       icon.className = inp.type === 'password' ? 'far fa-eye' : 'far fa-eye-slash';
     });
   });
+
+  // ── Ready Deliveries Pool ─────────────────────────────────
+  async function loadReadyDeliveries() {
+    const list = document.getElementById('readyDeliveriesList');
+    if (!list) return;
+
+    try {
+      const res = await fetch('../api/get_ready_deliveries.php');
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      if (data.orders.length === 0) {
+        list.innerHTML = `
+          <div class="order-card">
+            <div class="order-card-top">
+              <div class="order-left">
+                <div class="order-head">
+                  <div>
+                    <div class="order-table">No ready deliveries</div>
+                    <div class="order-muted">Check back later for new delivery orders.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = data.orders.map(order => {
+        const itemsStr = order.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+        return `
+          <div class="order-card" data-delivery-id="${order.id}">
+            <div class="order-card-top">
+              <div class="order-left">
+                <div class="order-head">
+                  <div class="order-thumb" style="display:flex; align-items:center; justify-content:center; background:#333; color:#c8a96a; font-size:20px;">
+                    <i class="fas fa-motorcycle"></i>
+                  </div>
+                  <div>
+                    <div class="order-table">Delivery Order #${order.id}</div>
+                    <div class="order-muted"><i class="fas fa-user"></i> ${order.guest_name || 'Customer'} (${order.guest_phone || 'N/A'})</div>
+                    <div class="order-muted"><i class="fas fa-map-marker-alt"></i> ${order.delivery_address || 'No Address Provided'}</div>
+                  </div>
+                </div>
+                <div class="order-items">
+                  <div style="color:#ccc; font-size:0.85rem;"><i class="fas fa-utensils"></i> ${itemsStr}</div>
+                </div>
+              </div>
+              <div class="order-right">
+                <div class="order-status order-status--ready">Ready for Pickup</div>
+                <div style="margin-top:auto;">
+                  <button class="order-delivered-btn claim-delivery-btn" data-claim-id="${order.id}" style="background:#c8a96a;">Claim Delivery</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error(err);
+      list.innerHTML = '<div class="order-card"><div class="order-table">Failed to load ready deliveries.</div></div>';
+    }
+  }
+
+  const readyDeliveriesList = document.getElementById('readyDeliveriesList');
+  if (readyDeliveriesList) {
+    readyDeliveriesList.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.claim-delivery-btn');
+      if (!btn) return;
+
+      const orderId = btn.dataset.claimId;
+      btn.disabled = true;
+      btn.textContent = 'Claiming...';
+
+      // We can use update_order_status.php to assign the waiter
+      // Waiter calls it, so it uses $_SESSION['user_id'] as waiter_id.
+      // And status stays 'ready', but since we just update it with 'ready', it sets the waiter_id!
+      try {
+        const res = await fetch('../api/update_order_status.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: parseInt(orderId), status: 'ready' }), // stays ready, assigns waiter
+        });
+        const result = await res.json();
+        if (result.success) {
+          showToast('Delivery claimed! Check your orders.');
+          loadReadyDeliveries();
+          // Reload page to show it in My Orders
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showToast(result.error || 'Failed to claim delivery', true);
+        }
+      } catch (err) {
+        showToast('Network error.', true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Claim Delivery';
+      }
+    });
+  }
+
+  // Initial call
+  if (window.location.pathname.includes('Waiter.php')) {
+    loadReadyDeliveries();
+  }
 
 }); // end DOMContentLoaded

@@ -14,7 +14,7 @@ $data    = json_decode(file_get_contents('php://input'), true);
 $orderId = (int)  ($data['order_id'] ?? 0);
 $status  = trim($data['status']      ?? '');
 
-$allowed = ['queued', 'in_progress', 'ready', 'served', 'cancelled', 'paid'];
+$allowed = ['queued', 'in_progress', 'ready', 'delivered', 'served', 'cancelled', 'paid'];
 if (!$orderId || !in_array($status, $allowed))
     respond(['error' => 'Invalid input'], 400);
 

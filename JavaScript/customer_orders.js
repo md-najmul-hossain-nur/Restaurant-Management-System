@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     'queued': { text: 'Placed', icon: 'fa-check', badgeClass: 'placed', index: 1 },
     'in_progress': { text: 'In Kitchen', icon: 'fa-clock', badgeClass: 'in-kitchen', index: 2 },
     'ready': { text: 'Ready', icon: 'fa-check-circle', badgeClass: 'ready', index: 3 },
-    'served': { text: 'Served', icon: 'fa-utensils', badgeClass: 'served', index: 4 },
+    'delivered': { text: 'Delivered', icon: 'fa-motorcycle', badgeClass: 'ready', index: 3.5 },
+    'served': { text: 'Completed', icon: 'fa-utensils', badgeClass: 'served', index: 4 },
     'cancelled': { text: 'Cancelled', icon: 'fa-times-circle', badgeClass: 'cancelled', index: 0 }
   };
 
@@ -136,7 +137,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
         </div>
 
-        ${order.status === 'ready' ? `
+        ${(order.status === 'ready' || order.status === 'delivered') ? `
           <div style="margin-top: 15px; text-align: right;">
             <button class="accept-order-btn" data-order-id="${order.id}" style="background: var(--green, #4ade80); color: #1a1a16; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">
               <i class="fas fa-check-circle"></i> Accept Order

@@ -3,6 +3,8 @@
 //         table status/add/edit, menu approve/edit, customer approve
 
 document.addEventListener('DOMContentLoaded', () => {
+  let employeeTimerId;
+  function updateEmployeeTimers() {}
 
   // ── Tab Navigation ────────────────────────────────────────
   const tabs = document.querySelectorAll('.tab[data-section]');
@@ -1110,6 +1112,94 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  updateTableStats();
+  // ── Admin Orders (Guest Delivery) ───────────────────────
+  async function loadAdminOrders() {
+    const grid = document.getElementById('adminOrdersGrid');
+    if (!grid) return;
 
+    try {
+      const res = await fetch('../api/get_guest_orders.php');
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      if (data.orders.length === 0) {
+        grid.innerHTML = '<div class="empty-state"><p>No guest orders currently.</p></div>';
+        return;
+      }
+
+      grid.innerHTML = data.orders.map(order => {
+        const itemsStr = order.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+        const waiterSelect = `<select class="assign-waiter-select" data-order-id="${order.id}">
+            <option value="">— Assign Waiter —</option>
+            ${data.waiters.map(w => `<option value="${w.id}" ${order.waiter_id == w.id ? 'selected' : ''}>${w.name}</option>`).join('')}
+          </select>`;
+
+        return `
+          <div class="order-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+              <strong>Order #${order.id}</strong>
+              <span class="status-badge ${order.status}">${order.status.toUpperCase()}</span>
+            </div>
+            <p style="font-size:0.9rem; margin-bottom:5px;"><i class="fas fa-user"></i> ${order.guest_name || 'Guest'} (${order.guest_phone || 'N/A'})</p>
+            <p style="font-size:0.9rem; margin-bottom:5px;"><i class="fas fa-map-marker-alt"></i> ${order.delivery_address || 'No Address Provided'}</p>
+            <p style="font-size:0.85rem; color:#ccc; margin-bottom:10px;"><i class="fas fa-utensils"></i> ${itemsStr}</p>
+            <div style="display:flex; gap: 10px; align-items:center;">
+              ${waiterSelect}
+              <button class="assign-waiter-btn" data-order-id="${order.id}" style="padding: 6px 12px; background: #c8a96a; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Update</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      console.error(err);
+      grid.innerHTML = '<div class="empty-state"><p>Failed to load orders.</p></div>';
+    }
+  }
+
+  const adminOrdersGrid = document.getElementById('adminOrdersGrid');
+  if (adminOrdersGrid) {
+    adminOrdersGrid.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.assign-waiter-btn');
+      if (!btn) return;
+
+      const orderId = btn.dataset.orderId;
+      const select = document.querySelector(`.assign-waiter-select[data-order-id="${orderId}"]`);
+      const waiterId = select.value;
+
+      if (!waiterId) {
+        showAdminToast('Please select a waiter first.', true);
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '...';
+
+      try {
+        const res = await fetch('../api/assign_order_waiter.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: orderId, waiter_id: waiterId })
+        });
+        const result = await res.json();
+        if (result.success) {
+          showAdminToast('Waiter assigned successfully!');
+          loadAdminOrders();
+        } else {
+          showAdminToast(result.error || 'Failed to assign waiter', true);
+        }
+      } catch (err) {
+        showAdminToast('Network error.', true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Update';
+      }
+    });
+  }
+
+  // Initial loads
+  updateTableStats();
+  updateMenuCount();
+  if (window.location.href.includes('Admin.php')) {
+    loadAdminOrders();
+  }
 }); // end DOMContentLoaded

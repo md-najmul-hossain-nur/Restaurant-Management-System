@@ -309,14 +309,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const orderTableSelect = document.getElementById('orderTable');
   const deliveryAddressField = document.getElementById('deliveryAddressField');
-  if (orderTableSelect && deliveryAddressField) {
-    orderTableSelect.addEventListener('change', () => {
-      if (orderTableSelect.value) {
+  if (deliveryAddressField) {
+    // No table selected (or no table picker at all, e.g. guests) means delivery
+    const syncDeliveryField = () => {
+      if (orderTableSelect && orderTableSelect.value) {
         deliveryAddressField.classList.add('hidden');
       } else {
         deliveryAddressField.classList.remove('hidden');
       }
-    });
+    };
+    syncDeliveryField();
+    if (orderTableSelect) orderTableSelect.addEventListener('change', syncDeliveryField);
   }
 
   await loadMenuItems();
