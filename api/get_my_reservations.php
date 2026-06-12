@@ -63,8 +63,8 @@ $stmt = $pdo->prepare(
      FROM reservations r
      JOIN restaurant_tables rt ON rt.id = r.table_id
      WHERE r.customer_id = ?
-       AND r.status IN ('pending', 'approved', 'confirmed')
-     ORDER BY FIELD(r.status, 'approved', 'confirmed', 'pending'),
+       AND r.status IN ('pending', 'approved', 'confirmed', 'completed', 'rejected', 'cancelled')
+     ORDER BY FIELD(r.status, 'approved', 'confirmed', 'pending', 'completed', 'rejected', 'cancelled'),
               r.reserved_date DESC,
               r.reserved_time DESC,
               r.id DESC"

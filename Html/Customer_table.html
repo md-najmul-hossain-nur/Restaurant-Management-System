@@ -244,15 +244,15 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'customer') {
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Date</label>
-            <input type="date" class="form-input" id="bookDate"/>
+            <input type="date" class="form-input" id="bookDate" onchange="refreshAvailabilityForSelection()"/>
           </div>
           <div class="form-group">
             <label class="form-label">Start Time</label>
-            <input type="time" class="form-input" id="bookTime" value="19:00" step="1800"/>
+            <input type="time" class="form-input" id="bookTime" value="19:00" step="1800" onchange="refreshAvailabilityForSelection()"/>
           </div>
           <div class="form-group">
             <label class="form-label">End Time</label>
-            <input type="time" class="form-input" id="bookEndTime" value="20:00" step="1800"/>
+            <input type="time" class="form-input" id="bookEndTime" value="20:00" step="1800" onchange="refreshAvailabilityForSelection()"/>
           </div>
         </div>
 

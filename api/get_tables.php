@@ -9,14 +9,20 @@ if (!isset($_SESSION['user_id']) || !in_array($role, ['customer', 'waiter', 'adm
 }
 
 $stmt = $pdo->query(
-    "SELECT id, table_number, capacity, position,
+    "SELECT rt.id, rt.table_number, rt.capacity, rt.position,
             CASE
-              WHEN assigned_waiter_id IS NOT NULL THEN 'occupied'
-              ELSE status
+              WHEN rt.assigned_waiter_id IS NOT NULL THEN 'occupied'
+              ELSE rt.status
             END AS status,
-            image_path
-     FROM restaurant_tables
-     ORDER BY table_number"
+            rt.image_path,
+            (SELECT TIME_FORMAT(r.reserved_time, '%h:%i %p')
+             FROM reservations r 
+             WHERE r.table_id = rt.id 
+               AND r.reserved_date = CURRENT_DATE
+               AND r.status IN ('pending', 'approved', 'confirmed', 'completed')
+             ORDER BY r.reserved_time DESC LIMIT 1) as next_reserved_time
+     FROM restaurant_tables rt
+     ORDER BY rt.table_number"
 );
 
 $tables = $stmt->fetchAll();

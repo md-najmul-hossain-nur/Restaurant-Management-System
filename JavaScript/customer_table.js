@@ -56,6 +56,7 @@ function buildTableFromDb(row) {
       { icon: 'fas fa-users', label: `${row.capacity} Seats` },
       { icon: 'fas fa-map-marker-alt', label: row.position || 'Dining Area' },
     ],
+    next_reserved_time: row.next_reserved_time,
   };
 }
 
@@ -131,6 +132,7 @@ function renderBrowserGrid() {
             ${t.pills.slice(0, 3).map(p =>
       `<span class="pill"><i class="${p.icon}"></i>${p.label}</span>`
     ).join('')}
+            ${t.next_reserved_time && status !== 'available' ? `<span class="pill" style="color:var(--c-gold)"><i class="fas fa-clock"></i>Reserved at ${t.next_reserved_time}</span>` : ''}
           </div>
           <button class="browser-select-btn"
                   onclick="event.stopPropagation(); selectAndBook('${t.key}')">
@@ -497,6 +499,7 @@ function getReservationStatus(status) {
     confirmed: { cls: 'confirmed', icon: 'fas fa-check-circle', label: 'Confirmed', msg: 'Your reservation is confirmed. See you soon.' },
     rejected: { cls: 'rejected', icon: 'fas fa-times-circle', label: 'Rejected', msg: 'This reservation was not approved.' },
     cancelled: { cls: 'cancelled', icon: 'fas fa-ban', label: 'Cancelled', msg: 'This reservation was cancelled.' },
+    completed: { cls: 'approved', icon: 'fas fa-flag-checkered', label: 'Completed', msg: 'This reservation has been completed.' },
   };
   return data[normalized] || data.pending;
 }

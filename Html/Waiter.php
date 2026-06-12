@@ -47,7 +47,7 @@ $resStmt = $pdo->query(
   "SELECT r.*, u.name as customer_name
    FROM reservations r
    LEFT JOIN users u ON u.id = r.customer_id
-   WHERE r.status IN ('approved', 'confirmed') AND r.reserved_date = CURRENT_DATE
+   WHERE r.status IN ('pending', 'approved', 'confirmed', 'completed') AND r.reserved_date = CURRENT_DATE
    ORDER BY r.reserved_time ASC"
 );
 $reservationsForWaiter = $resStmt->fetchAll() ?: [];

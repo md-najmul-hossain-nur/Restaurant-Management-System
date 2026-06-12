@@ -333,7 +333,7 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                     u.name AS customer_name
                  FROM reservations r
                  LEFT JOIN users u ON u.id = r.customer_id
-                 WHERE r.status = 'approved'
+                 WHERE r.status IN ('pending', 'approved', 'confirmed', 'completed')
                  ORDER BY r.reserved_date DESC, r.reserved_time DESC"
               );
               $reservations = $reservationsStmt->fetchAll() ?: [];
@@ -375,10 +375,6 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                   <div class="stat-value available" id="statAvailable"><?php echo (int) $stats['available']; ?></div>
                 </div>
                 <div class="stat-item">
-                  <div class="stat-label">Reserved</div>
-                  <div class="stat-value reserved" id="statReserved"><?php echo (int) $stats['reserved']; ?></div>
-                </div>
-                <div class="stat-item">
                   <div class="stat-label">Occupied</div>
                   <div class="stat-value occupied" id="statOccupied"><?php echo (int) $stats['occupied']; ?></div>
                 </div>
@@ -400,9 +396,6 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
               </button>
               <button type="button" class="filter-pill" data-filter="available">
                 <i class="fas fa-check-circle"></i> Available
-              </button>
-              <button type="button" class="filter-pill" data-filter="reserved">
-                <i class="fas fa-calendar-check"></i> Reserved
               </button>
               <button type="button" class="filter-pill" data-filter="occupied">
                 <i class="fas fa-utensils"></i> Occupied
