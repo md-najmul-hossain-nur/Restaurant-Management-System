@@ -5,7 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     'Show menu',
     'Reserve table',
     'Opening hours',
-    'Contact'
+    'Contact',
+    'Delivery info',
+    'Vegetarian options'
   ];
 
   const fab = document.createElement('button');
@@ -302,11 +304,17 @@ document.addEventListener('DOMContentLoaded', () => {
       gap: 8px;
       padding: 0 16px 12px;
       overflow-x: auto;
-      scrollbar-width: none;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(200, 169, 110, 0.5) transparent;
     }
 
     .chatbot-quick-replies::-webkit-scrollbar {
-      display: none;
+      height: 6px;
+    }
+
+    .chatbot-quick-replies::-webkit-scrollbar-thumb {
+      background: rgba(200, 169, 110, 0.45);
+      border-radius: 999px;
     }
 
     .chatbot-quick-replies button {
@@ -507,8 +515,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
       if (!data.success || !Array.isArray(data.messages)) return;
 
-      const currentCount = messagesContainer.querySelectorAll('.chatbot-msg').length;
-      if (hasLoadedHistory && currentCount === data.messages.length) return;
+      const domMsgs = messagesContainer.querySelectorAll('.chatbot-msg');
+      if (hasLoadedHistory) {
+        if (data.messages.length === 0) return;
+        const lastDbMsg = data.messages[data.messages.length - 1].message;
+        if (domMsgs.length > 0 && domMsgs[domMsgs.length - 1].textContent === lastDbMsg) {
+          return; // No new message
+        }
+      }
 
       messagesContainer.innerHTML = '';
       data.messages.forEach(msg => {
@@ -577,6 +591,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (/contact|phone|location|address|email|map/.test(text)) {
       return 'You can find phone, address, and location details on the Contact page. The homepage phone number is +1-978-123-4567.';
+    }
+
+    if (/delivery|shipping|takeaway|take out/.test(text)) {
+      return 'We offer both delivery and takeaway. You can place your order online through the Menu page and choose your preference.';
+    }
+
+    if (/vegetarian|vegan|veg|halal|diet/.test(text)) {
+      return 'Yes, we offer several vegetarian and special dietary options. You can view the details of each dish on our Menu page.';
     }
 
     if (/login|sign in|signup|register|account/.test(text)) {

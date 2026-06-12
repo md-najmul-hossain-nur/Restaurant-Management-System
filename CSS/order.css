@@ -259,172 +259,173 @@ body {
   }
 }
 
-  /* ============================================================
+/* ============================================================
      FOOTER
      ============================================================ */
-  footer {
-    background: black;
-    color: rgba(255, 255, 255, 0.7);
-    padding: 60px 80px 30px;
-    font-weight: 800;
-    margin-top: -200px;
-  }
-  
- 
-  .footer-grid {
-    display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr 1.3fr;
-    gap: 50px;
-    margin-bottom: 40px;
-  }
+footer {
+  background: black;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 60px 80px 30px;
+  font-weight: 800;
+  margin-top: -200px;
+}
 
-  
-  /* logo text in footer */
-  .footer-logo {
-    color: var(--white);
-    font-family: 'Inter', sans-serif;
-    font-size: 1rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    font-weight: 700;
-    display: inline-block;
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    padding: 4px 12px;
-    border-radius: 4px;
-    margin-bottom: 14px;
-  }
-  
-  /* Body copy inside footer columns */
-  footer p {
-    font-size: 1rem;
-    line-height: 1.8;
-    color: rgba(255, 255, 255, 0.55);
-    margin-bottom: 16px;
-  }
-  
-  /* Social icons in footer brand column */
-  .footer-social a {
-    color: rgba(255, 255, 255, 0.5);
-    margin-right: 12px;
-    font-size: 1.3rem;
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-  
-  .footer-social a:hover {
-    color: var(--gold);
-  }
-  
-  /* Column headings (e.g. "Open Hours", "Instagram") */
-  .footer-col h5 {
-    color: var(--white);
-    font-size: 1.02rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    font-weight: 700;
-    margin-bottom: 18px;
-  }
-  
-  /* Opening hours table */
-  .footer-col table {
-    border-collapse: collapse;
-    width: 100%;
-  }
-  
-  .footer-col table td {
-    font-size: 0.96rem;
-    color: rgba(255, 255, 255, 0.55);
-    padding: 3px 0;
-  }
-  
-  .footer-col table td:last-child {
-    text-align: right;
-  }
-  
-  /* ── Instagram thumbnail grid ── */
-  .instagram-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-  }
-  
-  
-  
-  
-  .instagram-grid img {
-    width: 100%;
-    height: 60px;
-    object-fit: cover;
-    opacity: 0.8;
-    transition: opacity 0.2s;
-  }
-  
-  .instagram-grid img:hover {
-    opacity: 2;
-  }
-  
-  
 
-  .newsletter-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 4px;
-  }
-  
-  .newsletter-form p {
-    font-size: 0.96rem;
-    color: rgba(255, 255, 255, 0.5);
-    margin-bottom: 0;
-    line-height: 1.6;
-  }
-  
-  .newsletter-form input {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    color: var(--white);
-    padding: 10px 14px;
-    font-size: 0.95rem;
-    font-family: 'Lato', sans-serif;
-    outline: none;
-    transition: border 0.2s;
-  }
-  
-  .newsletter-form input::placeholder {
-    color: rgba(255, 255, 255, 0.35);
-  }
-  
-  .newsletter-form input:focus {
-    border-color: var(--gold);
-  }
-  
-  .newsletter-form button {
-    background: var(--gold);
-    color: var(--white);
-    border: none;
-    padding: 11px;
-    font-size: 0.92rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    font-family: 'Lato', sans-serif;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  
-  .newsletter-form button:hover {
-    background: #b8945a;
-  }
-  
-  /* ── Footer bottom copyright bar ── */
-  .footer-bottom {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding-top: 22px;
-    text-align: center;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.3);
-    letter-spacing: 1px;
-  }
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.3fr;
+  gap: 50px;
+  margin-bottom: 40px;
+}
+
+
+/* logo text in footer */
+.footer-logo {
+  color: var(--white);
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  display: inline-block;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 4px 12px;
+  border-radius: 4px;
+  margin-bottom: 14px;
+}
+
+/* Body copy inside footer columns */
+footer p {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 16px;
+}
+
+/* Social icons in footer brand column */
+.footer-social a {
+  color: rgba(255, 255, 255, 0.5);
+  margin-right: 12px;
+  font-size: 1.3rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-social a:hover {
+  color: var(--gold);
+}
+
+/* Column headings (e.g. "Open Hours", "Instagram") */
+.footer-col h5 {
+  color: var(--white);
+  font-size: 1.02rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+/* Opening hours table */
+.footer-col table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.footer-col table td {
+  font-size: 0.96rem;
+  color: rgba(255, 255, 255, 0.55);
+  padding: 3px 0;
+}
+
+.footer-col table td:last-child {
+  text-align: right;
+}
+
+/* ── Instagram thumbnail grid ── */
+.instagram-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+
+
+
+.instagram-grid img {
+  width: 100%;
+  height: 60px;
+  object-fit: cover;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.instagram-grid img:hover {
+  opacity: 2;
+}
+
+
+
+.newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.newsletter-form p {
+  font-size: 0.96rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 0;
+  line-height: 1.6;
+}
+
+.newsletter-form input {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--white);
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-family: 'Lato', sans-serif;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.newsletter-form input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.newsletter-form input:focus {
+  border-color: var(--gold);
+}
+
+.newsletter-form button {
+  background: var(--gold);
+  color: var(--white);
+  border: none;
+  padding: 11px;
+  font-size: 0.92rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  font-family: 'Lato', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.newsletter-form button:hover {
+  background: #b8945a;
+}
+
+/* ── Footer bottom copyright bar ── */
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 22px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 1px;
+}
+
 /* ============================================================
    VISUAL POLISH FIX
    ============================================================ */
@@ -435,7 +436,7 @@ body {
   background: #ffffff;
   padding: 36px 40px;
   border-radius: 16px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.10);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04), 0 12px 40px rgba(0, 0, 0, 0.10);
   border: 1px solid #e8e2d9;
 }
 
@@ -456,7 +457,7 @@ body {
 .order-field textarea:focus {
   outline: none;
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(200,169,106,0.15);
+  box-shadow: 0 0 0 3px rgba(200, 169, 106, 0.15);
   background: #fff;
 }
 
@@ -482,7 +483,7 @@ body {
 .order-select:focus {
   outline: none;
   border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(200,169,106,0.15);
+  box-shadow: 0 0 0 3px rgba(200, 169, 106, 0.15);
 }
 
 /* Labels */
@@ -511,8 +512,13 @@ body {
   gap: 6px;
 }
 
-.add-item-btn:hover  { background: #b8945a; }
-.add-item-btn:active { transform: scale(0.97); }
+.add-item-btn:hover {
+  background: #b8945a;
+}
+
+.add-item-btn:active {
+  transform: scale(0.97);
+}
 
 /* Item picker row */
 .item-picker-row {
@@ -521,7 +527,9 @@ body {
   align-items: center;
 }
 
-.item-picker-row .order-select { flex: 1; }
+.item-picker-row .order-select {
+  flex: 1;
+}
 
 /* Selected items list container */
 #itemsList {
@@ -576,7 +584,9 @@ body {
   transition: background 0.15s;
 }
 
-.qty-btn:hover { background: rgba(200,169,106,0.15); }
+.qty-btn:hover {
+  background: rgba(200, 169, 106, 0.15);
+}
 
 .sel-qty {
   min-width: 18px;
@@ -612,7 +622,7 @@ body {
 
 .remove-btn:hover {
   color: #c0392b;
-  background: rgba(192,57,43,0.08);
+  background: rgba(192, 57, 43, 0.08);
 }
 
 /* Subtotal row */
@@ -621,8 +631,8 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
-  background: rgba(200,169,106,0.08);
-  border: 1px solid rgba(200,169,106,0.25);
+  background: rgba(200, 169, 106, 0.08);
+  border: 1px solid rgba(200, 169, 106, 0.25);
   border-radius: 8px;
   margin-top: 4px;
   font-weight: 700;
@@ -655,9 +665,18 @@ body {
   transition: background 0.2s, transform 0.1s;
 }
 
-.order-btn.primary:hover  { background: #b8945a; }
-.order-btn.primary:active { transform: scale(0.97); }
-.order-btn.primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.order-btn.primary:hover {
+  background: #b8945a;
+}
+
+.order-btn.primary:active {
+  transform: scale(0.97);
+}
+
+.order-btn.primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 
 .order-btn.ghost {
   background: #f1ece6;
@@ -674,7 +693,9 @@ body {
   transition: background 0.2s;
 }
 
-.order-btn.ghost:hover { background: #e8e0d5; }
+.order-btn.ghost:hover {
+  background: #e8e0d5;
+}
 
 .order-actions {
   display: flex;
@@ -692,8 +713,8 @@ body {
 
 /* Logged in note */
 .logged-in-note {
-  background: rgba(200,169,106,0.10);
-  border: 1.5px solid rgba(200,169,106,0.30);
+  background: rgba(200, 169, 106, 0.10);
+  border: 1.5px solid rgba(200, 169, 106, 0.30);
   color: #7a5f20;
   padding: 8px 14px;
   border-radius: 8px;
@@ -766,14 +787,14 @@ footer {
   border-radius: 16px;
   padding: 28px 40px;
   text-align: center;
-  box-shadow: 0 24px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 9999;
   min-width: 280px;
   max-width: 360px;
@@ -801,7 +822,7 @@ footer {
 .toast-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -814,6 +835,7 @@ footer {
 }
 
 @media (max-width: 1024px) {
+
   .nav-logo,
   .footer-logo {
     font-size: 0.9rem;

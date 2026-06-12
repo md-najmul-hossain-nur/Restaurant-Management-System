@@ -96,10 +96,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
           <i class="fas fa-user-check"></i>
           <span>Customer</span>
         </div>
-        <div class="tab" data-section="chat">
-          <i class="fas fa-comments"></i>
-          <span>Chat</span>
-        </div>
+
         <div class="tab" data-section="orders">
           <i class="fas fa-truck"></i>
           <span>Delivery Orders</span>
@@ -321,39 +318,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
           </div>
         </div>
 
-        <!-- ===================== CHAT ===================== -->
-        <div class="section-content" id="chat">
-          <div class="chat-dashboard">
-            <div class="chat-sidebar">
-              <div class="chat-sidebar-header">
-                <h2>Guest Conversations</h2>
-                <small>Click a session to view and reply</small>
-              </div>
-              <div class="chat-conversation-list" id="conversationList">
-                <div class="empty-state">
-                  <p>Loading conversations...</p>
-                </div>
-              </div>
-            </div>
-            <div class="chat-panel">
-              <div class="chat-panel-header">
-                <div>
-                  <h2 id="chatPanelTitle">Select a conversation</h2>
-                  <small id="chatPanelSubtitle">Guest chat history will appear here</small>
-                </div>
-              </div>
-              <div class="chat-thread" id="chatThread">
-                <div class="empty-state">
-                  <p>Select a conversation from the left to begin.</p>
-                </div>
-              </div>
-              <form class="chat-reply-form" id="chatReplyForm">
-                <input type="text" id="chatReplyInput" placeholder="Type your reply..." autocomplete="off" />
-                <button type="submit">Send</button>
-              </form>
-            </div>
-          </div>
-        </div>
+
 
         <!-- ===================== ORDERS ===================== -->
         <div class="section-content" id="orders">

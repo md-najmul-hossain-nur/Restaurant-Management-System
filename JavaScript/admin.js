@@ -4,7 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   let employeeTimerId;
-  function updateEmployeeTimers() {}
+  function updateEmployeeTimers() { }
 
   // ── Tab Navigation ────────────────────────────────────────
   const tabs = document.querySelectorAll('.tab[data-section]');
@@ -838,6 +838,21 @@ document.addEventListener('DOMContentLoaded', () => {
     return dt.toLocaleString();
   }
 
+  function startChatPolling() {
+    if (chatPollTimer) clearInterval(chatPollTimer);
+    chatPollTimer = setInterval(() => {
+      const chatSection = document.getElementById('chat');
+      if (!chatSection || !chatSection.classList.contains('active')) return;
+      
+      loadChatConversations();
+      if (selectedChatSession) {
+        loadChatHistory(selectedChatSession);
+      }
+    }, 4000);
+  }
+
+  startChatPolling();
+
   function renderConversationList(conversations) {
     if (!conversationList) return;
     const previousScrollTop = conversationList.scrollTop;
@@ -956,8 +971,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!sessionId) return;
       selectConversationElement(item);
       loadChatHistory(sessionId);
-      if (chatPollTimer) clearInterval(chatPollTimer);
-      chatPollTimer = setInterval(() => loadChatHistory(sessionId), 5000);
     });
   }
 
@@ -1150,7 +1163,7 @@ document.addEventListener('DOMContentLoaded', () => {
       grid.innerHTML = data.orders.map(order => {
         let itemsHtml = '';
         let cardSubtotal = 0;
-        
+
         order.items.forEach(i => {
           const qty = parseInt(i.quantity) || 0;
           const price = parseFloat(i.price) || 0;
@@ -1158,21 +1171,21 @@ document.addEventListener('DOMContentLoaded', () => {
           cardSubtotal += sub;
           itemsHtml += `<div>${qty}× ${escapeHtml(i.name)}</div>`;
         });
-        
+
         const cardTotal = parseFloat(order.total_amount) || (cardSubtotal * 1.10);
         const cardTax = Math.max(0, cardTotal - cardSubtotal);
-        
+
         const status = (order.status || 'queued').toLowerCase();
         let statusDisplay = status;
         if (status === 'queued' || status === 'in_progress') statusDisplay = 'In Kitchen';
         else if (status === 'ready') statusDisplay = 'Ready';
         else if (status === 'served' || status === 'delivered') statusDisplay = 'Delivered';
         else if (status === 'paid') statusDisplay = 'Paid';
-        
-        const timeStr = order.created_at ? new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+
+        const timeStr = order.created_at ? new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
         const isAssigned = !!order.waiter_id;
         const assignedWaiterName = isAssigned ? escapeHtml(data.waiters.find(w => w.id == order.waiter_id)?.name || 'Unknown Waiter') : '';
-        
+
         const waiterSelect = `<select class="assign-waiter-select" data-order-id="${order.id}" aria-label="Assign waiter">
             <option value="">— Assign Waiter —</option>
             ${data.waiters.map(w => `<option value="${w.id}">${escapeHtml(w.name)}</option>`).join('')}
@@ -1201,10 +1214,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span class="delivery-status delivery-status--${status}" style="padding:8px 14px; font-size:12px;">${statusDisplay.toUpperCase()}</span>
                 <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; margin-top:8px;">
                   ${order.items.map(i => {
-                    const qty = parseInt(i.quantity) || 0;
-                    const price = parseFloat(i.price) || 0;
-                    return `<div style="font-size:12px; color:rgba(254,254,255,0.85); font-weight:700;">${qty}× $${price.toFixed(2)} = $${(qty * price).toFixed(2)}</div>`;
-                  }).join('')}
+          const qty = parseInt(i.quantity) || 0;
+          const price = parseFloat(i.price) || 0;
+          return `<div style="font-size:12px; color:rgba(254,254,255,0.85); font-weight:700;">${qty}× $${price.toFixed(2)} = $${(qty * price).toFixed(2)}</div>`;
+        }).join('')}
                   <div style="font-size:12px; color:rgba(254,254,255,0.85); font-weight:700;">Subtotal: $${cardSubtotal.toFixed(2)}</div>
                   <div style="font-size:12px; color:rgba(254,254,255,0.85); font-weight:700;">Tax (10%): $${cardTax.toFixed(2)}</div>
                 </div>
