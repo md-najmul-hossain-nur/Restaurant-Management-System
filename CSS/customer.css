@@ -1060,7 +1060,7 @@ body {
   }
 
   .navbar {
-    position: relative !important; /* Override global absolute positioning from responsive.css */
+    position: relative !important;
     top: auto !important;
     left: auto !important;
     right: auto !important;
@@ -1180,7 +1180,7 @@ body {
   }
 
   .menu-grid {
-    grid-template-columns: 1fr; /* Single column for best readability on tiny phones */
+    grid-template-columns: 1fr;
     gap: 12px;
   }
 
@@ -1197,6 +1197,7 @@ body {
   }
 
   .add-btn {
-    width: 100%; /* Full width button on very small screens */
+    width: 100%;
   }
-}
+}
+
