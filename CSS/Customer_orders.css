@@ -137,6 +137,7 @@ body {
 ========================================== */
 .outer-wrapper {
   flex: 1;
+  min-height: 0;
   margin: 30px 50px;
   padding: 14px;
   background: var(--glass-bg);
@@ -148,7 +149,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /* ==========================================

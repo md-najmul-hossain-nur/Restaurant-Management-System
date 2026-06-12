@@ -331,15 +331,18 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="order-items">
             ${itemsHtml.join('')}
           </div>
-          <div class="order-total-label">Total (incl. tax)</div>
         </div>
         <div class="order-right">
           <div class="order-status order-status--kitchen">In Kitchen</div>
           <div class="order-prices">
             ${pricesHtml.join('')}
-            <div class="order-grand">$${grand}</div>
           </div>
         </div>
+      </div>
+      <!-- Full Width Total Row -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); margin-top:8px;">
+        <span style="font-size:16px; font-weight:700; color:#fff;">Total (incl. tax)</span>
+        <span style="font-size:20px; font-weight:900; color:var(--gold);">$${grand}</span>
       </div>
     `;
 
@@ -374,17 +377,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const orderId = card.dataset.orderId;
       if (orderId) {
         try {
-          await fetch('../api/update_order_status.php', {
+          const res = await fetch('../api/update_order_status.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ order_id: parseInt(orderId), status: 'delivered' }),
+            body: JSON.stringify({ order_id: parseInt(orderId), status: 'served' }),
           });
-        } catch { }
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            showToast(data.error || 'Failed to update order status', true);
+            return;
+          }
+        } catch {
+          showToast('Network error', true);
+          return;
+        }
       }
 
       statusEl.classList.remove('order-status--ready', 'order-status--kitchen');
-      statusEl.classList.add('order-status--delivered');
-      statusEl.textContent = 'Delivered';
+      statusEl.classList.add('order-status--served');
+      statusEl.textContent = 'Served';
 
       // Transform button to paid
       deliverBtn.removeAttribute('data-deliver-order');
@@ -409,11 +420,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const orderId = card?.dataset.orderId;
       if (orderId) {
         try {
-          await fetch('../api/update_order_status.php', {
+          const res = await fetch('../api/update_order_status.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ order_id: parseInt(orderId), status: 'paid' }),
           });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            showToast(data.error || 'Failed to mark as paid', true);
+            return;
+          }
           const statusEl = card.querySelector('.order-status');
           if (statusEl) statusEl.textContent = 'Paid';
           paidBtn.remove();
@@ -421,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
           updateOrderStats();
           updateHistoryCount();
         } catch {
-          showToast('Failed to mark as paid', true);
+          showToast('Network error', true);
         }
       }
     }
@@ -531,8 +547,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Check if table already has an active order
-      const existingOrder = document.querySelector(`.order-card[data-table-id="${select.value}"]`);
+      // Check if the table has a *currently active* order. Only look inside the
+      // active order list (#orderList) — orders that are already served/paid/
+      // delivered live in Order History and must not trigger this warning.
+      const activeOrderList = document.getElementById('orderList');
+      const existingOrder = activeOrderList?.querySelector(`.order-card[data-table-id="${select.value}"]`);
       if (existingOrder) {
         if (!confirm("This table already has an active order. Are you sure you want to place another order for this table?")) {
           return;

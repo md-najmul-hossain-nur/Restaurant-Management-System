@@ -482,11 +482,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (orderId) {
       try {
-        await fetch('../api/update_order_status.php', {
+        const res = await fetch('../api/update_order_status.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ order_id: parseInt(orderId), status: 'ready' }),
         });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          showToast(data.error || 'Failed to update order status', true);
+          return;
+        }
       } catch {
         showToast('Network error. Try again.', true);
         return;

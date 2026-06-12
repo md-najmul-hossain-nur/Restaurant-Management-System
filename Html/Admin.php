@@ -250,6 +250,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                     <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Status</th>
                     <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Last Clock In</th>
                     <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Last Clock Out</th>
+                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Total Hours</th>
                   </tr>
                 </thead>
               <tbody>
@@ -260,6 +261,21 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                       $in = $att['last_clock_in'] ? date('M j, Y g:i A', strtotime($att['last_clock_in'])) : '-';
                       $out = $att['last_clock_out'] ? date('M j, Y g:i A', strtotime($att['last_clock_out'])) : '-';
                       $status = $att['is_clocked_in'] ? '<span style="color:var(--green);">Clocked In</span>' : '<span style="color:var(--orange);">Clocked Out</span>';
+                      
+                      $totalHoursStr = '-';
+                      if (!empty($att['last_clock_in'])) {
+                          $start = strtotime($att['last_clock_in']);
+                          $end = time();
+                          if (empty($att['is_clocked_in']) && !empty($att['last_clock_out'])) {
+                              $end = strtotime($att['last_clock_out']);
+                          }
+                          if ($end > $start) {
+                              $diff = $end - $start;
+                              $hours = floor($diff / 3600);
+                              $minutes = floor(($diff % 3600) / 60);
+                              $totalHoursStr = $hours . 'h ' . $minutes . 'm';
+                          }
+                      }
                   ?>
                   <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                     <td style="padding: 10px;"><?php echo htmlspecialchars($att['name']); ?></td>
@@ -267,6 +283,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                     <td style="padding: 10px;"><?php echo $status; ?></td>
                     <td style="padding: 10px;"><?php echo $in; ?></td>
                     <td style="padding: 10px;"><?php echo $out; ?></td>
+                    <td style="padding: 10px; font-weight: 600; color: var(--gold);"><?php echo $totalHoursStr; ?></td>
                   </tr>
                   <?php } ?>
                 <?php } ?>

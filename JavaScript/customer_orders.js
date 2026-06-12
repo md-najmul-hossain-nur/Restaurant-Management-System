@@ -10,14 +10,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     'ready': { text: 'Ready', icon: 'fa-check-circle', badgeClass: 'ready', index: 3 },
     'delivered': { text: 'Delivered', icon: 'fa-motorcycle', badgeClass: 'ready', index: 3.5 },
     'served': { text: 'Completed', icon: 'fa-utensils', badgeClass: 'served', index: 4 },
+    'paid': { text: 'Paid', icon: 'fa-receipt', badgeClass: 'served', index: 4 },
     'cancelled': { text: 'Cancelled', icon: 'fa-times-circle', badgeClass: 'cancelled', index: 0 }
   };
 
+  let isInitialLoad = true;
+  let lastOrdersSignature = null;
+
   async function fetchOrders() {
     try {
-      ordersList.innerHTML = '<p style="color: #fff; text-align: center;">Loading orders...</p>';
+      // Only show the loading placeholder on the very first load — the 15s
+      // background poll must refresh silently, never flash the whole list.
+      if (isInitialLoad) {
+        ordersList.innerHTML = '<p style="color: #fff; text-align: center;">Loading orders...</p>';
+      }
+
       const response = await fetch('../api/get_customer_orders.php');
-      
+
       if (response.status === 401) {
         window.location.href = 'login.html';
         return;
@@ -28,10 +37,23 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       const orders = await response.json();
-      renderOrders(orders);
+
+      // Re-render only when the data actually changed, so the page does not
+      // rebuild (and reset scroll/hover) every poll when nothing is new.
+      const signature = JSON.stringify(orders);
+      if (signature !== lastOrdersSignature) {
+        lastOrdersSignature = signature;
+        renderOrders(orders);
+      }
+      isInitialLoad = false;
     } catch (error) {
       console.error(error);
-      ordersList.innerHTML = '<p style="color: #ef4444; text-align: center;">Error loading orders.</p>';
+      // Don't wipe good data on a transient poll failure — only show the error
+      // if we have nothing on screen yet.
+      if (isInitialLoad) {
+        ordersList.innerHTML = '<p style="color: #ef4444; text-align: center;">Error loading orders.</p>';
+        isInitialLoad = false;
+      }
     }
   }
 
@@ -45,8 +67,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       return;
     }
 
-    const activeOrders = orders.filter(o => o.status !== 'served' && o.status !== 'cancelled');
-    const pastOrders = orders.filter(o => o.status === 'served' || o.status === 'cancelled');
+    const activeOrders = orders.filter(o => o.status !== 'served' && o.status !== 'paid' && o.status !== 'cancelled');
+    const pastOrders = orders.filter(o => o.status === 'served' || o.status === 'paid' || o.status === 'cancelled');
 
     activeOrdersTitle.textContent = `Active Orders (${activeOrders.length})`;
 
@@ -138,20 +160,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
         </div>
 
-        ${(order.status === 'ready' || order.status === 'delivered') ? `
-          <div style="margin-top: 15px; text-align: right;">
-            <button class="accept-order-btn" data-order-id="${order.id}" style="background: var(--green, #4ade80); color: #1a1a16; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">
-              <i class="fas fa-check-circle"></i> Accept Order
-            </button>
-          </div>
-        ` : ''}
-        ${order.status === 'served' || order.status === 'paid' ? `
-          <div style="margin-top: 15px; text-align: right;">
-            <button class="download-bill-btn" data-order='${JSON.stringify(order).replace(/'/g, "&#39;")}' style="background: transparent; color: #e0733b; border: 1px solid #e0733b; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
-              <i class="fas fa-download"></i> Download Bill
-            </button>
-          </div>
-        ` : ''}
+
+
       </div>
     `;
   }
@@ -159,33 +169,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Initial fetch
   fetchOrders();
 
-  // Listen for Accept Order
-  document.addEventListener('click', async (e) => {
-    const acceptBtn = e.target.closest('.accept-order-btn');
-    if (acceptBtn) {
-      const orderId = acceptBtn.dataset.orderId;
-      acceptBtn.disabled = true;
-      acceptBtn.textContent = 'Accepting...';
-      
-      try {
-        const res = await fetch('../api/customer_accept_order.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ order_id: parseInt(orderId) })
-        });
-        const data = await res.json();
-        if (data.success) {
-          fetchOrders();
-        } else {
-          alert(data.error || 'Failed to accept order.');
-          acceptBtn.disabled = false;
-        }
-      } catch (err) {
-        console.error(err);
-        acceptBtn.disabled = false;
-      }
-    }
-  });
+
 
   // Optionally poll for updates every 15 seconds
   setInterval(fetchOrders, 15000);

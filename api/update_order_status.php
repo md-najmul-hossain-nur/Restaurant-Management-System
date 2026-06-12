@@ -14,6 +14,8 @@ $data    = json_decode(file_get_contents('php://input'), true);
 $orderId = (int)  ($data['order_id'] ?? 0);
 $status  = trim($data['status']      ?? '');
 
+error_log("update_order_status called: user=" . ($_SESSION['user_id'] ?? 'none') . " role=" . ($_SESSION['role'] ?? 'none') . " order=" . $orderId . " status=" . $status);
+
 $allowed = ['queued', 'in_progress', 'ready', 'delivered', 'served', 'cancelled', 'paid'];
 if (!$orderId || !in_array($status, $allowed))
     respond(['error' => 'Invalid input'], 400);
@@ -24,4 +26,5 @@ if (($_SESSION['role'] ?? '') === 'waiter') {
 } else {
     $pdo->prepare('UPDATE orders SET status = ? WHERE id = ?')->execute([$status, $orderId]);
 }
+error_log("update_order_status success for order " . $orderId);
 respond(['success' => true]);
