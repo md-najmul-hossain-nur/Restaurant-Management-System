@@ -301,7 +301,13 @@ document.addEventListener('DOMContentLoaded', () => {
       itemsHtml.push(`<div>${qty}× ${name}</div>`);
       pricesHtml.push(`<div class="order-price">${qty}× $${price.toFixed(2)} = $${(qty * price).toFixed(2)}</div>`);
     });
-    const grand = (total * 1.10).toFixed(2);
+    // Same formula as the server (waiter_place_order.php): grand = round(subtotal * 1.10)
+    const subtotal = Math.round(total * 100) / 100;
+    const grandNum = Math.round(total * 1.10 * 100) / 100;
+    const taxNum = Math.round((grandNum - subtotal) * 100) / 100;
+    pricesHtml.push(`<div class="order-price">Subtotal: $${subtotal.toFixed(2)}</div>`);
+    pricesHtml.push(`<div class="order-price">Tax (10%): $${taxNum.toFixed(2)}</div>`);
+    const grand = grandNum.toFixed(2);
 
     const card = document.createElement('div');
     card.className = 'order-card';
@@ -334,40 +340,90 @@ document.addEventListener('DOMContentLoaded', () => {
     orderList.prepend(card);
   }
 
-  // Deliver button
-  orderList?.addEventListener('click', async e => {
+  // Order History list (delivered/paid orders live here)
+  const historyList = document.getElementById('historyList');
+  const historyCountEl = document.getElementById('historyCount');
+
+  function updateHistoryCount() {
+    if (historyCountEl && historyList)
+      historyCountEl.textContent = historyList.querySelectorAll('.order-card[data-order-id]').length;
+  }
+
+  // Deliver / Paid buttons (shared by Order tab and Order History tab)
+  async function handleOrderAction(e) {
     const deliverBtn = e.target.closest('[data-deliver-order]');
-    if (!deliverBtn) return;
-    const card = deliverBtn.closest('.order-card');
-    const statusEl = card?.querySelector('.order-status');
-    if (!statusEl) return;
+    const paidBtn = e.target.closest('[data-paid-order]');
 
-    if (!statusEl.classList.contains('order-status--ready')) {
-      statusEl.style.outline = '2px solid rgba(224,115,59,.8)';
-      setTimeout(() => statusEl.style.outline = '', 1000);
-      return;
+    if (deliverBtn) {
+      const card = deliverBtn.closest('.order-card');
+      const statusEl = card?.querySelector('.order-status');
+      if (!statusEl) return;
+
+      if (!statusEl.classList.contains('order-status--ready')) {
+        statusEl.style.outline = '2px solid rgba(224,115,59,.8)';
+        setTimeout(() => statusEl.style.outline = '', 1000);
+        return;
+      }
+
+      const orderId = card.dataset.orderId;
+      if (orderId) {
+        try {
+          await fetch('../api/update_order_status.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_id: parseInt(orderId), status: 'served' }),
+          });
+        } catch { }
+      }
+
+      statusEl.classList.remove('order-status--ready', 'order-status--kitchen');
+      statusEl.classList.add('order-status--delivered');
+      statusEl.textContent = 'Delivered';
+
+      // Transform button to paid
+      deliverBtn.removeAttribute('data-deliver-order');
+      deliverBtn.setAttribute('data-paid-order', '');
+      deliverBtn.style.background = 'var(--green)';
+      deliverBtn.textContent = 'Mark as Paid';
+
+      // Move the delivered card into Order History
+      if (historyList) {
+        historyList.querySelector('.order-card:not([data-order-id])')?.remove();
+        historyList.prepend(card);
+        updateHistoryCount();
+      }
+
+      if (statCompleted)
+        statCompleted.textContent = (parseInt(statCompleted.textContent) || 0) + 1;
+      updateOrderStats();
     }
 
-    const orderId = card.dataset.orderId;
-    if (orderId) {
-      try {
-        await fetch('../api/update_order_status.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ order_id: parseInt(orderId), status: 'served' }),
-        });
-      } catch { }
+    if (paidBtn) {
+      const card = paidBtn.closest('.order-card');
+      const orderId = card?.dataset.orderId;
+      if (orderId) {
+        try {
+          await fetch('../api/update_order_status.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order_id: parseInt(orderId), status: 'paid' }),
+          });
+          const statusEl = card.querySelector('.order-status');
+          if (statusEl) statusEl.textContent = 'Paid';
+          paidBtn.remove();
+          showToast('Order marked as paid');
+          updateOrderStats();
+          updateHistoryCount();
+        } catch {
+          showToast('Failed to mark as paid', true);
+        }
+      }
     }
+  }
 
-    statusEl.classList.remove('order-status--ready', 'order-status--kitchen');
-    statusEl.classList.add('order-status--delivered');
-    statusEl.textContent = 'Delivered';
-    deliverBtn.remove();
-
-    if (statCompleted)
-      statCompleted.textContent = (parseInt(statCompleted.textContent) || 0) + 1;
-    updateOrderStats();
-  });
+  orderList?.addEventListener('click', handleOrderAction);
+  historyList?.addEventListener('click', handleOrderAction);
+  updateHistoryCount();
 
   // ── New Order Modal (DB-connected) ────────────────────────
   const modal = document.getElementById('newOrderModal');
@@ -403,7 +459,16 @@ document.addEventListener('DOMContentLoaded', () => {
           <button class="order-selected-remove" data-remove="${name}" aria-label="Remove">×</button>`;
         selectedItemsList.appendChild(row);
       });
-      if (selectedItemsTotal) selectedItemsTotal.textContent = formatMoney(total);
+      // Show the tax-inclusive total — must match what the server stores
+      const subtotal = Math.round(total * 100) / 100;
+      const grand = Math.round(total * 1.10 * 100) / 100;
+      const tax = Math.round((grand - subtotal) * 100) / 100;
+      if (selectedItemsTotal) {
+        selectedItemsTotal.innerHTML =
+          `<span style="display:block;font-size:12px;font-weight:600;color:rgba(254,254,255,0.65)">` +
+          `Subtotal ${formatMoney(subtotal)} &nbsp;·&nbsp; Tax (10%) ${formatMoney(tax)}</span>` +
+          `${formatMoney(grand)}`;
+      }
     }
 
     selectedItemsList?.addEventListener('click', e => {
@@ -460,6 +525,14 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // Check if table already has an active order
+      const existingOrder = document.querySelector(`.order-card[data-table-id="${select.value}"]`);
+      if (existingOrder) {
+        if (!confirm("This table already has an active order. Are you sure you want to place another order for this table?")) {
+          return;
+        }
+      }
+
       placeBtn.disabled = true;
       placeBtn.textContent = 'Placing…';
 
@@ -480,8 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const itemsSnapshot = new Map(selectedItems);
           closeModal();
           showToast('Order placed successfully!');
-          appendOrderCard(result.order_id, select.value, itemsSnapshot);
-          updateOrderStats();
+          setTimeout(() => window.location.reload(), 1000);
         } else {
           showToast(result.error || 'Failed to place order', true);
         }

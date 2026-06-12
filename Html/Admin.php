@@ -29,6 +29,18 @@ $tableCount = (int)$pdo->query("SELECT COUNT(*) FROM restaurant_tables WHERE sta
 $menuCount = (int)$pdo->query("SELECT COUNT(*) FROM recipes WHERE status = 'approved'")->fetchColumn();
 $rev = $pdo->query("SELECT SUM(total_amount) FROM orders WHERE status = 'served' AND MONTH(created_at) = MONTH(CURRENT_DATE()) AND YEAR(created_at) = YEAR(CURRENT_DATE())")->fetchColumn();
 $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
+$completedToday = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 'served' AND DATE(created_at) = CURDATE()")->fetchColumn();
+
+// Fetch Employee Attendance
+$attendanceStmt = $pdo->query("
+    SELECT u.name, u.role, c.is_clocked_in, c.last_clock_in, c.last_clock_out 
+    FROM users u JOIN chiefs c ON u.id = c.user_id 
+    UNION 
+    SELECT u.name, u.role, w.is_clocked_in, w.last_clock_in, w.last_clock_out 
+    FROM users u JOIN waiters w ON u.id = w.user_id
+    ORDER BY role, name
+");
+$attendances = $attendanceStmt->fetchAll() ?: [];
 ?>
 
 <!DOCTYPE html>
@@ -212,7 +224,6 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                 }
                 echo "      <span class=\"badge approved\"><i class=\"fas fa-check\"></i> Approved</span>";
                 echo "    </div>";
-                echo "    <div class=\"employee-time\"><span class=\"time-label\"></span> <span class=\"time-value\"></span></div>";
                 echo "  </div>";
                 echo "  <div class=\"employee-actions\">";
                 echo "    <span class=\"role-badge {$role}\">{$roleLabel}</span>";
@@ -221,6 +232,43 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
               }
             }
             ?>
+          </div>
+
+          <!-- Employee Attendance Table -->
+          <div class="attendance-container panel" style="margin-top: 3rem; margin-bottom: 3rem; padding: 25px; border-radius: 16px; background: rgba(30, 32, 28, 0.7); border: 1px solid rgba(200, 169, 106, 0.2); backdrop-filter: blur(10px);">
+            <h3 style="margin-bottom: 15px; color: var(--gold); font-size: 1.2rem;">Clock-in History</h3>
+            <div style="overflow-x: auto;">
+              <table class="table" style="width: 100%; border-collapse: collapse; color: #fff; font-size: 0.95rem;">
+                <thead>
+                  <tr style="border-bottom: 2px solid rgba(200, 169, 106, 0.3); text-align: left;">
+                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Name</th>
+                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Role</th>
+                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Status</th>
+                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Last Clock In</th>
+                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Last Clock Out</th>
+                  </tr>
+                </thead>
+              <tbody>
+                <?php if (empty($attendances)) { ?>
+                  <tr><td colspan="5" style="padding: 10px; text-align: center; opacity: 0.5;">No records</td></tr>
+                <?php } else { ?>
+                  <?php foreach ($attendances as $att) { 
+                      $in = $att['last_clock_in'] ? date('M j, Y g:i A', strtotime($att['last_clock_in'])) : '-';
+                      $out = $att['last_clock_out'] ? date('M j, Y g:i A', strtotime($att['last_clock_out'])) : '-';
+                      $status = $att['is_clocked_in'] ? '<span style="color:var(--green);">Clocked In</span>' : '<span style="color:var(--orange);">Clocked Out</span>';
+                  ?>
+                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <td style="padding: 10px;"><?php echo htmlspecialchars($att['name']); ?></td>
+                    <td style="padding: 10px; text-transform: capitalize;"><?php echo htmlspecialchars($att['role']); ?></td>
+                    <td style="padding: 10px;"><?php echo $status; ?></td>
+                    <td style="padding: 10px;"><?php echo $in; ?></td>
+                    <td style="padding: 10px;"><?php echo $out; ?></td>
+                  </tr>
+                  <?php } ?>
+                <?php } ?>
+              </tbody>
+            </table>
+            </div>
           </div>
         </div>
 
@@ -329,7 +377,7 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
               }
 
               $reservationsStmt = $pdo->query(
-                "SELECT r.table_id, r.guest_count, r.reserved_date, r.reserved_time, r.reserved_end_time,
+                "SELECT r.table_id, r.guest_count, r.reserved_date, r.reserved_time, r.reserved_end_time, r.status,
                     u.name AS customer_name
                  FROM reservations r
                  LEFT JOIN users u ON u.id = r.customer_id
@@ -491,24 +539,85 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                         <?php echo ucfirst(htmlspecialchars($status)); ?>
                       </span>
                     </div>
-                    <?php if (in_array($status, ['reserved', 'occupied'], true) || $waiterName !== 'None') { ?>
-                      <div class="reservation-info <?php echo htmlspecialchars($status); ?>">
-                        <p><strong>Waiter:</strong> <?php echo htmlspecialchars($waiterName); ?></p>
-                        <?php if (in_array($status, ['reserved', 'occupied'], true)) { ?>
-                          <p><strong>Guest:</strong> <?php echo htmlspecialchars($guestName); ?></p>
-                          <?php if ($timeText !== '') { ?>
-                            <p><strong>Time:</strong> <?php echo htmlspecialchars($timeText); ?></p>
-                          <?php } ?>
-                          <?php if ($guestCount !== '') { ?>
-                            <p><strong>Guests:</strong> <?php echo (int) $guestCount; ?></p>
-                          <?php } ?>
-                        <?php } ?>
+                      <div class="reservation-info <?php echo htmlspecialchars($status); ?>" style="padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px;">
+                        <button type="button" class="view-bookings-btn" onclick="viewTableBookings(<?php echo $tableId; ?>, <?php echo $tableNumber; ?>)" style="width: 100%; padding: 8px; background: rgba(200, 169, 106, 0.15); border: 1px solid var(--gold); border-radius: 6px; color: var(--gold); font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                          <i class="fas fa-list"></i> View Bookings
+                        </button>
                       </div>
-                    <?php } ?>
                   </div>
                 <?php } ?>
               <?php } ?>
             </div>
+
+            <!-- Table Bookings Panel (Hidden by default) -->
+            <div id="tableBookingsPanel" class="panel" style="margin-top: 3rem; margin-bottom: 3rem; padding: 25px; border-radius: 16px; background: rgba(30, 32, 28, 0.7); border: 1px solid rgba(200, 169, 106, 0.2); backdrop-filter: blur(10px); display: none;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: var(--gold); font-size: 1.2rem;">Bookings for Table <span id="bookingsTableNumber"></span></h3>
+                <button type="button" onclick="document.getElementById('tableBookingsPanel').style.display='none'" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+              </div>
+              <div style="overflow-x: auto;">
+                <table class="table" style="width: 100%; border-collapse: collapse; color: #fff; font-size: 0.95rem;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid rgba(200, 169, 106, 0.3); text-align: left;">
+                      <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Guest Name</th>
+                      <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Date</th>
+                      <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Time</th>
+                      <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Guests</th>
+                      <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tableBookingsBody">
+                    <!-- Rendered via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <script>
+              const allTableReservations = <?php 
+                $resByTable = [];
+                foreach ($reservations as $r) {
+                  $tId = $r['table_id'];
+                  if (!isset($resByTable[$tId])) $resByTable[$tId] = [];
+                  $resByTable[$tId][] = $r;
+                }
+                echo json_encode($resByTable);
+              ?>;
+              
+              function viewTableBookings(tableId, tableNumber) {
+                const panel = document.getElementById('tableBookingsPanel');
+                const tbody = document.getElementById('tableBookingsBody');
+                document.getElementById('bookingsTableNumber').innerText = tableNumber;
+                
+                const bookings = allTableReservations[tableId] || [];
+                
+                if (bookings.length === 0) {
+                  tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px; color: rgba(255,255,255,0.6);">No active bookings found for this table.</td></tr>';
+                } else {
+                  tbody.innerHTML = bookings.map(b => {
+                    const date = new Date(b.reserved_date).toLocaleDateString();
+                    let timeText = b.reserved_time ? new Date('1970-01-01T' + b.reserved_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'N/A';
+                    if (b.reserved_end_time) {
+                      timeText += ' - ' + new Date('1970-01-01T' + b.reserved_end_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
+                    const statusClass = b.status === 'confirmed' || b.status === 'approved' || b.status === 'completed' ? 'color: #81c784;' : 'color: #ffd54f;';
+                    
+                    return `
+                      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 12px 10px;">${b.customer_name || 'Walk-in'}</td>
+                        <td style="padding: 12px 10px;">${date}</td>
+                        <td style="padding: 12px 10px;">${timeText}</td>
+                        <td style="padding: 12px 10px;">${b.guest_count}</td>
+                        <td style="padding: 12px 10px; ${statusClass} text-transform: capitalize;">${b.status}</td>
+                      </tr>
+                    `;
+                  }).join('');
+                }
+                
+                panel.style.display = 'block';
+                panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            </script>
           </div>
         </div>
 

@@ -50,12 +50,27 @@ try {
         $assignedWaiterId = $waiterStmt->fetchColumn() ?: null;
     }
 
+    $scheduledTime = !empty($data['scheduled_time']) ? str_replace('T', ' ', $data['scheduled_time']) : null;
+    
+    // Calculate max prep time from recipes
+    $totalPrepTime = 0;
+    if (!empty($items)) {
+        $recipeIds = array_column($items, 'recipe_id');
+        $recipeIds = array_filter($recipeIds);
+        if (!empty($recipeIds)) {
+            $inClause = str_repeat('?,', count($recipeIds) - 1) . '?';
+            $prepStmt = $pdo->prepare("SELECT MAX(CAST(prep_time AS UNSIGNED)) FROM recipes WHERE id IN ($inClause)");
+            $prepStmt->execute($recipeIds);
+            $totalPrepTime = (int) $prepStmt->fetchColumn();
+        }
+    }
+
     // Insert order
     $stmt = $pdo->prepare(
-        "INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, payment_method, guest_name, guest_phone, notes)
-         VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?)"
+        "INSERT INTO orders (customer_id, table_id, waiter_id, status, total_amount, payment_method, guest_name, guest_phone, notes, scheduled_time, total_prep_time)
+         VALUES (?, ?, ?, 'queued', ?, ?, ?, ?, ?, ?, ?)"
     );
-    $stmt->execute([$userId, $tableId, $assignedWaiterId, $grandTotal, $paymentMethod, $guestName ?: null, $guestPhone ?: null, $notes]);
+    $stmt->execute([$userId, $tableId, $assignedWaiterId, $grandTotal, $paymentMethod, $guestName ?: null, $guestPhone ?: null, $notes, $scheduledTime, $totalPrepTime]);
     $orderId = $pdo->lastInsertId();
 
     // Insert items

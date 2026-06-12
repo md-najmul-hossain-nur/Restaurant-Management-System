@@ -58,16 +58,21 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
 
         <h1 class="page-title">My Orders</h1>
         <p class="page-subtitle">Track your orders and download bills</p>
-        <h2 class="section-title">Active Orders</h2>
+        <h2 class="section-title">Active Orders <span id="activeCount" class="badge">0</span></h2>
 
         <div class="orders-list">
           <p style="text-align: center; color: rgba(255, 255, 255, 0.6); margin-top: 20px;">Loading your orders...</p>
+        </div>
+
+        <h2 class="section-title" style="margin-top: 2rem;">Order History <span id="historyCount" class="badge">0</span></h2>
+        <div class="orders-list history-list">
         </div>
       </main>
 
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="../JavaScript/customer_orders.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

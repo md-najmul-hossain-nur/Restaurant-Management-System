@@ -313,6 +313,12 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
         <span>Online Payment</span>
       </label>
     </div>
+
+    <div style="margin: 1.5rem 0; text-align: left;">
+      <label style="color: #fff; font-size: 0.9rem; display: block; margin-bottom: 0.5rem;">Schedule Order (Optional)</label>
+      <input type="datetime-local" id="orderScheduledTime" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px;">
+      <small style="color: rgba(255,255,255,0.5); display: block; margin-top: 0.3rem;">Leave empty for immediate preparation.</small>
+    </div>
     
     <div class="payment-actions">
       <button class="payment-btn payment-btn--primary" id="confirmOrderBtn">
