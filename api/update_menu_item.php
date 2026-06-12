@@ -14,9 +14,12 @@ $rawPrice = ltrim($rawPrice, "$ ");
 $price    = (float) $rawPrice;
 $desc     = trim($_POST['editMenuDesc']    ?? '');
 $category = trim($_POST['editMenuTag']     ?? '');
+$prepTime = (int) ($_POST['editMenuPrepTime'] ?? 0);
 
 if (!$recipeId || !$name || !$price || !$category)
     respond(['error' => 'Required fields missing'], 400);
+if ($prepTime < 1)
+    respond(['error' => 'Prep time (minutes) is required'], 400);
 
 // Optional image upload
 $imagePath = null;
@@ -39,11 +42,11 @@ if (!empty($_FILES['editMenuImage']['name'])) {
 }
 
 if ($imagePath) {
-    $pdo->prepare('UPDATE recipes SET name=?, price=?, description=?, category=?, image_path=? WHERE id=?')
-        ->execute([$name, $price, $desc, $category, $imagePath, $recipeId]);
+    $pdo->prepare('UPDATE recipes SET name=?, price=?, description=?, category=?, prep_time=?, image_path=? WHERE id=?')
+        ->execute([$name, $price, $desc, $category, $prepTime, $imagePath, $recipeId]);
 } else {
-    $pdo->prepare('UPDATE recipes SET name=?, price=?, description=?, category=? WHERE id=?')
-        ->execute([$name, $price, $desc, $category, $recipeId]);
+    $pdo->prepare('UPDATE recipes SET name=?, price=?, description=?, category=?, prep_time=? WHERE id=?')
+        ->execute([$name, $price, $desc, $category, $prepTime, $recipeId]);
 }
 
 respond(['success' => true]);

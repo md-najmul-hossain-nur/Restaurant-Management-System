@@ -39,6 +39,13 @@ if ($guests > $table['capacity']) {
 }
 
 $date            = $data['date']             ?? date('Y-m-d');
+$dateObj         = DateTime::createFromFormat('Y-m-d', $date);
+if (!$dateObj || $dateObj->format('Y-m-d') !== $date) {
+    respond(['error' => 'Invalid reservation date'], 400);
+}
+if ($date < date('Y-m-d')) {
+    respond(['error' => 'Reservation date cannot be in the past'], 400);
+}
 $time            = normalizeReservationTime($data['time'] ?? '19:00');
 $endTime         = normalizeReservationTime($data['end_time'] ?? '');
 $specialRequests = $data['special_requests'] ?? '';

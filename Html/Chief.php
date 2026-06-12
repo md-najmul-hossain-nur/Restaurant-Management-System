@@ -214,7 +214,7 @@ function formatOrderStatus($status) {
 
           <div class="section-grid" id="kitchenOrdersGrid">
             <?php if (!$ordersWithItems) { ?>
-              <article class="card order-card grid-6">
+              <article class="card order-card">
                 <div class="order-body">
                   <div class="card-head">
                     <div>
@@ -230,7 +230,7 @@ function formatOrderStatus($status) {
                   $tableNumber = $order['table_number'] ?? 'N/A';
                   $imageSrc = $normalizeImagePath($order['image_path'] ?? '', '../Images/Table/4_people table.jpg');
               ?>
-                <article class="card order-card grid-6" data-order-id="<?php echo (int) $order['id']; ?>" data-order-status="<?php echo htmlspecialchars($status); ?>">
+                <article class="card order-card" data-order-id="<?php echo (int) $order['id']; ?>" data-order-status="<?php echo htmlspecialchars($status); ?>">
                   <img class="order-image" src="<?php echo htmlspecialchars($imageSrc); ?>" alt="Table <?php echo htmlspecialchars((string) $tableNumber); ?>">
                   <div class="order-body">
                     <div class="card-head">
@@ -281,7 +281,7 @@ function formatOrderStatus($status) {
 
           <div class="section-grid">
             <?php if (!$orderHistory) { ?>
-              <article class="card order-card grid-12">
+              <article class="card order-card" style="flex: 1 1 100%; max-width: 100%;">
                 <div class="order-body" style="text-align: center; padding: 40px;">
                   <h3 class="card-title">No history yet</h3>
                   <p class="card-subtitle">Orders you complete will appear here.</p>
@@ -292,7 +292,7 @@ function formatOrderStatus($status) {
                  $tnum = $ho['table_number'] ?? 'Takeaway';
                  $dStr = date('M j, Y g:i A', strtotime($ho['created_at']));
               ?>
-                <article class="card order-card grid-6">
+                <article class="card order-card">
                   <div class="order-body">
                     <div class="card-head">
                       <div>
@@ -333,7 +333,7 @@ function formatOrderStatus($status) {
 
           <div class="section-grid" id="recipesGrid">
             <?php if (!$recipes) { ?>
-              <article class="card order-card recipe-card grid-6">
+              <article class="card order-card recipe-card">
                 <div class="order-body">
                   <div class="card-head">
                     <div>
@@ -348,7 +348,7 @@ function formatOrderStatus($status) {
                   $imageSrc = $normalizeImagePath($recipe['image_path'] ?? '', '../Images/food/default.png');
                   $status = strtolower($recipe['status'] ?? 'pending');
               ?>
-                <article class="card order-card recipe-card grid-6" data-recipe-id="<?php echo (int) $recipe['id']; ?>" data-prep-time="<?php echo (int) ($recipe['prep_time'] ?? 0); ?>">
+                <article class="card order-card recipe-card" data-recipe-id="<?php echo (int) $recipe['id']; ?>" data-prep-time="<?php echo (int) ($recipe['prep_time'] ?? 0); ?>">
                   <span class="status-badge corner-badge"><?php echo htmlspecialchars(ucfirst($status)); ?></span>
                   <img class="order-image" src="<?php echo htmlspecialchars($imageSrc); ?>" alt="<?php echo htmlspecialchars($recipe['name'] ?? 'Recipe'); ?>" />
                   <div class="order-body">

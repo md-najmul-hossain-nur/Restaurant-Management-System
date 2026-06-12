@@ -32,13 +32,44 @@ $paymentMethod = $data['payment_method'] ?? 'Cash';
 $notes         = $data['notes']          ?? '';
 $items         = $data['items'];
 
-// Calculate total
-$total = 0;
-foreach ($items as $item) {
-    $total += $item['price'] * $item['quantity'];
+// Re-price every item from the database so clients cannot tamper with prices.
+$menuStmt = $pdo->query("SELECT id, name, price FROM recipes WHERE status = 'approved'");
+$menuById = [];
+$menuByName = [];
+foreach ($menuStmt->fetchAll() as $row) {
+    $menuById[(int) $row['id']] = $row;
+    $menuByName[strtolower(trim($row['name']))] = $row;
 }
+
+$total = 0;
+foreach ($items as &$item) {
+    $qty = (int) ($item['quantity'] ?? 0);
+    if ($qty < 1 || $qty > 50) {
+        respond(['error' => 'Invalid item quantity'], 400);
+    }
+
+    $recipeId = (int) ($item['recipe_id'] ?? 0);
+    $recipe = $menuById[$recipeId] ?? $menuByName[strtolower(trim((string) ($item['name'] ?? '')))] ?? null;
+    if (!$recipe) {
+        respond(['error' => 'Unknown menu item in order'], 400);
+    }
+
+    $item['recipe_id'] = (int) $recipe['id'];
+    $item['name']      = $recipe['name'];
+    $item['price']     = (float) $recipe['price'];
+    $item['quantity']  = $qty;
+    $total += $item['price'] * $qty;
+}
+unset($item);
+
 $tax        = $total * 0.10;
 $grandTotal = round($total + $tax, 2);
+
+// Delivery orders (no table) need an address so the waiter knows where to go.
+$deliveryAddress = trim($data['delivery_address'] ?? '');
+if ($tableId === null && $deliveryAddress === '') {
+    respond(['error' => 'Please provide a delivery address.'], 400);
+}
 
 try {
     $pdo->beginTransaction();
@@ -73,8 +104,6 @@ try {
     if ($scheduledTime !== null && $totalPrepTime < 1) {
         $totalPrepTime = 30;
     }
-
-    $deliveryAddress = trim($data['delivery_address'] ?? '');
 
     // Insert order
     $stmt = $pdo->prepare(

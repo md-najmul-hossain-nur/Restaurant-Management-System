@@ -64,7 +64,7 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Chat Messages</title>
   <link rel="stylesheet" href="../CSS/admin.css">
-  <style>table{width:100%;border-collapse:collapse}td,th{padding:8px;border:1px solid #ddd}pre{white-space:pre-wrap}.filters{display:flex;gap:12px;align-items:center;margin-bottom:12px}</style>
+  <style>table{width:100%;border-collapse:collapse}td,th{padding:8px;border:1px solid #ddd}pre{white-space:pre-wrap}.filters{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:12px}.table-scroll{width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}.table-scroll table{min-width:720px}@media(max-width:600px){.filters label,.filters input,.filters select{width:100%}.filters>div[style]{margin-left:0!important}td,th{padding:6px;font-size:0.85rem}}</style>
   <link rel="stylesheet" href="../CSS/responsive.css">
 </head>
 <body>
@@ -96,6 +96,7 @@ try {
     <div style="margin-left:auto">Showing <strong><?php echo (int)$total; ?></strong> messages</div>
   </form>
 
+  <div class="table-scroll">
   <table>
     <thead>
       <tr><th>ID</th><th>When</th><th>From</th><th>Role</th><th>Source</th><th>Message</th><th>Action</th></tr>
@@ -117,8 +118,9 @@ try {
     <?php endforeach; } ?>
     </tbody>
   </table>
+  </div>
 
-  <div class="pagination" style="margin-top:12px;display:flex;gap:8px;align-items:center">
+  <div class="pagination" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
     <?php if ($page>1): ?>
       <a href="?page=<?php echo $page-1; ?>&source=<?php echo urlencode($source); ?>&role=<?php echo urlencode($roleFilter); ?>&q=<?php echo urlencode($q); ?>">&laquo; Prev</a>
     <?php endif; ?>

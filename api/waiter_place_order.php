@@ -25,8 +25,31 @@ if (!$tableInfo || (int) $tableInfo['assigned_waiter_id'] !== (int) $waiterId) {
 }
 $customerId = $tableInfo['active_customer_id'] ?: $tableInfo['reserved_customer_id'] ?: null;
 
+// Re-price every item from the database so clients cannot tamper with prices.
+$menuStmt = $pdo->query("SELECT id, name, price FROM recipes WHERE status = 'approved'");
+$menuById = [];
+$menuByName = [];
+foreach ($menuStmt->fetchAll() as $row) {
+    $menuById[(int) $row['id']] = $row;
+    $menuByName[strtolower(trim($row['name']))] = $row;
+}
+
 $total = 0;
-foreach ($items as $item) $total += $item['price'] * $item['quantity'];
+foreach ($items as &$item) {
+    $qty = (int) ($item['quantity'] ?? 0);
+    if ($qty < 1 || $qty > 50) respond(['error' => 'Invalid item quantity'], 400);
+
+    $recipeId = (int) ($item['recipe_id'] ?? 0);
+    $recipe = $menuById[$recipeId] ?? $menuByName[strtolower(trim((string) ($item['name'] ?? '')))] ?? null;
+    if (!$recipe) respond(['error' => 'Unknown menu item in order'], 400);
+
+    $item['recipe_id'] = (int) $recipe['id'];
+    $item['name']      = $recipe['name'];
+    $item['price']     = (float) $recipe['price'];
+    $item['quantity']  = $qty;
+    $total += $item['price'] * $qty;
+}
+unset($item);
 $grandTotal = round($total * 1.10, 2); // 10% tax
 $paymentMethod = $data['payment_method'] ?? 'Cash';
 

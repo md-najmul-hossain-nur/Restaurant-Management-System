@@ -347,8 +347,9 @@ document.addEventListener('DOMContentLoaded', () => {
       recipes.forEach(r => {
         const imageSrc = normalizeImagePath(r.image_path || '../Images/food/default.png');
         const article = document.createElement('article');
-        article.className    = 'card order-card recipe-card grid-6';
+        article.className    = 'card order-card recipe-card';
         article.dataset.recipeId = r.id;
+        article.dataset.prepTime = r.prep_time || 0;
         article.innerHTML = `
           <span class="status-badge corner-badge">${capitalize(r.status)}</span>
           <img class="order-image" src="${imageSrc}" alt="${r.name}" />
@@ -363,6 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="divider"></div>
             <div class="actions recipe-actions">
               <span class="pill recipe-price">$${parseFloat(r.price).toFixed(2)}</span>
+              ${r.prep_time ? `<span class="pill"><i class="far fa-clock"></i> ${r.prep_time} min</span>` : ''}
               ${r.status === 'approved' ? '' : '<button class="order-edit-btn" data-edit-recipe>Edit</button>'}
             </div>
           </div>`;

@@ -347,7 +347,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
             </div>
           </div>
           
-          <div class="orders-grid" id="adminOrdersGrid" style="display: grid; gap: 20px; margin-top: 20px;">
+          <div class="orders-grid" id="adminOrdersGrid">
             <div class="empty-state"><p>Loading delivery orders...</p></div>
           </div>
         </div>
@@ -649,7 +649,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
 
             <?php
             $pendingStmt = $pdo->query(
-              "SELECT r.id, r.name, r.description, r.price, r.category, r.image_path, u.name AS chief_name
+              "SELECT r.id, r.name, r.description, r.price, r.category, r.prep_time, r.image_path, u.name AS chief_name
                FROM recipes r
                LEFT JOIN users u ON u.id = r.chef_id
                WHERE r.status = 'pending'
@@ -658,7 +658,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
             $pendingMenu = $pendingStmt->fetchAll() ?: [];
 
             $approvedStmt = $pdo->query(
-              "SELECT r.id, r.name, r.description, r.price, r.category, r.image_path, u.name AS chief_name
+              "SELECT r.id, r.name, r.description, r.price, r.category, r.prep_time, r.image_path, u.name AS chief_name
                FROM recipes r
                LEFT JOIN users u ON u.id = r.chef_id
                WHERE r.status = 'approved'
@@ -697,9 +697,10 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                     $desc = htmlspecialchars($item['description'] ?? '');
                     $price = number_format((float) ($item['price'] ?? 0), 2);
                     $category = htmlspecialchars($item['category'] ?? '');
+                    $prepTime = (int) ($item['prep_time'] ?? 0);
                     $imageSrc = htmlspecialchars($normalizeMenuImagePath($item['image_path'] ?? ''));
                     ?>
-                    <div class="menu-card pending" data-menu-id="<?php echo $menuId; ?>">
+                    <div class="menu-card pending" data-menu-id="<?php echo $menuId; ?>" data-prep-time="<?php echo $prepTime; ?>">
                       <div class="menu-thumb">
                         <img src="<?php echo $imageSrc; ?>" alt="<?php echo $name; ?>" />
                       </div>
@@ -711,6 +712,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                         <div class="menu-desc"><?php echo $desc; ?></div>
                         <div class="menu-bottom-row">
                           <span class="menu-tag"><?php echo $category; ?></span>
+                          <span class="menu-tag menu-prep-tag"<?php echo $prepTime ? '' : ' style="display:none;"'; ?>><i class="far fa-clock" style="margin-right:4px;"></i><span class="menu-prep-value"><?php echo $prepTime; ?></span> min</span>
                           <span class="menu-tag" style="background: rgba(0,0,0,0.2); color: var(--text-muted);"><i class="fas fa-user" style="margin-right:4px;"></i><?php echo htmlspecialchars($item['chief_name'] ?? 'Unknown'); ?></span>
                           <div class="menu-action-row">
                             <button type="button" class="menu-edit-btn" data-action="edit-menu">Edit</button>
@@ -745,9 +747,10 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                     $desc = htmlspecialchars($item['description'] ?? '');
                     $price = number_format((float) ($item['price'] ?? 0), 2);
                     $category = htmlspecialchars($item['category'] ?? '');
+                    $prepTime = (int) ($item['prep_time'] ?? 0);
                     $imageSrc = htmlspecialchars($normalizeMenuImagePath($item['image_path'] ?? ''));
                     ?>
-                    <div class="menu-card approved" data-menu-id="<?php echo $menuId; ?>">
+                    <div class="menu-card approved" data-menu-id="<?php echo $menuId; ?>" data-prep-time="<?php echo $prepTime; ?>">
                       <div class="menu-thumb">
                         <img src="<?php echo $imageSrc; ?>" alt="<?php echo $name; ?>" />
                       </div>
@@ -760,6 +763,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                         <div class="menu-desc"><?php echo $desc; ?></div>
                         <div class="menu-bottom-row">
                           <span class="menu-tag"><?php echo $category; ?></span>
+                          <span class="menu-tag menu-prep-tag"<?php echo $prepTime ? '' : ' style="display:none;"'; ?>><i class="far fa-clock" style="margin-right:4px;"></i><span class="menu-prep-value"><?php echo $prepTime; ?></span> min</span>
                           <span class="menu-tag" style="background: rgba(0,0,0,0.2); color: var(--text-muted);"><i class="fas fa-user" style="margin-right:4px;"></i><?php echo htmlspecialchars($item['chief_name'] ?? 'Unknown'); ?></span>
                         </div>
                       </div>
@@ -987,6 +991,10 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
           <div class="form-group">
             <label for="editMenuTag">Category</label>
             <input type="text" id="editMenuTag" name="editMenuTag" required>
+          </div>
+          <div class="form-group">
+            <label for="editMenuPrepTime">Prep Time (minutes)</label>
+            <input type="number" id="editMenuPrepTime" name="editMenuPrepTime" min="1" placeholder="e.g., 30" required>
           </div>
         </div>
         <div class="form-group full-width">

@@ -76,9 +76,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const progressWidth = order.status === 'cancelled' ? 0 : Math.min(100, Math.max(0, ((config.index - 0.5) / 3.5) * 100));
 
     // Build items HTML
+    const escapeHtml = v => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     const itemsHtml = order.items.map(item => `
       <div class="item-row">
-        <span class="item-name">${item.quantity}x ${item.name}</span>
+        <span class="item-name">${item.quantity}x ${escapeHtml(item.name)}</span>
         <span class="item-price">$${parseFloat(item.subtotal || item.price * item.quantity).toFixed(2)}</span>
       </div>
     `).join('');

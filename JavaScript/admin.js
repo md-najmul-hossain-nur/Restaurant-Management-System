@@ -642,6 +642,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (priceEl) document.getElementById('editMenuPrice').value = priceEl.textContent.replace(/[^0-9.]/g, '');
       if (descEl) document.getElementById('editMenuDesc').value = descEl.textContent;
       if (tagEl) document.getElementById('editMenuTag').value = tagEl.textContent;
+      const prepInput = document.getElementById('editMenuPrepTime');
+      if (prepInput) prepInput.value = parseInt(card.dataset.prepTime) || '';
       document.getElementById('editMenuImage').value = '';
 
       openModal('editMenuModal');
@@ -677,6 +679,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (d) d.textContent = formData.get('editMenuDesc');
             if (t) t.textContent = formData.get('editMenuTag');
+
+            const prepValue = parseInt(formData.get('editMenuPrepTime')) || 0;
+            currentMenuCard.dataset.prepTime = prepValue;
+            const prepTag = currentMenuCard.querySelector('.menu-prep-tag');
+            const prepValueEl = currentMenuCard.querySelector('.menu-prep-value');
+            if (prepValueEl) prepValueEl.textContent = prepValue;
+            if (prepTag) prepTag.style.display = prepValue ? '' : 'none';
           }
           closeModal('editMenuModal');
           showAdminToast('Menu item updated!');
@@ -840,8 +849,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     conversationList.innerHTML = conversations.map(conv => `
-      <div class="chat-conversation-item" data-session-id="${conv.session_id}">
-        <strong>${conv.participants || 'Guest'}</strong>
+      <div class="chat-conversation-item" data-session-id="${escapeHtml(conv.session_id)}">
+        <strong>${escapeHtml(conv.participants || 'Guest')}</strong>
         <span>Last activity: ${formatChatDate(conv.last_activity)}</span>
         <span>${conv.last_user_message ? 'Recent guest message' : 'No guest message yet'}</span>
       </div>
@@ -909,7 +918,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = document.createElement('div');
             item.className = `chat-message ${msg.source === 'user' ? 'user' : 'bot'}`;
             const author = msg.source === 'user' ? (msg.name || msg.email || 'Guest') : (msg.role === 'admin' ? 'Admin' : 'Bot');
-            item.innerHTML = `<div>${msg.message}</div><span class="meta">${author} · ${formatChatDate(msg.created_at)}</span>`;
+            item.innerHTML = `<div>${escapeHtml(msg.message)}</div><span class="meta">${escapeHtml(author)} · ${formatChatDate(msg.created_at)}</span>`;
             chatThread.appendChild(item);
           });
           if (wasAtBottom) {
@@ -1127,25 +1136,102 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // Sort orders: active on top, completed at bottom, by date descending
+      data.orders.sort((a, b) => {
+        const aStatus = (a.status || '').toLowerCase();
+        const bStatus = (b.status || '').toLowerCase();
+        const aCompleted = (aStatus === 'delivered' || aStatus === 'served' || aStatus === 'paid');
+        const bCompleted = (bStatus === 'delivered' || bStatus === 'served' || bStatus === 'paid');
+        if (aCompleted && !bCompleted) return 1;
+        if (!aCompleted && bCompleted) return -1;
+        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+      });
+
       grid.innerHTML = data.orders.map(order => {
-        const itemsStr = order.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
-        const waiterSelect = `<select class="assign-waiter-select" data-order-id="${order.id}">
+        let itemsHtml = '';
+        let cardSubtotal = 0;
+        
+        order.items.forEach(i => {
+          const qty = parseInt(i.quantity) || 0;
+          const price = parseFloat(i.price) || 0;
+          const sub = parseFloat(i.subtotal) || (qty * price);
+          cardSubtotal += sub;
+          itemsHtml += `<div>${qty}× ${escapeHtml(i.name)}</div>`;
+        });
+        
+        const cardTotal = parseFloat(order.total_amount) || (cardSubtotal * 1.10);
+        const cardTax = Math.max(0, cardTotal - cardSubtotal);
+        
+        const status = (order.status || 'queued').toLowerCase();
+        let statusDisplay = status;
+        if (status === 'queued' || status === 'in_progress') statusDisplay = 'In Kitchen';
+        else if (status === 'ready') statusDisplay = 'Ready';
+        else if (status === 'served' || status === 'delivered') statusDisplay = 'Delivered';
+        else if (status === 'paid') statusDisplay = 'Paid';
+        
+        const timeStr = order.created_at ? new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+        const isAssigned = !!order.waiter_id;
+        const assignedWaiterName = isAssigned ? escapeHtml(data.waiters.find(w => w.id == order.waiter_id)?.name || 'Unknown Waiter') : '';
+        
+        const waiterSelect = `<select class="assign-waiter-select" data-order-id="${order.id}" aria-label="Assign waiter">
             <option value="">— Assign Waiter —</option>
-            ${data.waiters.map(w => `<option value="${w.id}" ${order.waiter_id == w.id ? 'selected' : ''}>${w.name}</option>`).join('')}
+            ${data.waiters.map(w => `<option value="${w.id}">${escapeHtml(w.name)}</option>`).join('')}
           </select>`;
 
         return `
-          <div class="order-card" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-              <strong>Order #${order.id}</strong>
-              <span class="status-badge ${order.status}">${order.status.toUpperCase()}</span>
+          <div class="delivery-order-card" style="display:flex; flex-direction:column; gap:16px; background:var(--card-bg); border:1px solid var(--glass-border); border-radius:16px; padding:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:20px;">
+              <div style="flex:1;">
+                <div style="display:flex; align-items:center; gap:16px; margin-bottom:12px;">
+                  <div style="width:56px; height:56px; border-radius:12px; background:#333; color:#c8a96a; font-size:20px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <i class="fas fa-motorcycle"></i>
+                  </div>
+                  <div>
+                    <div style="font-size:18px; font-weight:800; color:#fff;">Delivery Order #${order.id}</div>
+                    <div style="font-size:13px; color:var(--text-secondary);">${escapeHtml(order.guest_name || 'Guest')}</div>
+                    <div style="font-size:13px; color:var(--text-secondary);"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.delivery_address || 'No Address Provided')}</div>
+                    <div style="font-size:13px; color:var(--text-secondary);">${timeStr}</div>
+                  </div>
+                </div>
+                <div style="padding:12px 16px; background:rgba(255,255,255,0.04); border-radius:10px; font-size:14px; color:var(--text-secondary); margin-bottom:10px;">
+                  ${itemsHtml || 'No items'}
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; align-items:flex-end; gap:10px; flex-shrink:0;">
+                <span class="delivery-status delivery-status--${status}" style="padding:8px 14px; font-size:12px;">${statusDisplay.toUpperCase()}</span>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px; margin-top:8px;">
+                  ${order.items.map(i => {
+                    const qty = parseInt(i.quantity) || 0;
+                    const price = parseFloat(i.price) || 0;
+                    return `<div style="font-size:12px; color:rgba(254,254,255,0.85); font-weight:700;">${qty}× $${price.toFixed(2)} = $${(qty * price).toFixed(2)}</div>`;
+                  }).join('')}
+                  <div style="font-size:12px; color:rgba(254,254,255,0.85); font-weight:700;">Subtotal: $${cardSubtotal.toFixed(2)}</div>
+                  <div style="font-size:12px; color:rgba(254,254,255,0.85); font-weight:700;">Tax (10%): $${cardTax.toFixed(2)}</div>
+                </div>
+              </div>
             </div>
-            <p style="font-size:0.9rem; margin-bottom:5px;"><i class="fas fa-user"></i> ${order.guest_name || 'Guest'} (${order.guest_phone || 'N/A'})</p>
-            <p style="font-size:0.9rem; margin-bottom:5px;"><i class="fas fa-map-marker-alt"></i> ${order.delivery_address || 'No Address Provided'}</p>
-            <p style="font-size:0.85rem; color:#ccc; margin-bottom:10px;"><i class="fas fa-utensils"></i> ${itemsStr}</p>
-            <div style="display:flex; gap: 10px; align-items:center;">
-              ${waiterSelect}
-              <button class="assign-waiter-btn" data-order-id="${order.id}" style="padding: 6px 12px; background: #c8a96a; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Update</button>
+
+            <!-- Full Width Total Row -->
+            <div style="display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); margin-bottom:4px;">
+              <span style="font-size:16px; font-weight:700; color:#fff;">Total (incl. tax)</span>
+              <span style="font-size:20px; font-weight:900; color:var(--gold);">$${cardTotal.toFixed(2)}</span>
+            </div>
+
+            <div class="delivery-assign-row" style="margin-top:auto; display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+              ${isAssigned ? `
+                <div style="flex:1; display:flex; align-items:center; gap:8px; padding:10px 14px; background:rgba(74,222,128,0.1); border-radius:10px; border:1px solid rgba(74,222,128,0.2);">
+                  <i class="fas fa-user-check" style="color:var(--green);"></i>
+                  <span style="font-weight:700; color:var(--green); font-size:14px;">Assigned to: ${assignedWaiterName}</span>
+                </div>
+              ` : `
+                <div class="assign-waiter-field" style="flex:1;">
+                  <i class="fas fa-user-tie"></i>
+                  ${waiterSelect}
+                </div>
+                <button class="assign-waiter-btn" data-order-id="${order.id}">
+                  <i class="fas fa-check"></i> Assign
+                </button>
+              `}
             </div>
           </div>
         `;
@@ -1171,8 +1257,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      const originalHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.textContent = '...';
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
 
       try {
         const res = await fetch('../api/assign_order_waiter.php', {
@@ -1184,15 +1271,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.success) {
           showAdminToast('Waiter assigned successfully!');
           loadAdminOrders();
-        } else {
-          showAdminToast(result.error || 'Failed to assign waiter', true);
+          return; // grid re-rendered; nothing to restore
         }
+        showAdminToast(result.error || 'Failed to assign waiter', true);
       } catch (err) {
         showAdminToast('Network error.', true);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Update';
       }
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
     });
   }
 

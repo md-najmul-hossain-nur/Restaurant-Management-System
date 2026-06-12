@@ -277,7 +277,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateOrderStats() {
     if (!orderList) return;
     const cards = orderList.querySelectorAll('.order-card[data-order-id]');
-    const ready = orderList.querySelectorAll('.order-status--ready').length;
+    
+    let ready = orderList.querySelectorAll('.order-status--ready').length;
+    const readyDeliveries = document.getElementById('readyDeliveriesList');
+    if (readyDeliveries) {
+      ready += readyDeliveries.querySelectorAll('.order-card[data-order-id]').length;
+    }
+    
     const kitchen = orderList.querySelectorAll('.order-status--kitchen').length;
     if (orderCountEl) orderCountEl.textContent = cards.length;
     if (statPending) statPending.textContent = ready;
@@ -687,6 +693,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // ── Ready Deliveries Pool ─────────────────────────────────
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   async function loadReadyDeliveries() {
     const list = document.getElementById('readyDeliveriesList');
     if (!list) return;
@@ -714,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       list.innerHTML = data.orders.map(order => {
-        const itemsStr = order.items.map(i => `${i.quantity}x ${i.name}`).join(', ');
+        const itemsStr = order.items.map(i => `${i.quantity}x ${escapeHtml(i.name)}`).join(', ');
         return `
           <div class="order-card" data-delivery-id="${order.id}">
             <div class="order-card-top">
@@ -725,8 +740,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   </div>
                   <div>
                     <div class="order-table">Delivery Order #${order.id}</div>
-                    <div class="order-muted"><i class="fas fa-user"></i> ${order.guest_name || 'Customer'} (${order.guest_phone || 'N/A'})</div>
-                    <div class="order-muted"><i class="fas fa-map-marker-alt"></i> ${order.delivery_address || 'No Address Provided'}</div>
+                    <div class="order-muted"><i class="fas fa-user"></i> ${escapeHtml(order.guest_name || 'Customer')} (${escapeHtml(order.guest_phone || 'N/A')})</div>
+                    <div class="order-muted"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.delivery_address || 'No Address Provided')}</div>
                   </div>
                 </div>
                 <div class="order-items">
@@ -743,6 +758,8 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         `;
       }).join('');
+      
+      updateOrderStats();
     } catch (err) {
       console.error(err);
       list.innerHTML = '<div class="order-card"><div class="order-table">Failed to load ready deliveries.</div></div>';

@@ -149,7 +149,7 @@ body>* {
     padding-right: 1rem;
   }
 
-  nav {
+  nav:not(.navbar) {
     margin: 0;
     top: 0;
     left: 0;
@@ -287,7 +287,7 @@ body>* {
 
 /* Project-wide responsive overrides */
 @media (max-width: 1280px) {
-  nav {
+  nav:not(.navbar) {
     margin-left: 32px;
     margin-right: 32px;
     padding-left: 24px;
@@ -341,7 +341,7 @@ body>* {
     background-attachment: scroll;
   }
 
-  nav {
+  nav:not(.navbar) {
     position: absolute;
     top: 16px;
     left: 16px;
@@ -593,7 +593,7 @@ body>* {
 }
 
 @media (max-width: 680px) {
-  nav {
+  nav:not(.navbar) {
     align-items: center;
   }
 
@@ -866,6 +866,7 @@ body>* {
   .instagram-grid,
   .stats-strip,
   .service-grid,
+  .services-grid,
   .chef-grid,
   .testimony-grid {
     width: 100%;
@@ -1370,4 +1371,35 @@ body {
   .outer-wrapper {
     max-height: none;
   }
+}
+
+/* ==================================================
+   Dashboard top bar — keep "Feliciano" on the left and
+   the role title + logout button on the RIGHT at every
+   width (Admin / Customer / Waiter / Chef). Overrides the
+   generic ".topbar { flex-direction: column }" rule that
+   otherwise stacked the logout to the left on small screens.
+================================================== */
+.dashboard .topbar {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dashboard .top-right {
+  margin-left: auto;
+  width: auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+.dashboard .brand {
+  flex-shrink: 0;
 }

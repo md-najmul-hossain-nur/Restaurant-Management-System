@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     success: 'Signup successful. Please wait for admin approval before logging in.',
     missing: 'Please fill in all required fields.',
     password_mismatch: 'Passwords do not match.',
+    weak_password: 'Password must be at least 8 characters long.',
     invalid_email: 'Please enter a valid email address.',
     exists: 'This email is already registered.',
     server: 'Signup failed. Please try again later.'
@@ -75,7 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const confirm = document.getElementById('confirm-password');
     if (!pwd || !confirm) return;
 
-    if (pwd.value !== confirm.value) {
+    const problem = pwd.value !== confirm.value
+      ? 'Passwords do not match.'
+      : (pwd.value.length < 8 ? 'Password must be at least 8 characters long.' : '');
+
+    if (problem) {
       e.preventDefault();
       // Show error under confirm field
       let errEl = document.getElementById('confirm-pwd-error');
@@ -85,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         errEl.style.cssText = 'color:#e07070;font-size:12px;margin-top:4px;display:block';
         confirm.parentNode.insertAdjacentElement('afterend', errEl);
       }
-      errEl.textContent = 'Passwords do not match.';
+      errEl.textContent = problem;
       confirm.style.outline = '2px solid rgba(224,112,112,0.7)';
       return;
     }

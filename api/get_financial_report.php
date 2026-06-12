@@ -19,7 +19,8 @@ $summaryStmt = $pdo->prepare(
         COALESCE(SUM(total_amount), 0) AS total_revenue,
         COALESCE(AVG(total_amount), 0) AS avg_order_value
      FROM orders
-     WHERE DATE(created_at) BETWEEN ? AND ?"
+     WHERE DATE(created_at) BETWEEN ? AND ?
+       AND status != 'cancelled'"
 );
 $summaryStmt->execute([$start, $end]);
 $summary = $summaryStmt->fetch() ?: [
