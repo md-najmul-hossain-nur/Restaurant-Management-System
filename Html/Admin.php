@@ -305,9 +305,12 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
               ensureReservationsTable($pdo);
 
               $tablesStmt = $pdo->query(
-                "SELECT id, table_number, capacity, position, status, image_path
-                 FROM restaurant_tables
-                 ORDER BY table_number"
+                "SELECT rt.id, rt.table_number, rt.capacity, rt.position, rt.status, rt.image_path,
+                        w.name AS waiter_name, c.name AS active_customer_name
+                 FROM restaurant_tables rt
+                 LEFT JOIN users w ON w.id = rt.assigned_waiter_id
+                 LEFT JOIN users c ON c.id = rt.active_customer_id
+                 ORDER BY rt.table_number"
               );
               $tables = $tablesStmt->fetchAll() ?: [];
 
@@ -422,9 +425,11 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                   $status = strtolower(trim($table['status'] ?? 'available'));
                   $imageSrc = $normalizeTableImagePath($table['image_path'] ?? '');
                   $posLabel = $positionLabels[$position] ?? ($position ? ucwords($position) : 'Unknown');
+                  $waiterName = $table['waiter_name'] ?? 'None';
+                  $activeCustomer = $table['active_customer_name'] ?? '';
                   $reservation = $latestByTable[$tableId] ?? null;
 
-                  $guestName = $reservation['customer_name'] ?? 'Customer';
+                  $guestName = $activeCustomer ?: ($reservation['customer_name'] ?? 'Walk-in');
                   $guestCount = $reservation['guest_count'] ?? '';
                   $timeText = '';
                   if (!empty($reservation['reserved_time'])) {
@@ -454,21 +459,22 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                     </div>
                     <h4>Table <?php echo $tableNumber; ?></h4>
                     <div class="table-meta">Capacity: <?php echo $capacity; ?></div>
-                    <div class="table-status-dropdown">
-                      <select class="status-select" data-table-id="<?php echo $tableId; ?>">
-                        <option value="available" <?php echo $status === 'available' ? 'selected' : ''; ?>>Available</option>
-                        <option value="reserved" <?php echo $status === 'reserved' ? 'selected' : ''; ?>>Reserved</option>
-                        <option value="occupied" <?php echo $status === 'occupied' ? 'selected' : ''; ?>>Occupied</option>
-                      </select>
+                    <div class="table-status-display">
+                      <span class="status-badge <?php echo htmlspecialchars($status); ?>">
+                        <?php echo ucfirst(htmlspecialchars($status)); ?>
+                      </span>
                     </div>
-                    <?php if ($reservation && in_array($status, ['reserved', 'occupied'], true)) { ?>
+                    <?php if (in_array($status, ['reserved', 'occupied'], true) || $waiterName !== 'None') { ?>
                       <div class="reservation-info <?php echo htmlspecialchars($status); ?>">
-                        <p><strong>Guest:</strong> <?php echo htmlspecialchars($guestName); ?></p>
-                        <?php if ($timeText !== '') { ?>
-                          <p><strong>Time:</strong> <?php echo htmlspecialchars($timeText); ?></p>
-                        <?php } ?>
-                        <?php if ($guestCount !== '') { ?>
-                          <p><strong>Guests:</strong> <?php echo (int) $guestCount; ?></p>
+                        <p><strong>Waiter:</strong> <?php echo htmlspecialchars($waiterName); ?></p>
+                        <?php if (in_array($status, ['reserved', 'occupied'], true)) { ?>
+                          <p><strong>Guest:</strong> <?php echo htmlspecialchars($guestName); ?></p>
+                          <?php if ($timeText !== '') { ?>
+                            <p><strong>Time:</strong> <?php echo htmlspecialchars($timeText); ?></p>
+                          <?php } ?>
+                          <?php if ($guestCount !== '') { ?>
+                            <p><strong>Guests:</strong> <?php echo (int) $guestCount; ?></p>
+                          <?php } ?>
                         <?php } ?>
                       </div>
                     <?php } ?>
@@ -489,18 +495,20 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
 
             <?php
             $pendingStmt = $pdo->query(
-              "SELECT id, name, description, price, category, image_path
-             FROM recipes
-             WHERE status = 'pending'
-             ORDER BY created_at DESC"
+              "SELECT r.id, r.name, r.description, r.price, r.category, r.image_path, u.name AS chief_name
+               FROM recipes r
+               LEFT JOIN users u ON u.id = r.chef_id
+               WHERE r.status = 'pending'
+               ORDER BY r.created_at DESC"
             );
             $pendingMenu = $pendingStmt->fetchAll() ?: [];
 
             $approvedStmt = $pdo->query(
-              "SELECT id, name, description, price, category, image_path
-             FROM recipes
-             WHERE status = 'approved'
-             ORDER BY created_at DESC"
+              "SELECT r.id, r.name, r.description, r.price, r.category, r.image_path, u.name AS chief_name
+               FROM recipes r
+               LEFT JOIN users u ON u.id = r.chef_id
+               WHERE r.status = 'approved'
+               ORDER BY r.created_at DESC"
             );
             $approvedMenu = $approvedStmt->fetchAll() ?: [];
 
@@ -549,6 +557,7 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                         <div class="menu-desc"><?php echo $desc; ?></div>
                         <div class="menu-bottom-row">
                           <span class="menu-tag"><?php echo $category; ?></span>
+                          <span class="menu-tag" style="background: rgba(0,0,0,0.2); color: var(--text-muted);"><i class="fas fa-user-chef" style="margin-right:4px;"></i><?php echo htmlspecialchars($item['chief_name'] ?? 'Unknown'); ?></span>
                           <div class="menu-action-row">
                             <button type="button" class="menu-edit-btn" data-action="edit-menu">Edit</button>
                             <button type="button" class="menu-approve-btn" data-action="approve">Approve</button>
@@ -597,6 +606,7 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                         <div class="menu-desc"><?php echo $desc; ?></div>
                         <div class="menu-bottom-row">
                           <span class="menu-tag"><?php echo $category; ?></span>
+                          <span class="menu-tag" style="background: rgba(0,0,0,0.2); color: var(--text-muted);"><i class="fas fa-user-chef" style="margin-right:4px;"></i><?php echo htmlspecialchars($item['chief_name'] ?? 'Unknown'); ?></span>
                         </div>
                       </div>
                     </div>

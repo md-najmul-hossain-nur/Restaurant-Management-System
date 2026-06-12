@@ -18,6 +18,13 @@ body {
   overflow-x: hidden;
 }
 
+/* Prevent dashboard headers/tabs from squishing */
+.panel,
+.navbar,
+.topbar {
+  flex-shrink: 0;
+}
+
 img,
 picture,
 video,

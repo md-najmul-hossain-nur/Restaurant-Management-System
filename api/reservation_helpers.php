@@ -11,7 +11,7 @@ function ensureReservationsTable(PDO $pdo) {
             reserved_end_time TIME NOT NULL DEFAULT '21:00:00',
             guest_count INT NOT NULL DEFAULT 1,
             special_requests TEXT,
-            status ENUM('pending','approved','rejected','cancelled') NOT NULL DEFAULT 'pending',
+            status ENUM('pending','approved','rejected','cancelled','completed') NOT NULL DEFAULT 'pending',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
             INDEX idx_reservations_customer (customer_id),
@@ -38,12 +38,13 @@ function ensureReservationsTable(PDO $pdo) {
         $statusType = strtolower((string) $columns['status']['COLUMN_TYPE']);
         $needsStatusUpdate = strpos($statusType, "'approved'") === false
             || strpos($statusType, "'rejected'") === false
-            || strpos($statusType, "'confirmed'") === false;
+            || strpos($statusType, "'confirmed'") === false
+            || strpos($statusType, "'completed'") === false;
 
         if ($needsStatusUpdate) {
             $pdo->exec(
                 "ALTER TABLE reservations
-                 MODIFY status ENUM('pending','approved','confirmed','rejected','cancelled') NOT NULL DEFAULT 'pending'"
+                 MODIFY status ENUM('pending','approved','confirmed','rejected','cancelled','completed') NOT NULL DEFAULT 'pending'"
             );
         }
 

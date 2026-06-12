@@ -16,6 +16,25 @@ try {
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]);
+
+    // Auto-release expired reservations and tables
+    $pdo->exec("
+        UPDATE restaurant_tables rt
+        JOIN reservations r ON rt.id = r.table_id
+        SET rt.status = 'available', rt.reserved_customer_id = NULL, rt.active_customer_id = NULL
+        WHERE r.status IN ('approved', 'confirmed')
+          AND (r.reserved_date < CURRENT_DATE() 
+               OR (r.reserved_date = CURRENT_DATE() AND r.reserved_end_time <= CURRENT_TIME()))
+          AND rt.status IN ('reserved', 'occupied')
+    ");
+
+    $pdo->exec("
+        UPDATE reservations
+        SET status = 'completed'
+        WHERE status IN ('approved', 'confirmed')
+          AND (reserved_date < CURRENT_DATE() 
+               OR (reserved_date = CURRENT_DATE() AND reserved_end_time <= CURRENT_TIME()))
+    ");
 } catch (PDOException $e) {
     // Problem 2 fix: set JSON header before outputting error
     http_response_code(500);

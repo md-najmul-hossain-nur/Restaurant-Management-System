@@ -26,8 +26,9 @@ $lastClockIn = $clockData['last_clock_in'] ?? '';
 $lastClockOut = $clockData['last_clock_out'] ?? '';
 
 $myTablesStmt = $pdo->prepare(
-  "SELECT rt.id, rt.table_number, rt.capacity, rt.image_path
+  "SELECT rt.id, rt.table_number, rt.capacity, rt.image_path, rt.active_customer_id, u.name AS customer_name
    FROM restaurant_tables rt
+   LEFT JOIN users u ON u.id = rt.active_customer_id
    WHERE rt.assigned_waiter_id = ?
    ORDER BY rt.table_number"
 );
@@ -41,6 +42,19 @@ $availTablesStmt = $pdo->query(
    ORDER BY table_number"
 );
 $availableTables = $availTablesStmt->fetchAll() ?: [];
+
+$resStmt = $pdo->query(
+  "SELECT r.*, u.name as customer_name
+   FROM reservations r
+   LEFT JOIN users u ON u.id = r.customer_id
+   WHERE r.status IN ('approved', 'confirmed') AND r.reserved_date = CURRENT_DATE
+   ORDER BY r.reserved_time ASC"
+);
+$reservationsForWaiter = $resStmt->fetchAll() ?: [];
+$latestByTable = [];
+foreach ($reservationsForWaiter as $r) {
+  $latestByTable[$r['table_id']] = $r;
+}
 
 $orderStmt = $pdo->prepare(
   "SELECT o.id, o.status, o.total_amount, o.created_at, o.table_id, o.guest_name,
@@ -253,7 +267,11 @@ function waiterStatusClass($status)
                         alt="Table <?php echo (int) $table['table_number']; ?>" />
                     </div>
                     <div class="waiter-table-name">Table <?php echo (int) $table['table_number']; ?></div>
-                    <div class="waiter-table-meta">Seats: <?php echo (int) $table['capacity']; ?></div>
+                    <div class="waiter-table-meta">Seats: <?php echo (int) $table['capacity']; ?>
+                      <?php if (!empty($table['customer_name'])) { ?>
+                        <br>Guest: <strong><?php echo htmlspecialchars($table['customer_name']); ?></strong>
+                      <?php } ?>
+                    </div>
                     <button class="waiter-table-action waiter-table-action--release" type="button"
                       data-release="<?php echo (int) $table['id']; ?>">Release Table</button>
                   </div>
@@ -280,8 +298,18 @@ function waiterStatusClass($status)
                     </div>
                     <div class="waiter-table-name">Table <?php echo (int) $table['table_number']; ?></div>
                     <div class="waiter-table-meta">Seats: <?php echo (int) $table['capacity']; ?>
-                      <?php if (($table['status'] ?? '') === 'reserved')
-                        echo ' - <strong style="color:var(--c-gold)">RESERVED</strong>'; ?>
+                      <?php 
+                      if (($table['status'] ?? '') === 'reserved') {
+                        $res = $latestByTable[$table['id']] ?? null;
+                        if ($res) {
+                          $guest = htmlspecialchars($res['customer_name'] ?? 'Walk-in');
+                          $time = date('g:i A', strtotime($res['reserved_time']));
+                          echo " - <strong style='color:var(--c-gold)'>RESERVED ($guest at $time)</strong>";
+                        } else {
+                          echo ' - <strong style="color:var(--c-gold)">RESERVED</strong>';
+                        }
+                      }
+                      ?>
                     </div>
                     <button class="waiter-table-action waiter-table-action--take" type="button"
                       data-take="<?php echo (int) $table['id']; ?>">Take Table</button>

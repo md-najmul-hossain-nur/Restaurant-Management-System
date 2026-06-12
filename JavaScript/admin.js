@@ -323,12 +323,10 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
               <h4>Table ${tableNumber}</h4>
               <div class="table-meta">Capacity: ${capacity}</div>
-              <div class="table-status-dropdown">
-                <select class="status-select" data-table-id="${tableId}">
-                  <option value="available" ${status === 'available' ? 'selected' : ''}>Available</option>
-                  <option value="reserved" ${status === 'reserved' ? 'selected' : ''}>Reserved</option>
-                  <option value="occupied" ${status === 'occupied' ? 'selected' : ''}>Occupied</option>
-                </select>
+              <div class="table-status-display">
+                <span class="status-badge ${status}">
+                  ${status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
               </div>
             `;
 

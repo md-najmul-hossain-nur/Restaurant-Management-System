@@ -1359,16 +1359,24 @@ body {
   color: var(--text-muted);
 }
 
-.status-select {
+.table-status-display {
   width: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid var(--glass-border);
-  padding: 8px;
-  border-radius: 8px;
-  color: #fff;
-  font-size: 13px;
-  outline: none;
+  margin-top: 10px;
 }
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  text-transform: capitalize;
+}
+
+.status-badge.available { background: rgba(39, 174, 96, 0.2); border: 1px solid var(--green); color: var(--green); }
+.status-badge.reserved { background: rgba(243, 156, 18, 0.2); border: 1px solid var(--orange); color: var(--orange); }
+.status-badge.occupied { background: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; color: #e74c3c; }
 
 /* ==========================================
    Modals
