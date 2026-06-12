@@ -150,6 +150,7 @@ VALUES (
   1,
   1
 );
+//
 
 INSERT INTO recipes (chef_id, name, description, price, prep_time, category, image_path, status)
 VALUES
