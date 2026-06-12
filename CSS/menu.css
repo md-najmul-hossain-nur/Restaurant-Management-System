@@ -521,7 +521,8 @@
   }
 
 @media (max-width: 1024px) {
-  .nav-logo {
+  .nav-logo,
+  .footer-logo {
     font-size: 0.9rem;
     padding: 3px 10px;
   }

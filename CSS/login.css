@@ -68,8 +68,8 @@
      ============================================================ */
   .top-logo {
     position: absolute;
-    top: 30px;
-    left: 40px;
+    top: 40px;
+    left: 100px;
     z-index: 100;
   }
 
@@ -236,12 +236,10 @@
 
   
   .card-logo-img {
-    width: 120px;
-    height: 130px;
+    width: 90px;
+    height: 96px;
     object-fit: cover;
     border-radius: 8px;
-    align-items: center;
-    margin-right: 3px;
   }
   
   
@@ -259,8 +257,6 @@
     line-height: 1;
     margin-bottom: 6px;
     text-align: center;
-    align-items: center;
-    margin-right: 20px;
   }
   
   /* Welcome subtitle beneath script heading */
@@ -272,8 +268,6 @@
     text-align: center;
     line-height: 1.6;
     margin-bottom: 20px;
-    align-items: center;
-    gap: 30px;
   }
   .left-content h1{
     line-height: 1.3;
