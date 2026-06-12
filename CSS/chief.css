@@ -141,6 +141,7 @@ body {
   gap: 12px;
   overflow-x: hidden;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .outer-wrapper::-webkit-scrollbar { width: 8px; }

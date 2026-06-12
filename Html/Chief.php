@@ -235,7 +235,11 @@ function formatOrderStatus($status) {
                   <div class="order-body">
                     <div class="card-head">
                       <div>
-                        <h3 class="card-title">Table <?php echo htmlspecialchars((string) $tableNumber); ?></h3>
+                        <?php if ($tableNumber === 'N/A') { ?>
+                          <h3 class="card-title" style="color:var(--accent);">Direct Order</h3>
+                        <?php } else { ?>
+                          <h3 class="card-title">Table <?php echo htmlspecialchars((string) $tableNumber); ?></h3>
+                        <?php } ?>
                         <p class="card-subtitle">Placed <?php echo date('g:i A', strtotime($order['created_at'] ?? 'now')); ?></p>
                       </div>
                       <span class="status-badge"><?php echo htmlspecialchars(formatOrderStatus($status)); ?></span>
@@ -253,6 +257,7 @@ function formatOrderStatus($status) {
                     <div class="actions">
                       <?php if ($order['chef_id'] === null) { ?>
                         <button class="btn btn-secondary" type="button" data-pick-order>Pick Order</button>
+                        <button class="btn btn-danger" type="button" data-reject-order style="background:var(--red); border-color:var(--red);">Reject</button>
                       <?php } else { ?>
                         <button class="btn btn-secondary" type="button" data-mark-ready>Mark Ready</button>
                       <?php } ?>
@@ -360,7 +365,9 @@ function formatOrderStatus($status) {
                     <div class="divider"></div>
                     <div class="actions recipe-actions">
                       <span class="pill recipe-price">$<?php echo number_format((float) ($recipe['price'] ?? 0), 2); ?></span>
-                      <button class="order-edit-btn" data-edit-recipe>Edit</button>
+                      <?php if ($status !== 'approved') { ?>
+                        <button class="order-edit-btn" data-edit-recipe>Edit</button>
+                      <?php } ?>
                     </div>
                   </div>
                 </article>
