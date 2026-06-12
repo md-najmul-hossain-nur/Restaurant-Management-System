@@ -60,6 +60,7 @@ try {
 <html>
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin — Chat Messages</title>
   <link rel="stylesheet" href="../CSS/admin.css">
   <style>table{width:100%;border-collapse:collapse}td,th{padding:8px;border:1px solid #ddd}pre{white-space:pre-wrap}.filters{display:flex;gap:12px;align-items:center;margin-bottom:12px}</style>

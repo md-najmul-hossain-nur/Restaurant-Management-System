@@ -17,16 +17,21 @@
 	<nav>
 		<a href="Index.html" class="nav-logo" aria-label="Go to Home">Feliciano</a>
 
-		<ul class="nav-links">
+		<ul class="nav-links" id="navLinks">
 			<li><a href="Index.html">Home</a></li>
 			<li><a href="about.html">About</a></li>
 			<li><a href="menu.html">Menu</a></li>
 			<li><a href="contact.html" class="active">Contact</a></li>
 		</ul>
 
-		<a href="login.html" class="btn-profile" aria-label="Go to Login">
-			<img src="../Images/profile.png" alt="Profile" class="nav-profile-img">
-		</a>
+		<div class="nav-right">
+			<a href="login.html" class="btn-profile" aria-label="Go to Login">
+				<img src="../Images/profile.png" alt="Profile" class="nav-profile-img">
+			</a>
+			<button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu" aria-expanded="false">
+				<span></span><span></span><span></span>
+			</button>
+		</div>
 	</nav>
  <section class="hero">
     
@@ -130,5 +135,6 @@
 		</div>
 
 	</footer>
+	<script src="../JavaScript/nav.js"></script>
 </body>
 </html>

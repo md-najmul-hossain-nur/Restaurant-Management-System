@@ -345,6 +345,21 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                 }
               }
 
+              $activeOrdersStmt = $pdo->query(
+                "SELECT o.table_id, o.guest_name, o.created_at, u.name AS customer_name
+                 FROM orders o
+                 LEFT JOIN users u ON u.id = o.customer_id
+                 WHERE o.status NOT IN ('served', 'cancelled', 'completed') AND o.table_id IS NOT NULL
+                 ORDER BY o.created_at DESC"
+              );
+              $activeOrdersByTable = [];
+              foreach ($activeOrdersStmt->fetchAll() ?: [] as $ord) {
+                $tId = $ord['table_id'];
+                if (!isset($activeOrdersByTable[$tId])) {
+                  $activeOrdersByTable[$tId] = $ord;
+                }
+              }
+
               $positionLabels = [
                 'window' => 'Window',
                 'center' => 'Center',
@@ -422,14 +437,33 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
                   $activeCustomer = $table['active_customer_name'] ?? '';
                   $reservation = $latestByTable[$tableId] ?? null;
 
-                  $guestName = $activeCustomer ?: ($reservation['customer_name'] ?? 'Walk-in');
-                  $guestCount = $reservation['guest_count'] ?? '';
+                  $guestName = $activeCustomer;
                   $timeText = '';
-                  if (!empty($reservation['reserved_time'])) {
-                    $timeText = date('g:i A', strtotime($reservation['reserved_time']));
-                    if (!empty($reservation['reserved_end_time'])) {
-                      $timeText .= ' - ' . date('g:i A', strtotime($reservation['reserved_end_time']));
-                    }
+                  $guestCount = $reservation['guest_count'] ?? '';
+
+                  if ($status === 'occupied') {
+                      $activeOrder = $activeOrdersByTable[$tableId] ?? null;
+                      if ($activeOrder) {
+                          if (!$guestName) {
+                              $guestName = $activeOrder['customer_name'] ?: $activeOrder['guest_name'];
+                          }
+                          $timeText = date('g:i A', strtotime($activeOrder['created_at']));
+                      }
+                  }
+
+                  if (!$guestName) {
+                      $guestName = $reservation['customer_name'] ?? 'Walk-in';
+                  }
+
+                  if ($timeText === '' && !empty($reservation['reserved_time'])) {
+                      $timeText = date('g:i A', strtotime($reservation['reserved_time']));
+                      if (!empty($reservation['reserved_end_time'])) {
+                          $timeText .= ' - ' . date('g:i A', strtotime($reservation['reserved_end_time']));
+                      }
+                  }
+
+                  if (!$guestName) {
+                      $guestName = 'Walk-in';
                   }
                   ?>
                   <div class="table-card" data-table-id="<?php echo $tableId; ?>"

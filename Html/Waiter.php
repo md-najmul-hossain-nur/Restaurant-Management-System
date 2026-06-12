@@ -26,7 +26,7 @@ $lastClockIn = $clockData['last_clock_in'] ?? '';
 $lastClockOut = $clockData['last_clock_out'] ?? '';
 
 $myTablesStmt = $pdo->prepare(
-  "SELECT rt.id, rt.table_number, rt.capacity, rt.image_path, rt.active_customer_id, u.name AS customer_name
+  "SELECT rt.id, rt.table_number, rt.capacity, rt.image_path, rt.active_customer_id, rt.status, u.name AS customer_name
    FROM restaurant_tables rt
    LEFT JOIN users u ON u.id = rt.active_customer_id
    WHERE rt.assigned_waiter_id = ?
@@ -54,6 +54,21 @@ $reservationsForWaiter = $resStmt->fetchAll() ?: [];
 $latestByTable = [];
 foreach ($reservationsForWaiter as $r) {
   $latestByTable[$r['table_id']] = $r;
+}
+
+$activeOrdersStmt = $pdo->query(
+  "SELECT o.table_id, o.guest_name, o.created_at, u.name AS customer_name
+   FROM orders o
+   LEFT JOIN users u ON u.id = o.customer_id
+   WHERE o.status NOT IN ('served', 'cancelled', 'completed') AND o.table_id IS NOT NULL
+   ORDER BY o.created_at DESC"
+);
+$activeOrdersByTable = [];
+foreach ($activeOrdersStmt->fetchAll() ?: [] as $ord) {
+  $tId = $ord['table_id'];
+  if (!isset($activeOrdersByTable[$tId])) {
+    $activeOrdersByTable[$tId] = $ord;
+  }
 }
 
 $orderStmt = $pdo->prepare(
@@ -268,8 +283,35 @@ function waiterStatusClass($status)
                     </div>
                     <div class="waiter-table-name">Table <?php echo (int) $table['table_number']; ?></div>
                     <div class="waiter-table-meta">Seats: <?php echo (int) $table['capacity']; ?>
-                      <?php if (!empty($table['customer_name'])) { ?>
-                        <br>Guest: <strong><?php echo htmlspecialchars($table['customer_name']); ?></strong>
+                      <?php 
+                      $guestName = $table['customer_name'] ?? '';
+                      $timeText = '';
+                      $tId = $table['id'];
+                      $res = $latestByTable[$tId] ?? null;
+                      $status = $table['status'] ?? 'available';
+
+                      if ($status === 'occupied' || $status === 'reserved') {
+                          $activeOrder = $activeOrdersByTable[$tId] ?? null;
+                          if ($activeOrder) {
+                              if (!$guestName) {
+                                  $guestName = $activeOrder['customer_name'] ?: $activeOrder['guest_name'];
+                              }
+                              $timeText = date('g:i A', strtotime($activeOrder['created_at']));
+                          }
+                      }
+
+                      if (!$guestName) {
+                          $guestName = $res['customer_name'] ?? 'Walk-in';
+                      }
+                      
+                      if ($timeText === '' && !empty($res['reserved_time'])) {
+                          $timeText = date('g:i A', strtotime($res['reserved_time']));
+                      }
+
+                      if ($guestName || $timeText) { 
+                      ?>
+                        <br>Guest: <strong><?php echo htmlspecialchars($guestName); ?></strong>
+                        <?php if ($timeText) { ?><br>Time: <strong><?php echo htmlspecialchars($timeText); ?></strong><?php } ?>
                       <?php } ?>
                     </div>
                     <button class="waiter-table-action waiter-table-action--release" type="button"

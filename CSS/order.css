@@ -83,13 +83,16 @@ body {
 .nav-logo {
   color: var(--white);
   font-family: 'Inter', sans-serif;
-  font-size: 1.45rem;
+  font-size: 1rem;
   letter-spacing: 2px;
   text-transform: uppercase;
-  font-weight: 1000;
+  font-weight: 700;
   flex: 0 0 auto;
   display: inline-block;
   text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 4px 12px;
+  border-radius: 4px;
 }
 
 .nav-links {
@@ -249,23 +252,6 @@ body {
 @media (max-width: 640px) {
   .order-hero {
     height: 220px;
-  }
-
-  .order-nav {
-    margin-left: 16px;
-    margin-right: 16px;
-    padding: 0 18px;
-    height: auto;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .nav-links {
-    position: static;
-    transform: none;
-    flex-wrap: wrap;
-    gap: 16px;
   }
 
   .order-grid {
