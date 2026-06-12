@@ -588,7 +588,6 @@ body>* {
     align-items: center;
   }
 
-  .nav-logo,
   .brand {
     font-size: 1rem;
     letter-spacing: 1.5px;
@@ -1059,7 +1058,6 @@ body>* {
 @media (max-width: 380px) {
 
   .brand,
-  .nav-logo,
   .top-logo {
     letter-spacing: 1px;
   }
