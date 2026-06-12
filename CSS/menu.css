@@ -338,19 +338,21 @@
   .menu-tabs {
     max-width: 1120px;
     margin: 0 auto 18px;
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
     border: 1px solid #dddddd;
     background: #ffffff;
   }
 
   .menu-tab {
+    flex: 1 1 140px;
     text-align: center;
     padding: 14px 8px;
     font-size: 0.95rem;
     font-weight: 600;
     color: #333333;
     border-right: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
     cursor: pointer;
     user-select: none;
     background: none;
@@ -463,10 +465,6 @@
   }
 
   @media (max-width: 980px) {
-    .menu-tabs {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
     .menu-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -493,12 +491,10 @@
       padding: 56px 16px 68px;
     }
 
-    .menu-tabs {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin-bottom: 14px;
-    }
+    .menu-tabs { margin-bottom: 14px; }
 
     .menu-tab {
+      flex-basis: 50%;
       font-size: 0.88rem;
       padding: 12px 6px;
     }

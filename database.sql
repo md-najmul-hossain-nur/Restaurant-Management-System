@@ -77,7 +77,7 @@ CREATE TABLE reservations (
   reserved_end_time TIME NOT NULL DEFAULT '21:00:00',
   guest_count INT NOT NULL DEFAULT 1,
   special_requests TEXT,
-  status ENUM('pending','approved','rejected','cancelled') NOT NULL DEFAULT 'pending',
+  status ENUM('pending','approved','confirmed','rejected','cancelled','completed') NOT NULL DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_reservations_table FOREIGN KEY (table_id) REFERENCES restaurant_tables(id) ON DELETE CASCADE,
@@ -104,16 +104,21 @@ CREATE TABLE orders (
   customer_id INT DEFAULT NULL,
   table_id INT DEFAULT NULL,
   waiter_id INT DEFAULT NULL,
-  status ENUM('queued','in_progress','ready','served','cancelled') NOT NULL DEFAULT 'queued',
+  chef_id INT DEFAULT NULL,
+  status ENUM('queued','in_progress','ready','served','cancelled','paid') NOT NULL DEFAULT 'queued',
   total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  payment_method VARCHAR(50) DEFAULT 'Cash',
   guest_name VARCHAR(100),
   guest_phone VARCHAR(20),
   notes TEXT,
+  scheduled_time DATETIME NULL,
+  total_prep_time INT NOT NULL DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT fk_orders_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE SET NULL,
   CONSTRAINT fk_orders_table FOREIGN KEY (table_id) REFERENCES restaurant_tables(id) ON DELETE SET NULL,
-  CONSTRAINT fk_orders_waiter FOREIGN KEY (waiter_id) REFERENCES users(id) ON DELETE SET NULL
+  CONSTRAINT fk_orders_waiter FOREIGN KEY (waiter_id) REFERENCES users(id) ON DELETE SET NULL,
+  CONSTRAINT fk_orders_chef FOREIGN KEY (chef_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE order_items (
@@ -144,3 +149,14 @@ VALUES (
   1,
   1
 );
+
+INSERT INTO recipes (chef_id, name, description, price, prep_time, category, image_path, status)
+VALUES
+  (NULL, 'Grilled Beef with Potatoes', 'Meat, potatoes, rice, tomato, and house sauce.', 29.00, '25', 'Dinner', 'Images/food/main cross/pexels-mohamed9380-36682995.jpg', 'approved'),
+  (NULL, 'Herb Roasted Salmon', 'Salmon, garlic butter, lemon, and fresh herbs.', 29.00, '20', 'Lunch', 'Images/food/main cross/pexels-mohamed9380-36691316.jpg', 'approved'),
+  (NULL, 'Chicken Alfredo Pasta', 'Creamy sauce, chicken, parmesan, and parsley.', 24.00, '18', 'Lunch', 'Images/food/chicken.jpg', 'approved'),
+  (NULL, 'Steakhouse Special', 'Prime steak, garlic mash, pepper jus, and greens.', 34.00, '30', 'Dinner', 'Images/food/main cross/pexels-mohamed9380-36734935.jpg', 'approved'),
+  (NULL, 'Garden Fresh Salad', 'Mixed greens, feta, cucumber, and citrus dressing.', 16.00, '10', 'Breakfast', 'Images/food/main cross/pexels-valeriya-19503815.jpg', 'approved'),
+  (NULL, 'Berry Cheesecake', 'Creamy cheesecake with berry compote.', 12.00, '12', 'Desserts', 'Images/menu/berrychessecake.jpg', 'approved'),
+  (NULL, 'Tropical Fizz', 'Fresh tropical fruit cooler with soda.', 8.00, '5', 'Drinks', 'Images/menu/tropicalfizz.jpg', 'approved'),
+  (NULL, 'Chef Signature Seafood Trio', 'Seafood selection with seasonal vegetables.', 38.00, '28', 'Special', 'Images/menu/Seafoodtrio.jpg', 'approved');
