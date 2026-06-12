@@ -103,7 +103,6 @@
   }
  
   .hero-headline {
-    margin-right: 100px;
     font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(2.8rem, 5vw, 5rem);
     font-weight: 700;
