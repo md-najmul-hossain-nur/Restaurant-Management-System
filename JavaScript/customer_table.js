@@ -112,8 +112,9 @@ function renderBrowserGrid() {
   grid.innerHTML = getDisplayTables().map(t => {
     const tableNum = t.tableNumber || parseInt(t.key.replace('table', ''));
     const status = t.status || dbTableStatuses[tableNum] || 'available';
+    const displayStatus = status === 'available' ? 'available' : 'reserved';
     const badgeHTML = status !== 'available'
-      ? `<span class="browser-card-status-badge ${status}">${status}</span>`
+      ? `<span class="browser-card-status-badge" style="background: #e05555; color: #fff;">Reserved</span>`
       : '';
 
     return `
@@ -175,25 +176,24 @@ function openBookingForm(tableKey) {
   const timeInput = document.getElementById('bookTime');
   const endTimeInput = document.getElementById('bookEndTime');
   try {
-    const step = parseInt(timeInput.step || '1800', 10);
-
     const now = new Date();
-    // round up to next 30-minute slot
-    const nextSlot = new Date(Math.ceil(now.getTime() / (step * 1000)) * (step * 1000));
-    const endSlot = new Date(nextSlot.getTime() + (60 * 60 * 1000));
-    const hh = String(nextSlot.getHours()).padStart(2, '0');
-    const mm = String(nextSlot.getMinutes()).padStart(2, '0');
-    const endHh = String(endSlot.getHours()).padStart(2, '0');
-    const endMm = String(endSlot.getMinutes()).padStart(2, '0');
-    const candidate = `${hh}:${mm}`;
-    const endCandidate = `${endHh}:${endMm}`;
-    // set next slot as default (fallback to 19:00 if something fails)
-    timeInput.value = candidate || timeInput.value || '19:00';
-    if (endTimeInput) endTimeInput.value = endCandidate || endTimeInput.value || '20:00';
+    // round up to next hour
+    let nextHour = now.getHours() + 1;
+    if (nextHour < 10) nextHour = 10;
+    if (nextHour > 22) nextHour = 22; // max option is 22:00
+    
+    let endHour = nextHour + 1;
+    if (endHour > 23) endHour = 23;
+    
+    const candidate = `${String(nextHour).padStart(2, '0')}:00`;
+    const endCandidate = `${String(endHour).padStart(2, '0')}:00`;
+    
+    timeInput.value = candidate || '19:00';
+    if (endTimeInput) endTimeInput.value = endCandidate || '20:00';
   } catch (e) {
     // fallback
-    timeInput.value = timeInput.value || '19:00';
-    if (endTimeInput) endTimeInput.value = endTimeInput.value || '20:00';
+    timeInput.value = '19:00';
+    if (endTimeInput) endTimeInput.value = '20:00';
   }
 
   document.querySelectorAll('.table-chip').forEach(c => {

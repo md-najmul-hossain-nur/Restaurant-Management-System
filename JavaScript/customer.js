@@ -230,12 +230,16 @@ async function placeOrderInDB(paymentMethod) {
     quantity:  item.qty,
   }));
 
+  const scheduledTimeEl = document.getElementById('orderScheduledTime');
+  const scheduledTime = scheduledTimeEl ? scheduledTimeEl.value : null;
+
   const res = await fetch('../api/place_order.php', {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       table_id:       tableId,
       payment_method: paymentMethod,
+      scheduled_time: scheduledTime,
       items,
     }),
   });

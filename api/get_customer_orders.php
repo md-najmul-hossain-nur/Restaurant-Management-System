@@ -14,15 +14,30 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
 $customerId = (int) $_SESSION['user_id'];
 
 try {
-    // Fetch orders for this customer
+    // Auto-claim any unassigned active orders placed by waiters for tables currently assigned to this customer
+    $updateStmt = $pdo->prepare(
+        "UPDATE orders 
+         SET customer_id = ? 
+         WHERE customer_id IS NULL 
+           AND status != 'paid' 
+           AND table_id IN (
+               SELECT id FROM restaurant_tables 
+               WHERE active_customer_id = ? OR reserved_customer_id = ?
+           )"
+    );
+    $updateStmt->execute([$customerId, $customerId, $customerId]);
+
+    // Fetch orders for this customer (or for a table they are currently sitting at / reserved)
     $stmt = $pdo->prepare(
         "SELECT o.id, o.status, o.total_amount, o.created_at, t.table_number 
          FROM orders o
          LEFT JOIN restaurant_tables t ON o.table_id = t.id
          WHERE o.customer_id = ?
+            OR (o.table_id IS NOT NULL AND t.active_customer_id = ? AND o.status != 'paid')
+            OR (o.table_id IS NOT NULL AND t.reserved_customer_id = ? AND o.status != 'paid')
          ORDER BY o.created_at DESC"
     );
-    $stmt->execute([$customerId]);
+    $stmt->execute([$customerId, $customerId, $customerId]);
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     if (!$orders) {

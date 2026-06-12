@@ -81,14 +81,15 @@ document.addEventListener("DOMContentLoaded", function () {
     dots[activeIndex].classList.add("active");
     dots[activeIndex].setAttribute("aria-selected", "true");
 
-    // On mobile (≤980px) the grid is a flex row — translate by card widths
-    // On desktop the grid shows all 3 cards, but we still visually highlight
-    if (window.innerWidth <= 980) {
+    // On mobile (≤768px) the grid is a flex row — translate by card widths.
+    // Must match the Index.css breakpoint that switches the grid to a flex row.
+    if (window.innerWidth <= 768) {
       grid.style.transform = `translateX(-${
         (100 / cards.length) * activeIndex
       }%)`;
     } else {
-      // Desktop: fade the non-active cards slightly
+      // Desktop: clear any leftover mobile translate, fade non-active cards
+      grid.style.transform = "";
       cards.forEach((card, i) => {
         card.style.transition = "opacity 0.4s ease";
         card.style.opacity = i === activeIndex ? "1" : "0.35";

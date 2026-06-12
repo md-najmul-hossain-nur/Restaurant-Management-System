@@ -32,11 +32,12 @@ $completedToday = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 
     ->fetchColumn();
 
 $orderStmt = $pdo->prepare(
-    "SELECT o.id, o.status, o.created_at, o.table_id, o.chef_id, rt.table_number, rt.image_path
+    "SELECT o.id, o.status, o.created_at, o.scheduled_time, o.total_prep_time, o.table_id, o.chef_id, rt.table_number, rt.image_path
      FROM orders o
      LEFT JOIN restaurant_tables rt ON rt.id = o.table_id
-     WHERE o.status IN ('queued','in_progress','ready')
+     WHERE o.status IN ('queued','in_progress')
        AND (o.chef_id IS NULL OR o.chef_id = ?)
+       AND (o.scheduled_time IS NULL OR NOW() >= DATE_SUB(o.scheduled_time, INTERVAL o.total_prep_time MINUTE))
      ORDER BY o.created_at ASC"
 );
 $orderStmt->execute([$userId]);
@@ -64,7 +65,7 @@ $historyStmt = $pdo->prepare(
     "SELECT o.id, o.status, o.total_amount, o.created_at, rt.table_number 
      FROM orders o
      LEFT JOIN restaurant_tables rt ON rt.id = o.table_id
-     WHERE o.chef_id = ? AND o.status = 'served'
+     WHERE o.chef_id = ? AND o.status IN ('ready', 'served', 'paid')
      ORDER BY o.created_at DESC"
 );
 $historyStmt->execute([$userId]);
@@ -252,7 +253,7 @@ function formatOrderStatus($status) {
                     <div class="actions">
                       <?php if ($order['chef_id'] === null) { ?>
                         <button class="btn btn-secondary" type="button" data-pick-order>Pick Order</button>
-                      <?php } else if ($status !== 'ready') { ?>
+                      <?php } else { ?>
                         <button class="btn btn-secondary" type="button" data-mark-ready>Mark Ready</button>
                       <?php } ?>
                       <span class="pill"><?php echo htmlspecialchars(formatOrderStatus($status)); ?></span>
@@ -293,7 +294,11 @@ function formatOrderStatus($status) {
                         <h3 class="card-title">Order #<?php echo (int) $ho['id']; ?> - Table <?php echo htmlspecialchars((string) $tnum); ?></h3>
                         <p class="card-subtitle"><?php echo $dStr; ?></p>
                       </div>
-                      <span class="status-badge" style="color:var(--green); border-color:var(--green);">Served</span>
+                      <?php if (strtolower($ho['status']) === 'ready') { ?>
+                        <span class="status-badge" style="color:var(--orange); border-color:var(--orange);">Ready for Pickup</span>
+                      <?php } else { ?>
+                        <span class="status-badge" style="color:var(--green); border-color:var(--green);">Served</span>
+                      <?php } ?>
                     </div>
                     <div class="order-meta">
                       <?php foreach ($ho['items'] as $it) { ?>

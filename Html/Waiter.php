@@ -36,6 +36,9 @@ $myTablesStmt = $pdo->prepare(
 $myTablesStmt->execute([$userId]);
 $myTables = $myTablesStmt->fetchAll() ?: [];
 
+// Clear stale waiter assignments for tables that are actually available
+$pdo->query("UPDATE restaurant_tables SET assigned_waiter_id = NULL, active_customer_id = NULL WHERE status = 'available' AND assigned_waiter_id IS NOT NULL");
+
 $availTablesStmt = $pdo->query(
   "SELECT id, table_number, capacity, image_path, status
    FROM restaurant_tables
@@ -77,8 +80,8 @@ $orderStmt = $pdo->prepare(
             rt.table_number, rt.image_path
      FROM orders o
      LEFT JOIN restaurant_tables rt ON rt.id = o.table_id
-     WHERE o.waiter_id = ? OR o.waiter_id IS NULL
-     ORDER BY o.created_at DESC"
+     WHERE (o.waiter_id = ? OR o.waiter_id IS NULL) AND o.status != 'cancelled'
+     ORDER BY o.created_at DESC LIMIT 100"
 );
 $orderStmt->execute([$userId]);
 $orders = $orderStmt->fetchAll() ?: [];
@@ -93,6 +96,18 @@ foreach ($orders as $order) {
   $itemStmt->execute([$order['id']]);
   $order['items'] = $itemStmt->fetchAll() ?: [];
   $ordersWithItems[] = $order;
+}
+
+// Split: active orders stay in the Order tab, delivered/paid ones go to Order History
+$activeOrders = [];
+$historyOrders = [];
+foreach ($ordersWithItems as $order) {
+  $orderStatus = strtolower(trim($order['status'] ?? ''));
+  if (in_array($orderStatus, ['served', 'paid'], true)) {
+    $historyOrders[] = $order;
+  } else {
+    $activeOrders[] = $order;
+  }
 }
 
 $readyCount = 0;
@@ -147,7 +162,7 @@ function waiterStatusClass($status)
   $status = strtolower(trim($status));
   if ($status === 'ready')
     return 'order-status--ready';
-  if ($status === 'served')
+  if ($status === 'served' || $status === 'paid')
     return 'order-status--delivered';
   return 'order-status--kitchen';
 }
@@ -211,6 +226,10 @@ function waiterStatusClass($status)
         <div class="tab" data-section="order">
           <i class="fas fa-utensils"></i>
           <span>Order</span>
+        </div>
+        <div class="tab" data-section="history">
+          <i class="fas fa-history"></i>
+          <span>Order History</span>
         </div>
         <div class="tab" data-section="profile">
           <i class="fas fa-user"></i>
@@ -385,20 +404,20 @@ function waiterStatusClass($status)
         <div class="section-content" id="order">
           <div class="order-header">
             <div>
-              <h1 class="page-title">My Orders (<span id="orderCount"><?php echo count($ordersWithItems); ?></span>)
+              <h1 class="page-title">My Orders (<span id="orderCount"><?php echo count($activeOrders); ?></span>)
               </h1>
             </div>
             <button class="order-new-btn" type="button" data-new-order>+ New Order</button>
           </div>
 
           <div class="order-list" id="orderList">
-            <?php if (!$ordersWithItems) { ?>
+            <?php if (!$activeOrders) { ?>
               <div class="order-card">
                 <div class="order-card-top">
                   <div class="order-left">
                     <div class="order-head">
                       <div>
-                        <div class="order-table">No orders yet</div>
+                        <div class="order-table">No active orders</div>
                         <div class="order-muted">Start a new order from the button above.</div>
                       </div>
                     </div>
@@ -406,7 +425,7 @@ function waiterStatusClass($status)
                 </div>
               </div>
             <?php } else { ?>
-              <?php foreach ($ordersWithItems as $order) {
+              <?php foreach ($activeOrders as $order) {
                 $imageSrc = $normalizeImagePath($order['image_path'] ?? '', '../Images/Table/4_people table.jpg');
                 $status = $order['status'] ?? 'queued';
                 $tableNumber = $order['table_number'] ?? 'N/A';
@@ -414,7 +433,7 @@ function waiterStatusClass($status)
                 $statusLabel = formatWaiterStatusLabel($status);
                 $statusClass = waiterStatusClass($status);
                 ?>
-                <div class="order-card" data-order-id="<?php echo (int) $order['id']; ?>">
+                <div class="order-card" data-order-id="<?php echo (int) $order['id']; ?>" data-table-id="<?php echo (int) $order['table_id']; ?>">
                   <div class="order-card-top">
                     <div class="order-left">
                       <div class="order-head">
@@ -443,6 +462,20 @@ function waiterStatusClass($status)
                     <div class="order-right">
                       <div class="order-status <?php echo $statusClass; ?>"><?php echo htmlspecialchars($statusLabel); ?>
                       </div>
+                      <?php
+                      // Breakdown: tax derived from the stored total so the
+                      // displayed rows always sum exactly to the grand total
+                      $cardSubtotal = 0;
+                      foreach ($order['items'] as $item) {
+                        $cardSubtotal += (float) $item['subtotal'];
+                      }
+                      $cardSubtotal = round($cardSubtotal, 2);
+                      $cardTotal = round((float) ($order['total_amount'] ?? 0), 2);
+                      if ($cardTotal <= 0 && $cardSubtotal > 0) {
+                        $cardTotal = round($cardSubtotal * 1.10, 2);
+                      }
+                      $cardTax = max(0, round($cardTotal - $cardSubtotal, 2));
+                      ?>
                       <div class="order-prices">
                         <?php if (!empty($order['items'])) { ?>
                           <?php foreach ($order['items'] as $item) { ?>
@@ -451,11 +484,15 @@ function waiterStatusClass($status)
                               $<?php echo number_format((float) $item['subtotal'], 2); ?></div>
                           <?php } ?>
                         <?php } ?>
-                        <div class="order-grand">$<?php echo number_format((float) ($order['total_amount'] ?? 0), 2); ?>
+                        <div class="order-price">Subtotal: $<?php echo number_format($cardSubtotal, 2); ?></div>
+                        <div class="order-price">Tax (10%): $<?php echo number_format($cardTax, 2); ?></div>
+                        <div class="order-grand">$<?php echo number_format($cardTotal, 2); ?>
                         </div>
                       </div>
                       <?php if (strtolower($status) === 'ready') { ?>
                         <button class="order-delivered-btn" type="button" data-deliver-order>Mark as Delivered</button>
+                      <?php } elseif (strtolower($status) === 'served') { ?>
+                        <button class="order-delivered-btn" type="button" style="background:var(--green);" data-paid-order>Mark as Paid</button>
                       <?php } ?>
                     </div>
                   </div>
@@ -485,15 +522,8 @@ function waiterStatusClass($status)
                         </option>
                       <?php } ?>
                     </optgroup>
-                  <?php } ?>
-                  <?php if ($availableTables) { ?>
-                    <optgroup label="Available Tables">
-                      <?php foreach ($availableTables as $table) { ?>
-                        <option id="table-option-<?php echo (int) $table['id']; ?>"
-                          value="<?php echo (int) $table['id']; ?>">Table <?php echo (int) $table['table_number']; ?>
-                        </option>
-                      <?php } ?>
-                    </optgroup>
+                  <?php } else { ?>
+                    <option value="" disabled>You have no assigned tables.</option>
                   <?php } ?>
                 </select>
               </div>
@@ -526,6 +556,101 @@ function waiterStatusClass($status)
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- ===== ORDER HISTORY ===== -->
+        <div class="section-content" id="history">
+          <h1 class="page-title">Order History (<span id="historyCount"><?php echo count($historyOrders); ?></span>)</h1>
+          <p class="page-subtitle">Orders you have taken and delivered</p>
+
+          <div class="order-list" id="historyList">
+            <?php if (!$historyOrders) { ?>
+              <div class="order-card">
+                <div class="order-card-top">
+                  <div class="order-left">
+                    <div class="order-head">
+                      <div>
+                        <div class="order-table">No delivered orders yet</div>
+                        <div class="order-muted">Orders you deliver will show up here.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <?php } else { ?>
+              <?php foreach ($historyOrders as $order) {
+                $imageSrc = $normalizeImagePath($order['image_path'] ?? '', '../Images/Table/4_people table.jpg');
+                $status = $order['status'] ?? 'served';
+                $tableNumber = $order['table_number'] ?? 'N/A';
+                $guestName = $order['guest_name'] ?? 'Walk-in';
+                $statusLabel = formatWaiterStatusLabel($status);
+                $statusClass = waiterStatusClass($status);
+                ?>
+                <div class="order-card" data-order-id="<?php echo (int) $order['id']; ?>" data-table-id="<?php echo (int) $order['table_id']; ?>">
+                  <div class="order-card-top">
+                    <div class="order-left">
+                      <div class="order-head">
+                        <div class="order-thumb">
+                          <img src="<?php echo htmlspecialchars($imageSrc); ?>"
+                            alt="Table <?php echo htmlspecialchars((string) $tableNumber); ?>" />
+                        </div>
+                        <div>
+                          <div class="order-table">Table <?php echo htmlspecialchars((string) $tableNumber); ?></div>
+                          <div class="order-muted"><?php echo htmlspecialchars($guestName); ?></div>
+                          <div class="order-muted"><?php echo date('M j, Y · g:i A', strtotime($order['created_at'] ?? 'now')); ?>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="order-items">
+                        <?php if (!empty($order['items'])) { ?>
+                          <?php foreach ($order['items'] as $item) { ?>
+                            <div><?php echo (int) $item['quantity']; ?>× <?php echo htmlspecialchars($item['name']); ?></div>
+                          <?php } ?>
+                        <?php } else { ?>
+                          <div>No items</div>
+                        <?php } ?>
+                      </div>
+                      <div class="order-total-label">Total (incl. tax)</div>
+                    </div>
+                    <div class="order-right">
+                      <div class="order-status <?php echo $statusClass; ?>"><?php echo htmlspecialchars($statusLabel); ?>
+                      </div>
+                      <?php
+                      // Breakdown: tax derived from the stored total so the
+                      // displayed rows always sum exactly to the grand total
+                      $cardSubtotal = 0;
+                      foreach ($order['items'] as $item) {
+                        $cardSubtotal += (float) $item['subtotal'];
+                      }
+                      $cardSubtotal = round($cardSubtotal, 2);
+                      $cardTotal = round((float) ($order['total_amount'] ?? 0), 2);
+                      if ($cardTotal <= 0 && $cardSubtotal > 0) {
+                        $cardTotal = round($cardSubtotal * 1.10, 2);
+                      }
+                      $cardTax = max(0, round($cardTotal - $cardSubtotal, 2));
+                      ?>
+                      <div class="order-prices">
+                        <?php if (!empty($order['items'])) { ?>
+                          <?php foreach ($order['items'] as $item) { ?>
+                            <div class="order-price"><?php echo (int) $item['quantity']; ?>×
+                              $<?php echo number_format((float) $item['price'], 2); ?> =
+                              $<?php echo number_format((float) $item['subtotal'], 2); ?></div>
+                          <?php } ?>
+                        <?php } ?>
+                        <div class="order-price">Subtotal: $<?php echo number_format($cardSubtotal, 2); ?></div>
+                        <div class="order-price">Tax (10%): $<?php echo number_format($cardTax, 2); ?></div>
+                        <div class="order-grand">$<?php echo number_format($cardTotal, 2); ?>
+                        </div>
+                      </div>
+                      <?php if (strtolower($status) === 'served') { ?>
+                        <button class="order-delivered-btn" type="button" style="background:var(--green);" data-paid-order>Mark as Paid</button>
+                      <?php } ?>
+                    </div>
+                  </div>
+                </div>
+              <?php } ?>
+            <?php } ?>
           </div>
         </div>
 

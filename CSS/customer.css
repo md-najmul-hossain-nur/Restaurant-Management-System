@@ -262,7 +262,15 @@ body {
 }
 
 .category-bar::-webkit-scrollbar {
-  display: none;
+  height: 6px;
+}
+.category-bar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+.category-bar::-webkit-scrollbar-thumb {
+  background: var(--accent-dark);
+  border-radius: 4px;
 }
 
 .cat-btn {
@@ -305,16 +313,22 @@ body {
 }
 
 .menu-grid::-webkit-scrollbar {
-  width: 3px;
+  width: 8px;
 }
 
 .menu-grid::-webkit-scrollbar-track {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
 
 .menu-grid::-webkit-scrollbar-thumb {
   background: var(--accent-dark);
   border-radius: 4px;
+}
+
+.menu-grid {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-dark) transparent;
 }
 
 /* ==========================================
@@ -547,11 +561,22 @@ body {
   display: none;
   flex-direction: column;
   gap: 8px;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-dark) transparent;
 }
 
 .cart-items::-webkit-scrollbar {
-  display: none;
+  width: 8px;
+}
+
+.cart-items::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.cart-items::-webkit-scrollbar-thumb {
+  background: var(--accent-dark);
+  border-radius: 4px;
 }
 
 .cart-empty {
@@ -788,6 +813,8 @@ body {
 
 .customize-modal {
   width: min(360px, 92vw);
+  max-height: 85vh;
+  overflow-y: auto;
   background: rgba(20, 22, 18, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 12px;
@@ -796,6 +823,21 @@ body {
   color: #fefeff;
   text-align: center;
   position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-dark) transparent;
+}
+
+.customize-modal::-webkit-scrollbar {
+  width: 3px;
+}
+
+.customize-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.customize-modal::-webkit-scrollbar-thumb {
+  background: var(--accent-dark);
+  border-radius: 4px;
 }
 
 .customize-close {
@@ -953,6 +995,8 @@ body {
 
 .payment-modal {
   width: min(360px, 92vw);
+  max-height: 85vh;
+  overflow-y: auto;
   background: rgba(20, 22, 18, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 12px;
@@ -961,6 +1005,21 @@ body {
   color: #fefeff;
   text-align: center;
   position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-dark) transparent;
+}
+
+.payment-modal::-webkit-scrollbar {
+  width: 3px;
+}
+
+.payment-modal::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.payment-modal::-webkit-scrollbar-thumb {
+  background: var(--accent-dark);
+  border-radius: 4px;
 }
 
 .payment-close {

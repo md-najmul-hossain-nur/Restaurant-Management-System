@@ -189,10 +189,12 @@ body {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-dark) transparent;
 }
 
-.main-content::-webkit-scrollbar { width: 3px; }
-.main-content::-webkit-scrollbar-track { background: transparent; }
+.main-content::-webkit-scrollbar { width: 8px; }
+.main-content::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 4px; }
 .main-content::-webkit-scrollbar-thumb { background: var(--accent-dark); border-radius: 4px; }
 
 /* ==========================================

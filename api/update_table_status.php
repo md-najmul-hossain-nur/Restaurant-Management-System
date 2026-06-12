@@ -25,7 +25,15 @@ if (!in_array($status, ['available', 'reserved', 'occupied'], true)) {
     respond(['error' => 'Invalid input'], 400);
 }
 
-$pdo->prepare('UPDATE restaurant_tables SET status = ? WHERE id = ?')
-    ->execute([$status, $tableId]);
+if ($status === 'available') {
+    $pdo->prepare(
+        'UPDATE restaurant_tables
+         SET status = ?, assigned_waiter_id = NULL, active_customer_id = NULL
+         WHERE id = ?'
+    )->execute([$status, $tableId]);
+} else {
+    $pdo->prepare('UPDATE restaurant_tables SET status = ? WHERE id = ?')
+        ->execute([$status, $tableId]);
+}
 
 respond(['success' => true]);

@@ -193,6 +193,11 @@ body {
   border-radius: 10px;
 }
 
+.outer-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 169, 106, 0.4) transparent;
+}
+
 /* ==========================================
    Hero Panel
    ========================================== */
@@ -305,7 +310,7 @@ body {
    Main Content Area
    ========================================== */
 .main-content {
-  padding: 10px 0;
+  padding: 10px 16px 24px;
   flex: 1;
   min-height: 0;
 }
@@ -764,9 +769,44 @@ body {
   background: rgba(0, 0, 0, 0.2);
 }
 
+/* Employee attendance table — scrolls horizontally on small screens */
+.attendance-container {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 169, 106, 0.4) transparent;
+}
+
+.attendance-container::-webkit-scrollbar {
+  height: 3px;
+}
+
+.attendance-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.attendance-container::-webkit-scrollbar-thumb {
+  background: rgba(200, 169, 106, 0.4);
+  border-radius: 4px;
+}
+
 .chat-conversation-list {
   flex: 1;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 169, 106, 0.4) transparent;
+}
+
+.chat-conversation-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.chat-conversation-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-conversation-list::-webkit-scrollbar-thumb {
+  background: rgba(200, 169, 106, 0.4);
+  border-radius: 4px;
 }
 
 .chat-conversation-item {
@@ -814,9 +854,18 @@ body {
   width: 5px;
 }
 
+.chat-thread::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .chat-thread::-webkit-scrollbar-thumb {
   background: rgba(200, 169, 106, 0.2);
   border-radius: 10px;
+}
+
+.chat-thread {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 169, 106, 0.2) transparent;
 }
 
 .chat-message {
@@ -1408,6 +1457,21 @@ body {
   overflow-y: auto;
   position: relative;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 169, 106, 0.4) transparent;
+}
+
+.modal-content::-webkit-scrollbar {
+  width: 3px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(200, 169, 106, 0.4);
+  border-radius: 4px;
 }
 
 .modal-header {

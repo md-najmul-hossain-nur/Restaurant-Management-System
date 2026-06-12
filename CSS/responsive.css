@@ -1091,3 +1091,196 @@ body>* {
     overflow-wrap: anywhere;
   }
 }
+
+/* ==================================================
+   Approved responsive fixes — appended only here
+================================================== */
+
+/* Change 1 — Admin attendance table: scroll inside its card,
+   never the page (5 columns cannot compress below ~560px) */
+@media (max-width: 768px) {
+  .attendance-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+  }
+
+  .attendance-container table {
+    min-width: 560px;
+  }
+}
+
+@media (max-width: 480px) {
+  .attendance-container th,
+  .attendance-container td {
+    padding: 8px 6px !important;
+    font-size: 0.82rem;
+  }
+}
+
+/* Change 3 — Hero panel button: remove desktop left offset
+   once the hero stacks to a column */
+@media (max-width: 768px) {
+  .panel.hero .btn-primary {
+    margin-left: 0;
+  }
+}
+
+/* Change 5 — Waiter/Chef order card: close the 601–768px
+   collision band (shared rule for both dashboards) */
+@media (max-width: 768px) {
+  .order-card-top {
+    flex-wrap: wrap;
+  }
+
+  .order-left {
+    min-width: 0;
+  }
+
+  .order-right {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    text-align: left;
+  }
+}
+
+/* Change 7 — Public menu tabs: let long category labels wrap
+   instead of clipping inside narrow tab cells */
+@media (max-width: 640px) {
+  .menu-tab {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+}
+
+/* Change 4 — Chat: long unbroken strings must wrap, never
+   force horizontal scroll */
+@media (max-width: 600px) {
+  .chat-message {
+    max-width: 88%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .chat-conversation-item {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .chat-thread,
+  .chat-conversation-list {
+    max-width: 100%;
+  }
+}
+
+/* Change 6 — Text overflow safety net (no effect unless text
+   would otherwise overflow) */
+@media (max-width: 480px) {
+  .order-muted,
+  .profile-row span,
+  .menu-name,
+  .card-name,
+  .approved-info p,
+  .employee-info p,
+  td {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* Change 8 — Admin reports: stack filter row and download
+   action on small phones */
+@media (max-width: 480px) {
+  .reports-header {
+    flex-wrap: wrap;
+  }
+
+  .reports-filter {
+    grid-template-columns: 1fr;
+  }
+
+  .download-report-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Change 2 — Small Mobile tier (320–374px) */
+@media (max-width: 374px) {
+  .topbar {
+    padding: 10px 12px;
+  }
+
+  .brand {
+    font-size: 0.85rem;
+    padding: 4px 8px;
+  }
+
+  .outer-wrapper {
+    width: calc(100% - 12px);
+    margin: 6px;
+    padding: 6px;
+  }
+
+  .main-content {
+    padding: 10px 4px;
+  }
+
+  .waiter-stat-value,
+  .card h3 {
+    font-size: 30px;
+  }
+
+  .waiter-stat-icon {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+
+  .tab,
+  .nav-item,
+  .cat-btn,
+  .filter-pill,
+  .menu-tab {
+    font-size: 0.78rem;
+    padding: 7px 8px;
+  }
+
+  .order-item-chip {
+    font-size: 0.8rem;
+    padding: 10px;
+  }
+
+  .modal,
+  .modal-panel,
+  .browser-panel,
+  .booking-panel,
+  .settings-modal,
+  .form-modal,
+  .recipe-modal-box,
+  .customize-modal,
+  .payment-modal,
+  .order-modal-content,
+  .table-modal,
+  .confirm-modal {
+    width: calc(100vw - 12px);
+    max-width: calc(100vw - 12px);
+    padding: 14px;
+  }
+
+  .order-toast {
+    min-width: 0;
+    max-width: calc(100vw - 24px);
+  }
+
+  .waiter-table-meta strong {
+    overflow-wrap: anywhere;
+  }
+
+  .page-title {
+    font-size: clamp(1.4rem, 7.5vw, 1.9rem);
+  }
+}

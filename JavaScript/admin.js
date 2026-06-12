@@ -201,72 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ── Employee Timers ─────────────────────────────────────
-  let employeeTimerId = null;
-
-  function getEmployeeCards() {
-    return document.querySelectorAll('.employee-card');
-  }
-
-  function formatDuration(ms) {
-    const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-    if (hours > 0) return `${hours}h ${minutes}m`;
-    if (minutes > 0) return `${minutes}m ${seconds}s`;
-    return `${seconds}s`;
-  }
-
-  function parseTimestamp(value, forceLocal = false) {
-    if (!value) return null;
-    const normalized = value.trim().replace(' ', 'T');
-    const cleaned = forceLocal ? normalized.replace(/([+-]\d{2}:?\d{2}|Z)$/i, '') : normalized;
-    const date = new Date(cleaned);
-    if (Number.isNaN(date.getTime())) return null;
-    return date;
-  }
-
-  function updateEmployeeTimers() {
-    const now = new Date();
-    getEmployeeCards().forEach(card => {
-      const timeLabel = card.querySelector('.time-label');
-      const timeValue = card.querySelector('.time-value');
-      if (!timeLabel || !timeValue) return;
-
-      const isClocked = card.dataset.clocked === '1';
-      const clockInRaw = card.dataset.clockIn;
-      const clockOutRaw = card.dataset.clockOut;
-      const clockIn = parseTimestamp(clockInRaw);
-      const clockOut = parseTimestamp(clockOutRaw);
-
-      if (isClocked && clockIn) {
-        timeLabel.textContent = 'Clocked in for';
-        let diff = now - clockIn;
-        if (diff < 0 && clockInRaw) {
-          const fallback = parseTimestamp(clockInRaw, true);
-          if (fallback) diff = now - fallback;
-        }
-        timeValue.textContent = formatDuration(diff);
-      } else if (!isClocked && clockOut) {
-        timeLabel.textContent = 'Clocked out for';
-        let diff = now - clockOut;
-        if (diff < 0 && clockOutRaw) {
-          const fallback = parseTimestamp(clockOutRaw, true);
-          if (fallback) diff = now - fallback;
-        }
-        timeValue.textContent = formatDuration(diff);
-      } else {
-        timeLabel.textContent = '';
-        timeValue.textContent = '';
-      }
-    });
-  }
-
-  if (getEmployeeCards().length) {
-    updateEmployeeTimers();
-    employeeTimerId = setInterval(updateEmployeeTimers, 1000);
-  }
+  // ── Employee Timers removed ───────────────────────────────
 
   // ── Add Table Modal ───────────────────────────────────────
   const openAddTableBtn = document.getElementById('openAddTable');

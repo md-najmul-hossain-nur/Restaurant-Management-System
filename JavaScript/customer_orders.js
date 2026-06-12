@@ -143,6 +143,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             </button>
           </div>
         ` : ''}
+        ${order.status === 'served' || order.status === 'paid' ? `
+          <div style="margin-top: 15px; text-align: right;">
+            <button class="download-bill-btn" data-order='${JSON.stringify(order).replace(/'/g, "&#39;")}' style="background: transparent; color: #e0733b; border: 1px solid #e0733b; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">
+              <i class="fas fa-download"></i> Download Bill
+            </button>
+          </div>
+        ` : ''}
       </div>
     `;
   }

@@ -155,6 +155,11 @@ body {
   scrollbar-color: rgba(200,169,106,0.55) transparent;
 }
 
+.outer-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,169,106,0.55) transparent;
+}
+
 /* ==========================================
    Hero Panel (Waiter)
 ========================================== */
@@ -2437,6 +2442,15 @@ body.is-clocked-out .panel.hero .btn.btn-primary[data-clock-out] {
   animation: slideIn 0.28s ease;
   max-height: calc(100vh - 48px);
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,169,106,0.45) transparent;
+}
+
+.modal-content::-webkit-scrollbar { width: 3px; }
+.modal-content::-webkit-scrollbar-track { background: transparent; }
+.modal-content::-webkit-scrollbar-thumb {
+  background: rgba(200,169,106,0.45);
+  border-radius: 4px;
 }
 
 @keyframes slideIn {
@@ -2998,6 +3012,11 @@ body.is-clocked-out .panel.hero .btn.btn-primary[data-clock-out] {
 .recipe-modal-box::-webkit-scrollbar-thumb {
   background: rgba(200, 169, 106, 0.45);
   border-radius: 4px;
+}
+
+.recipe-modal-box {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 169, 106, 0.45) transparent;
 }
 
 /* Header */
