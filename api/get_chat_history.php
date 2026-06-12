@@ -1,8 +1,8 @@
 <?php
 session_start();
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/../PHP/db.php';
-require_once __DIR__ . '/../PHP/bootstrap.php';
+require_once __DIR__ . '/../Php/db.php';
+require_once __DIR__ . '/../Php/bootstrap.php';
 
 $sessionIdentifier = null;
 $userRole = $_SESSION['role'] ?? null;

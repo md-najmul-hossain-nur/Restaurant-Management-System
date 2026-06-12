@@ -1,8 +1,8 @@
 <?php
 session_start();
 header('Content-Type: application/json; charset=utf-8');
-require_once __DIR__ . '/../PHP/db.php';
-require_once __DIR__ . '/../PHP/bootstrap.php';
+require_once __DIR__ . '/../Php/db.php';
+require_once __DIR__ . '/../Php/bootstrap.php';
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (!is_array($input) || !isset($input['message'])) {

@@ -4,8 +4,8 @@
  * Option C: linked to account if logged in, guest if not
  */
 
-require_once '../PHP/db.php';
-require_once '../PHP/bootstrap.php';
+require_once '../Php/db.php';
+require_once '../Php/bootstrap.php';
 header('Content-Type: application/json');
 
 $data = json_decode(file_get_contents('php://input'), true) ?: [];

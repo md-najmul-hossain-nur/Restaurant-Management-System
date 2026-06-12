@@ -1,3 +1,13 @@
+<?php
+session_start();
+require_once __DIR__ . '/../Php/db.php';
+restoreRoleSession('customer');
+
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
+    header('Location: login.html');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,7 +45,7 @@
         <a href="Customer_table.html" class="nav-item">
           <i class="far fa-calendar-alt"></i> Booking
         </a>
-        <a href="Customer_orders.html" class="nav-item active">
+        <a href="Customer_orders.php" class="nav-item active">
           <i class="fas fa-shopping-cart"></i> Order List
         </a>
         <a href="Customer_profile.html" class="nav-item">
@@ -48,21 +58,16 @@
 
         <h1 class="page-title">My Orders</h1>
         <p class="page-subtitle">Track your orders and download bills</p>
-        <h2 class="section-title">Active Orders (2)</h2>
+        <h2 class="section-title">Active Orders</h2>
 
         <div class="orders-list">
           <p style="text-align: center; color: rgba(255, 255, 255, 0.6); margin-top: 20px;">Loading your orders...</p>
-        </div>
-
-        <h2 class="section-title" style="margin-top: 40px;">Order History</h2>
-        <div class="history-list">
-          <p style="text-align: center; color: rgba(255, 255, 255, 0.6); margin-top: 20px;">Loading history...</p>
         </div>
       </main>
 
     </div>
   </div>
 
-  <script src="../JavaScript/customer_orders.js"></script>
+  <script src="../JavaScript/customer_orders.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

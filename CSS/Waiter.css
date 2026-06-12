@@ -606,8 +606,19 @@ body {
   font-size: 14px;
   color: var(--text-secondary);
   display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.meta-row {
+  display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+}
+
+.meta-label {
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .waiter-table-action {

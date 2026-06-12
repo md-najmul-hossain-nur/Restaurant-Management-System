@@ -41,7 +41,7 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'customer') {
       <div class="brand">Feliciano</div>
       <div class="top-right">
         <div class="dashboard-label">Customer<br>Dashboard</div>
-        <div class="logout" onclick="window.location.href='login.html'">
+        <div class="logout" onclick="window.location.href='../Php/logout.php'">
           <img src="../Images/logout.png" alt="Logout" class="logout-icon">
         </div>
       </div>
@@ -58,7 +58,7 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'customer') {
         <a href="Customer_table.html" class="nav-item active">
           <i class="far fa-calendar-alt"></i> Booking
         </a>
-        <a href="Customer_orders.html" class="nav-item">
+        <a href="Customer_orders.php" class="nav-item">
           <i class="fas fa-shopping-cart"></i> Order List
         </a>
         <a href="Customer_profile.html" class="nav-item">
@@ -278,46 +278,7 @@ if (!isset($_SESSION['user_id']) || $sessionRole !== 'customer') {
         <div>
           <div class="table-picker-label">Selected Table</div>
           <div class="table-grid" id="tableChipGrid">
-            <div class="table-chip" onclick="selectTable(this)" data-table="1">
-              <i class="fas fa-chair"></i>
-              <span>Table 1</span>
-              <span class="chip-cap">2 seats</span>
-            </div>
-            <div class="table-chip" onclick="selectTable(this)" data-table="2">
-              <i class="fas fa-chair"></i>
-              <span>Table 2</span>
-              <span class="chip-cap">2 seats</span>
-            </div>
-            <div class="table-chip" onclick="selectTable(this)" data-table="3">
-              <i class="fas fa-chair"></i>
-              <span>Table 3</span>
-              <span class="chip-cap">4 seats</span>
-            </div>
-            <div class="table-chip" onclick="selectTable(this)" data-table="4">
-              <i class="fas fa-chair"></i>
-              <span>Table 4</span>
-              <span class="chip-cap">4 seats</span>
-            </div>
-            <div class="table-chip" onclick="selectTable(this)" data-table="5">
-              <i class="fas fa-chair"></i>
-              <span>Table 5</span>
-              <span class="chip-cap">4 seats</span>
-            </div>
-            <div class="table-chip" onclick="selectTable(this)" data-table="6">
-              <i class="fas fa-chair"></i>
-              <span>Table 6</span>
-              <span class="chip-cap">6 seats</span>
-            </div>
-            <div class="table-chip" onclick="selectTable(this)" data-table="7">
-              <i class="fas fa-chair"></i>
-              <span>Table 7</span>
-              <span class="chip-cap">6 seats</span>
-            </div>
-            <div class="table-chip" onclick="selectTable(this)" data-table="8">
-              <i class="fas fa-chair"></i>
-              <span>Table 8</span>
-              <span class="chip-cap">8 seats</span>
-            </div>
+            <!-- Dynamically populated by customer_table.js from database -->
           </div>
         </div>
 

@@ -51,7 +51,7 @@ $monthlyRevenue = $rev ? number_format((float)$rev, 2) : '0.00';
       <div class="brand">Feliciano</div>
       <div class="top-right">
         <div class="admin-title">Admin<br>Dashboard</div>
-        <div class="logout" onclick="window.location.href='login.html'">
+        <div class="logout" onclick="window.location.href='../Php/logout.php'">
           <img src="../Images/logout.png" alt="Logout" class="logout-icon">
         </div>
       </div>

@@ -1,7 +1,7 @@
 <?php
 session_start();
-require_once __DIR__ . '/../PHP/db.php';
-require_once __DIR__ . '/../PHP/bootstrap.php';
+require_once __DIR__ . '/../Php/db.php';
+require_once __DIR__ . '/../Php/bootstrap.php';
 
 // only admins can delete messages
 if (($_SESSION['role'] ?? '') !== 'admin') {

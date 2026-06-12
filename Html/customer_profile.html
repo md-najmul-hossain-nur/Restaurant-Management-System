@@ -31,7 +31,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
       <div class="brand">Feliciano</div>
       <div class="top-right">
         <div class="dashboard-label">Customer<br>Dashboard</div>
-        <button class="logout-btn" onclick="window.location.href='login.html'" title="Logout" aria-label="Logout">
+        <button class="logout-btn" onclick="window.location.href='../Php/logout.php'" title="Logout" aria-label="Logout">
           <i class="fas fa-right-from-bracket"></i>
         </button>
       </div>
@@ -50,7 +50,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
           <i class="far fa-calendar-alt"></i>
           <span>Booking</span>
         </a>
-        <a href="Customer_orders.html" class="nav-item">
+        <a href="Customer_orders.php" class="nav-item">
           <i class="fas fa-shopping-cart"></i>
           <span>Order List</span>
         </a>

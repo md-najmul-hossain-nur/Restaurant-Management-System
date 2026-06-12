@@ -1,6 +1,6 @@
 <?php
 
-require_once '../PHP/db.php';
+require_once '../Php/db.php';
 require_once __DIR__ . '/reservation_helpers.php';
 header('Content-Type: application/json');
 

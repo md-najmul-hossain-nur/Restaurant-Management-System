@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../Php/db.php';
-require_once '../PHP/bootstrap.php';
+require_once '../Php/bootstrap.php';
 header('Content-Type: application/json');
 
 requireLogin('admin');

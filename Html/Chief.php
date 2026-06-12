@@ -1,12 +1,13 @@
 <?php
 session_start();
+require_once __DIR__ . '/../Php/db.php';
+require_once __DIR__ . '/../Php/bootstrap.php';
+restoreRoleSession('chief');
+
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'chief') {
     header('Location: login.html');
     exit;
 }
-
-require_once __DIR__ . '/../Php/db.php';
-require_once __DIR__ . '/../Php/bootstrap.php';
 
 $userId = (int) $_SESSION['user_id'];
 
@@ -30,13 +31,15 @@ $progressCount = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status = '
 $completedToday = (int) $pdo->query("SELECT COUNT(*) FROM orders WHERE status = 'served' AND DATE(created_at) = CURDATE()")
     ->fetchColumn();
 
-$orderStmt = $pdo->query(
-    "SELECT o.id, o.status, o.created_at, o.table_id, rt.table_number, rt.image_path
+$orderStmt = $pdo->prepare(
+    "SELECT o.id, o.status, o.created_at, o.table_id, o.chef_id, rt.table_number, rt.image_path
      FROM orders o
      LEFT JOIN restaurant_tables rt ON rt.id = o.table_id
      WHERE o.status IN ('queued','in_progress','ready')
+       AND (o.chef_id IS NULL OR o.chef_id = ?)
      ORDER BY o.created_at ASC"
 );
+$orderStmt->execute([$userId]);
 $orders = $orderStmt->fetchAll() ?: [];
 
 $ordersWithItems = [];
@@ -55,6 +58,24 @@ $recipesStmt = $pdo->prepare(
 );
 $recipesStmt->execute([$userId]);
 $recipes = $recipesStmt->fetchAll() ?: [];
+
+// Fetch Order History for this chef (Served)
+$historyStmt = $pdo->prepare(
+    "SELECT o.id, o.status, o.total_amount, o.created_at, rt.table_number 
+     FROM orders o
+     LEFT JOIN restaurant_tables rt ON rt.id = o.table_id
+     WHERE o.chef_id = ? AND o.status = 'served'
+     ORDER BY o.created_at DESC"
+);
+$historyStmt->execute([$userId]);
+$orderHistory = $historyStmt->fetchAll() ?: [];
+
+$historyItemsStmt = $pdo->prepare('SELECT name, quantity, price, subtotal FROM order_items WHERE order_id = ?');
+foreach ($orderHistory as &$ho) {
+    $historyItemsStmt->execute([$ho['id']]);
+    $ho['items'] = $historyItemsStmt->fetchAll() ?: [];
+}
+unset($ho);
 
 $normalizeImagePath = function ($path, $fallback) {
     if (!$path) {
@@ -93,7 +114,7 @@ function formatOrderStatus($status) {
       <div class="brand">Feliciano</div>
       <div class="top-right">
         <div class="admin-title">Chef<br>Dashboard</div>
-        <div class="logout" onclick="window.location.href='login.html'">
+        <div class="logout" onclick="window.location.href='../Php/logout.php'">
           <img src="../Images/logout.png" alt="Logout" class="logout-icon">
          </div>
       </div>
@@ -125,6 +146,10 @@ function formatOrderStatus($status) {
         <div class="tab" data-section="order">
           <i class="fas fa-utensils"></i>
           <span>Recipes</span>
+        </div>
+        <div class="tab" data-section="history">
+          <i class="fas fa-history"></i>
+          <span>Order History</span>
         </div>
         <div class="tab" data-section="profile">
           <i class="fas fa-user"></i>
@@ -225,10 +250,59 @@ function formatOrderStatus($status) {
                     </div>
                     <div class="divider"></div>
                     <div class="actions">
-                      <?php if ($status !== 'ready') { ?>
+                      <?php if ($order['chef_id'] === null) { ?>
+                        <button class="btn btn-secondary" type="button" data-pick-order>Pick Order</button>
+                      <?php } else if ($status !== 'ready') { ?>
                         <button class="btn btn-secondary" type="button" data-mark-ready>Mark Ready</button>
                       <?php } ?>
                       <span class="pill"><?php echo htmlspecialchars(formatOrderStatus($status)); ?></span>
+                    </div>
+                  </div>
+                </article>
+              <?php } ?>
+            <?php } ?>
+          </div>
+        </div>
+
+        <!-- ===================== ORDER HISTORY ===================== -->
+        <div class="section-content" id="history">
+          <div class="order-header">
+            <div>
+              <h1 class="page-title">Order History</h1>
+              <p class="page-subtitle">Your served and completed orders</p>
+            </div>
+          </div>
+
+          <div class="section-grid">
+            <?php if (!$orderHistory) { ?>
+              <article class="card order-card grid-12">
+                <div class="order-body" style="text-align: center; padding: 40px;">
+                  <h3 class="card-title">No history yet</h3>
+                  <p class="card-subtitle">Orders you complete will appear here.</p>
+                </div>
+              </article>
+            <?php } else { ?>
+              <?php foreach ($orderHistory as $ho) { 
+                 $tnum = $ho['table_number'] ?? 'Takeaway';
+                 $dStr = date('M j, Y g:i A', strtotime($ho['created_at']));
+              ?>
+                <article class="card order-card grid-6">
+                  <div class="order-body">
+                    <div class="card-head">
+                      <div>
+                        <h3 class="card-title">Order #<?php echo (int) $ho['id']; ?> - Table <?php echo htmlspecialchars((string) $tnum); ?></h3>
+                        <p class="card-subtitle"><?php echo $dStr; ?></p>
+                      </div>
+                      <span class="status-badge" style="color:var(--green); border-color:var(--green);">Served</span>
+                    </div>
+                    <div class="order-meta">
+                      <?php foreach ($ho['items'] as $it) { ?>
+                        <span class="pill"><?php echo (int)$it['quantity']; ?>x <?php echo htmlspecialchars($it['name']); ?></span>
+                      <?php } ?>
+                    </div>
+                    <div class="divider"></div>
+                    <div style="text-align: right; font-weight: 700; color: #fefeff;">
+                      Total: $<?php echo number_format($ho['total_amount'], 2); ?>
                     </div>
                   </div>
                 </article>
@@ -487,6 +561,6 @@ function formatOrderStatus($status) {
 </div>
 
   </div>
-  <script src="../JavaScript/chief.js"></script>
+  <script src="../JavaScript/chief.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>

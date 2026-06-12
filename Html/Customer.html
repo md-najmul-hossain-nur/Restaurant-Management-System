@@ -29,7 +29,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
       <div class="brand">Feliciano</div>
       <div class="top-right">
         <div class="dashboard-label">Customer<br>Dashboard</div>
-        <div class="logout" onclick="window.location.href='login.html'">
+        <div class="logout" onclick="window.location.href='../Php/logout.php'">
           <img src="../Images/logout.png" alt="Logout" class="logout-icon">
         </div>
       </div>
@@ -46,7 +46,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
         <a href="Customer_table.html" class="nav-item">
           <i class="far fa-calendar-alt"></i> Booking
         </a>
-        <a href="Customer_orders.html" class="nav-item">
+        <a href="Customer_orders.php" class="nav-item">
           <i class="fas fa-shopping-cart"></i> Order List
         </a>
         <a href="Customer_profile.html" class="nav-item">
@@ -63,13 +63,12 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'customer') {
           <!-- Category Filter Bar -->
           <div class="category-bar">
             <span class="cat-btn active">All</span>
-            <span class="cat-btn">Pizza</span>
-            <span class="cat-btn">Burgers</span>
-            <span class="cat-btn">Salads</span>
-            <span class="cat-btn">Main Course</span>
-            <span class="cat-btn">Pasta</span>
+            <span class="cat-btn">Breakfast</span>
+            <span class="cat-btn">Lunch</span>
+            <span class="cat-btn">Dinner</span>
+            <span class="cat-btn">Drinks</span>
             <span class="cat-btn">Desserts</span>
-            <span class="cat-btn">Appetizers</span>
+            <span class="cat-btn">Special</span>
           </div>
 
           <!-- Menu Grid -->

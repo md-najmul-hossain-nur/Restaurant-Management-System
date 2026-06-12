@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const ordersList = document.querySelector('.orders-list');
+  const historyList = document.querySelector('.history-list');
   const activeOrdersTitle = document.querySelector('.section-title');
 
   // Map status string to UI text and progress index
@@ -36,14 +37,31 @@ document.addEventListener('DOMContentLoaded', async () => {
   function renderOrders(orders) {
     if (!orders || orders.length === 0) {
       activeOrdersTitle.textContent = 'Active Orders (0)';
-      ordersList.innerHTML = '<div class="empty-state" style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">You have no orders yet.</div>';
+      ordersList.innerHTML = '<div class="empty-state" style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">You have no active orders yet.</div>';
+      if (historyList) {
+        historyList.innerHTML = '<div class="empty-state" style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">No order history.</div>';
+      }
       return;
     }
 
-    const activeCount = orders.filter(o => o.status !== 'served' && o.status !== 'cancelled').length;
-    activeOrdersTitle.textContent = `Active Orders (${activeCount})`;
+    const activeOrders = orders.filter(o => o.status !== 'served' && o.status !== 'cancelled');
+    const pastOrders = orders.filter(o => o.status === 'served' || o.status === 'cancelled');
 
-    ordersList.innerHTML = orders.map(order => buildOrderCard(order)).join('');
+    activeOrdersTitle.textContent = `Active Orders (${activeOrders.length})`;
+
+    if (activeOrders.length === 0) {
+      ordersList.innerHTML = '<div class="empty-state" style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">You have no active orders.</div>';
+    } else {
+      ordersList.innerHTML = activeOrders.map(order => buildOrderCard(order)).join('');
+    }
+
+    if (historyList) {
+      if (pastOrders.length === 0) {
+        historyList.innerHTML = '<div class="empty-state" style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">No order history.</div>';
+      } else {
+        historyList.innerHTML = pastOrders.map(order => buildOrderCard(order)).join('');
+      }
+    }
   }
 
   function buildOrderCard(order) {
@@ -117,12 +135,48 @@ document.addEventListener('DOMContentLoaded', async () => {
             <span class="item-price total-price">$${parseFloat(order.total_amount).toFixed(2)}</span>
           </div>
         </div>
+
+        ${order.status === 'ready' ? `
+          <div style="margin-top: 15px; text-align: right;">
+            <button class="accept-order-btn" data-order-id="${order.id}" style="background: var(--green, #4ade80); color: #1a1a16; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 14px;">
+              <i class="fas fa-check-circle"></i> Accept Order
+            </button>
+          </div>
+        ` : ''}
       </div>
     `;
   }
 
   // Initial fetch
   fetchOrders();
+
+  // Listen for Accept Order
+  document.addEventListener('click', async (e) => {
+    const acceptBtn = e.target.closest('.accept-order-btn');
+    if (acceptBtn) {
+      const orderId = acceptBtn.dataset.orderId;
+      acceptBtn.disabled = true;
+      acceptBtn.textContent = 'Accepting...';
+      
+      try {
+        const res = await fetch('../api/customer_accept_order.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: parseInt(orderId) })
+        });
+        const data = await res.json();
+        if (data.success) {
+          fetchOrders();
+        } else {
+          alert(data.error || 'Failed to accept order.');
+          acceptBtn.disabled = false;
+        }
+      } catch (err) {
+        console.error(err);
+        acceptBtn.disabled = false;
+      }
+    }
+  });
 
   // Optionally poll for updates every 15 seconds
   setInterval(fetchOrders, 15000);

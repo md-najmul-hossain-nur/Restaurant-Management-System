@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../PHP/db.php';
+require_once __DIR__ . '/../Php/db.php';
 
 // The new password requested by the user
 $newPassword = '12345678';

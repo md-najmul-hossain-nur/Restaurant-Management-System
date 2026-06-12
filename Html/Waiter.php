@@ -1,12 +1,13 @@
 <?php
 session_start();
+require_once __DIR__ . '/../Php/db.php';
+require_once __DIR__ . '/../Php/bootstrap.php';
+restoreRoleSession('waiter');
+
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'waiter') {
   header('Location: login.html');
   exit;
 }
-
-require_once __DIR__ . '/../Php/db.php';
-require_once __DIR__ . '/../Php/bootstrap.php';
 
 $userId = (int) $_SESSION['user_id'];
 
@@ -173,7 +174,7 @@ function waiterStatusClass($status)
       <div class="brand">Feliciano</div>
       <div class="top-right">
         <div class="admin-title">Waiter<br>Dashboard</div>
-        <div class="logout" onclick="window.location.href='login.html'">
+        <div class="logout" onclick="window.location.href='../Php/logout.php'">
           <img src="../Images/logout.png" alt="Logout" class="logout-icon">
         </div>
       </div>
@@ -268,7 +269,7 @@ function waiterStatusClass($status)
             </h2>
             <div class="waiter-table-grid" id="myTablesGrid">
               <?php if (!$myTables) { ?>
-                <div class="waiter-table-card">
+                <div class="waiter-table-card" data-empty="1">
                   <div class="waiter-table-name">No assigned tables</div>
                 </div>
               <?php } else { ?>
@@ -282,8 +283,8 @@ function waiterStatusClass($status)
                         alt="Table <?php echo (int) $table['table_number']; ?>" />
                     </div>
                     <div class="waiter-table-name">Table <?php echo (int) $table['table_number']; ?></div>
-                    <div class="waiter-table-meta">Seats: <?php echo (int) $table['capacity']; ?>
-                      <?php 
+                    <div class="waiter-table-meta">
+                      <?php
                       $guestName = $table['customer_name'] ?? '';
                       $timeText = '';
                       $tId = $table['id'];
@@ -303,15 +304,24 @@ function waiterStatusClass($status)
                       if (!$guestName) {
                           $guestName = $res['customer_name'] ?? 'Walk-in';
                       }
-                      
+
                       if ($timeText === '' && !empty($res['reserved_time'])) {
                           $timeText = date('g:i A', strtotime($res['reserved_time']));
                       }
-
-                      if ($guestName || $timeText) { 
                       ?>
-                        <br>Guest: <strong><?php echo htmlspecialchars($guestName); ?></strong>
-                        <?php if ($timeText) { ?><br>Time: <strong><?php echo htmlspecialchars($timeText); ?></strong><?php } ?>
+                      <div class="meta-row">
+                        <span class="meta-label">Seats:</span>
+                        <strong><?php echo (int) $table['capacity']; ?></strong>
+                      </div>
+                      <div class="meta-row">
+                        <span class="meta-label">Guest:</span>
+                        <strong><?php echo htmlspecialchars($guestName); ?></strong>
+                      </div>
+                      <?php if ($timeText) { ?>
+                      <div class="meta-row">
+                        <span class="meta-label">Time:</span>
+                        <strong><?php echo htmlspecialchars($timeText); ?></strong>
+                      </div>
                       <?php } ?>
                     </div>
                     <button class="waiter-table-action waiter-table-action--release" type="button"
@@ -325,7 +335,7 @@ function waiterStatusClass($status)
                 id="availTableCount"><?php echo count($availableTables); ?></span>)</h2>
             <div class="waiter-table-grid" id="availTablesGrid">
               <?php if (!$availableTables) { ?>
-                <div class="waiter-table-card">
+                <div class="waiter-table-card" data-empty="1">
                   <div class="waiter-table-name">No available tables</div>
                 </div>
               <?php } else { ?>
@@ -339,19 +349,28 @@ function waiterStatusClass($status)
                         alt="Table <?php echo (int) $table['table_number']; ?>" />
                     </div>
                     <div class="waiter-table-name">Table <?php echo (int) $table['table_number']; ?></div>
-                    <div class="waiter-table-meta">Seats: <?php echo (int) $table['capacity']; ?>
-                      <?php 
-                      if (($table['status'] ?? '') === 'reserved') {
-                        $res = $latestByTable[$table['id']] ?? null;
-                        if ($res) {
-                          $guest = htmlspecialchars($res['customer_name'] ?? 'Walk-in');
-                          $time = date('g:i A', strtotime($res['reserved_time']));
-                          echo " - <strong style='color:var(--c-gold)'>RESERVED ($guest at $time)</strong>";
-                        } else {
-                          echo ' - <strong style="color:var(--c-gold)">RESERVED</strong>';
-                        }
-                      }
-                      ?>
+                    <div class="waiter-table-meta">
+                      <div class="meta-row">
+                        <span class="meta-label">Seats:</span>
+                        <strong><?php echo (int) $table['capacity']; ?></strong>
+                      </div>
+                      <?php if (($table['status'] ?? '') === 'reserved') {
+                        $res = $latestByTable[$table['id']] ?? null; ?>
+                      <div class="meta-row">
+                        <span class="meta-label">Guest:</span>
+                        <strong style="color:var(--accent)"><?php echo htmlspecialchars($res['customer_name'] ?? 'Walk-in'); ?></strong>
+                      </div>
+                      <div class="meta-row">
+                        <span class="meta-label">Status:</span>
+                        <strong style="color:var(--gold)">Reserved</strong>
+                      </div>
+                      <?php if ($res && !empty($res['reserved_time'])) { ?>
+                      <div class="meta-row">
+                        <span class="meta-label">Time:</span>
+                        <strong><?php echo date('g:i A', strtotime($res['reserved_time'])); ?></strong>
+                      </div>
+                      <?php } ?>
+                      <?php } ?>
                     </div>
                     <button class="waiter-table-action waiter-table-action--take" type="button"
                       data-take="<?php echo (int) $table['id']; ?>">Take Table</button>

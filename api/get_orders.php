@@ -4,7 +4,7 @@
  * Returns all orders for the logged-in customer with items
  */
 
-require_once '../PHP/db.php';
+require_once '../Php/db.php';
 header('Content-Type: application/json');
 
 requireLogin();

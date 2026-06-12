@@ -395,9 +395,42 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   kitchenOrdersGrid?.addEventListener('click', async (e) => {
-    const actionBtn = e.target.closest('[data-mark-ready]');
-    if (!actionBtn) return;
-    const card = actionBtn.closest('.order-card');
+    // Check for pick order button
+    const pickBtn = e.target.closest('[data-pick-order]');
+    if (pickBtn) {
+      const card = pickBtn.closest('.order-card');
+      const orderId = card?.dataset.orderId;
+      if (!orderId) return;
+
+      pickBtn.disabled = true;
+      pickBtn.textContent = 'Picking...';
+
+      try {
+        const res = await fetch('../api/chef_pick_order.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: parseInt(orderId) }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          // reload page to fetch fresh data
+          window.location.reload();
+        } else {
+          alert(data.error || 'Failed to pick order');
+          pickBtn.disabled = false;
+          pickBtn.textContent = 'Pick Order';
+        }
+      } catch (err) {
+        console.error(err);
+        pickBtn.disabled = false;
+        pickBtn.textContent = 'Pick Order';
+      }
+      return;
+    }
+
+    const readyBtn = e.target.closest('[data-mark-ready]');
+    if (!readyBtn) return;
+    const card = readyBtn.closest('.order-card');
     if (!card) return;
 
     const statusEl = card.querySelector('.status-badge');
@@ -418,9 +451,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     card.dataset.orderStatus = 'ready';
     if (statusEl) statusEl.textContent = 'Ready';
-    actionBtn.textContent = '✓ Ready';
-    actionBtn.disabled = true;
-    setTimeout(() => { actionBtn.hidden = true; }, 400);
+    readyBtn.textContent = '✓ Ready';
+    readyBtn.disabled = true;
+    setTimeout(() => { readyBtn.hidden = true; }, 400);
     showToast('Order marked as ready!');
     updateOrderStats();
   });
