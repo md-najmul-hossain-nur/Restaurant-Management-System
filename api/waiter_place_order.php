@@ -53,6 +53,7 @@ try {
     }
 
     $pdo->prepare("UPDATE restaurant_tables SET status='occupied' WHERE id=?")->execute([$tableId]);
+    $pdo->prepare("UPDATE reservations SET status='completed' WHERE table_id=? AND reserved_date=CURRENT_DATE AND status IN ('pending', 'approved', 'confirmed')")->execute([$tableId]);
     $pdo->commit();
     respond(['success' => true, 'order_id' => $orderId]);
 } catch (Exception $e) {

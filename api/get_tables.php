@@ -11,6 +11,7 @@ if (!isset($_SESSION['user_id']) || !in_array($role, ['customer', 'waiter', 'adm
 $stmt = $pdo->query(
     "SELECT rt.id, rt.table_number, rt.capacity, rt.position,
             CASE
+              WHEN rt.status = 'reserved' THEN 'reserved'
               WHEN rt.assigned_waiter_id IS NOT NULL THEN 'occupied'
               ELSE rt.status
             END AS status,

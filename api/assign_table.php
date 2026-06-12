@@ -21,7 +21,7 @@ try {
         $stmt = $pdo->prepare(
             "UPDATE restaurant_tables
              SET assigned_waiter_id = ?, 
-                 status = 'occupied',
+                 status = CASE WHEN status = 'reserved' THEN 'reserved' ELSE 'occupied' END,
                  active_customer_id = COALESCE(active_customer_id, reserved_customer_id)
              WHERE id = ?
                AND status IN ('available', 'reserved')

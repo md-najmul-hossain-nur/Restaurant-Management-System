@@ -1092,7 +1092,8 @@ body {
   background: rgba(200,169,106,0.07);
 }
 
-.form-select option { background: #1c1e1a; color: var(--text-primary); }
+.form-select option,
+.form-input option { background: #1c1e1a; color: var(--text-primary); }
 
 .table-picker-label {
   font-size: 13px;

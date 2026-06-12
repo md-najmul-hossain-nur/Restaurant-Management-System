@@ -99,6 +99,7 @@ try {
 
         $pdo->prepare("UPDATE restaurant_tables SET status = 'occupied', active_customer_id = ? WHERE id = ?")
             ->execute([$activeCustId, $tableId]);
+        $pdo->prepare("UPDATE reservations SET status='completed' WHERE table_id=? AND reserved_date=CURRENT_DATE AND status IN ('pending', 'approved', 'confirmed')")->execute([$tableId]);
     }
 
     $pdo->commit();

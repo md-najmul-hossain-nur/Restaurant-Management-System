@@ -52,6 +52,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  height: 100svh;
   overflow: hidden;
 }
 
@@ -329,9 +330,18 @@ body {
 ========================================== */
 .main-content {
   padding: 20px 28px;
-  overflow: visible;
+  overflow-y: auto;
   flex: 1;
   min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,169,106,0.55) transparent;
+}
+
+.main-content::-webkit-scrollbar { width: 3px; }
+.main-content::-webkit-scrollbar-track { background: transparent; }
+.main-content::-webkit-scrollbar-thumb {
+  background: rgba(200,169,106,0.55);
+  border-radius: 4px;
 }
 
 .page-title {
@@ -735,10 +745,14 @@ body {
   gap: 14px;
 }
 
+/* h3.card-title needed: .card h3 (44px, for overview stat numbers)
+   otherwise outweighs .card-title on order/recipe card headings */
+.card h3.card-title,
 .card-title {
   font-size: 18px;
   font-weight: 900;
   line-height: 1.2;
+  margin-bottom: 0;
 }
 
 .card-subtitle {
