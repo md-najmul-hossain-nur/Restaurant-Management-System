@@ -249,7 +249,6 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                     <th>Last Clock Out</th>
                     <th>Total Hours</th>
                   </tr>
-                  </tr>
                 </thead>
               <tbody>
                 <?php if (empty($attendances)) { ?>
@@ -282,7 +281,6 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                     <td><?php echo $in; ?></td>
                     <td><?php echo $out; ?></td>
                     <td class="total-hours-cell"><?php echo $totalHoursStr; ?></td>
-                  </tr>
                   </tr>
                   <?php } ?>
                 <?php } ?>
