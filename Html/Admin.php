@@ -235,17 +235,17 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
           </div>
 
           <!-- Employee Attendance Table -->
-          <div class="attendance-container panel" style="margin-top: 3rem; margin-bottom: 3rem; padding: 25px; border-radius: 16px; background: rgba(30, 32, 28, 0.7); border: 1px solid rgba(200, 169, 106, 0.2); backdrop-filter: blur(10px);">
+          <div class="attendance-container panel">
             <h3 style="margin-bottom: 15px; color: var(--gold); font-size: 1.2rem;">Clock-in History</h3>
-            <div style="overflow-x: auto;">
-              <table class="table" style="width: 100%; border-collapse: collapse; color: #fff; font-size: 0.95rem;">
+            <div class="responsive-table-wrapper">
+              <table class="table attendance-table">
                 <thead>
-                  <tr style="border-bottom: 2px solid rgba(200, 169, 106, 0.3); text-align: left;">
-                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Name</th>
-                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Role</th>
-                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Status</th>
-                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Last Clock In</th>
-                    <th style="padding: 12px 10px; font-weight: 600; color: rgba(255,255,255,0.8);">Last Clock Out</th>
+                  <tr class="table-header-row">
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Last Clock In</th>
+                    <th>Last Clock Out</th>
                   </tr>
                 </thead>
               <tbody>
@@ -257,12 +257,12 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                       $out = $att['last_clock_out'] ? date('M j, Y g:i A', strtotime($att['last_clock_out'])) : '-';
                       $status = $att['is_clocked_in'] ? '<span style="color:var(--green);">Clocked In</span>' : '<span style="color:var(--orange);">Clocked Out</span>';
                   ?>
-                  <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                    <td style="padding: 10px;"><?php echo htmlspecialchars($att['name']); ?></td>
-                    <td style="padding: 10px; text-transform: capitalize;"><?php echo htmlspecialchars($att['role']); ?></td>
-                    <td style="padding: 10px;"><?php echo $status; ?></td>
-                    <td style="padding: 10px;"><?php echo $in; ?></td>
-                    <td style="padding: 10px;"><?php echo $out; ?></td>
+                  <tr class="table-body-row">
+                    <td><?php echo htmlspecialchars($att['name']); ?></td>
+                    <td class="text-capitalize"><?php echo htmlspecialchars($att['role']); ?></td>
+                    <td><?php echo $status; ?></td>
+                    <td><?php echo $in; ?></td>
+                    <td><?php echo $out; ?></td>
                   </tr>
                   <?php } ?>
                 <?php } ?>
