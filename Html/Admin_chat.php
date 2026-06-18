@@ -85,6 +85,7 @@ try {
 
     .filters {
       display: flex;
+      flex-wrap: wrap;
       gap: 12px;
       align-items: center;
       margin-bottom: 12px
@@ -129,6 +130,7 @@ try {
     <div style="margin-left:auto">Showing <strong><?php echo (int) $total; ?></strong> messages</div>
   </form>
 
+  <div class="table-scroll">
   <table>
     <thead>
       <tr>
@@ -163,8 +165,9 @@ try {
       } ?>
     </tbody>
   </table>
+  </div>
 
-  <div class="pagination" style="margin-top:12px;display:flex;gap:8px;align-items:center">
+  <div class="pagination" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
     <?php if ($page > 1): ?>
       <a
         href="?page=<?php echo $page - 1; ?>&source=<?php echo urlencode($source); ?>&role=<?php echo urlencode($roleFilter); ?>&q=<?php echo urlencode($q); ?>">&laquo;

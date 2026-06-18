@@ -277,7 +277,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateOrderStats() {
     if (!orderList) return;
     const cards = orderList.querySelectorAll('.order-card[data-order-id]');
-    const ready = orderList.querySelectorAll('.order-status--ready').length;
+    
+    let ready = orderList.querySelectorAll('.order-status--ready').length;
+    const readyDeliveries = document.getElementById('readyDeliveriesList');
+    if (readyDeliveries) {
+      ready += readyDeliveries.querySelectorAll('.order-card[data-order-id]').length;
+    }
+    
     const kitchen = orderList.querySelectorAll('.order-status--kitchen').length;
     if (orderCountEl) orderCountEl.textContent = cards.length;
     if (statPending) statPending.textContent = ready;
@@ -325,15 +331,18 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="order-items">
             ${itemsHtml.join('')}
           </div>
-          <div class="order-total-label">Total (incl. tax)</div>
         </div>
         <div class="order-right">
           <div class="order-status order-status--kitchen">In Kitchen</div>
           <div class="order-prices">
             ${pricesHtml.join('')}
-            <div class="order-grand">$${grand}</div>
           </div>
         </div>
+      </div>
+      <!-- Full Width Total Row -->
+      <div style="display:flex; justify-content:space-between; align-items:center; padding-top:12px; border-top:1px solid rgba(255,255,255,0.08); margin-top:8px;">
+        <span style="font-size:16px; font-weight:700; color:#fff;">Total (incl. tax)</span>
+        <span style="font-size:20px; font-weight:900; color:var(--gold);">$${grand}</span>
       </div>
     `;
 
@@ -368,17 +377,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const orderId = card.dataset.orderId;
       if (orderId) {
         try {
-          await fetch('../api/update_order_status.php', {
+          const res = await fetch('../api/update_order_status.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ order_id: parseInt(orderId), status: 'served' }),
           });
-        } catch { }
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            showToast(data.error || 'Failed to update order status', true);
+            return;
+          }
+        } catch {
+          showToast('Network error', true);
+          return;
+        }
       }
 
       statusEl.classList.remove('order-status--ready', 'order-status--kitchen');
-      statusEl.classList.add('order-status--delivered');
-      statusEl.textContent = 'Delivered';
+      statusEl.classList.add('order-status--served');
+      statusEl.textContent = 'Served';
 
       // Transform button to paid
       deliverBtn.removeAttribute('data-deliver-order');
@@ -403,11 +420,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const orderId = card?.dataset.orderId;
       if (orderId) {
         try {
-          await fetch('../api/update_order_status.php', {
+          const res = await fetch('../api/update_order_status.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ order_id: parseInt(orderId), status: 'paid' }),
           });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            showToast(data.error || 'Failed to mark as paid', true);
+            return;
+          }
           const statusEl = card.querySelector('.order-status');
           if (statusEl) statusEl.textContent = 'Paid';
           paidBtn.remove();
@@ -415,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
           updateOrderStats();
           updateHistoryCount();
         } catch {
-          showToast('Failed to mark as paid', true);
+          showToast('Network error', true);
         }
       }
     }
@@ -525,8 +547,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      // Check if table already has an active order
-      const existingOrder = document.querySelector(`.order-card[data-table-id="${select.value}"]`);
+      // Check if the table has a *currently active* order. Only look inside the
+      // active order list (#orderList) — orders that are already served/paid/
+      // delivered live in Order History and must not trigger this warning.
+      const activeOrderList = document.getElementById('orderList');
+      const existingOrder = activeOrderList?.querySelector(`.order-card[data-table-id="${select.value}"]`);
       if (existingOrder) {
         if (!confirm("This table already has an active order. Are you sure you want to place another order for this table?")) {
           return;
@@ -685,5 +710,121 @@ document.addEventListener('DOMContentLoaded', () => {
       icon.className = inp.type === 'password' ? 'far fa-eye' : 'far fa-eye-slash';
     });
   });
+
+  // ── Ready Deliveries Pool ─────────────────────────────────
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  async function loadReadyDeliveries() {
+    const list = document.getElementById('readyDeliveriesList');
+    if (!list) return;
+
+    try {
+      const res = await fetch('../api/get_ready_deliveries.php');
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error);
+
+      if (data.orders.length === 0) {
+        list.innerHTML = `
+          <div class="order-card">
+            <div class="order-card-top">
+              <div class="order-left">
+                <div class="order-head">
+                  <div>
+                    <div class="order-table">No ready deliveries</div>
+                    <div class="order-muted">Check back later for new delivery orders.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = data.orders.map(order => {
+        const itemsStr = order.items.map(i => `${i.quantity}x ${escapeHtml(i.name)}`).join(', ');
+        return `
+          <div class="order-card" data-delivery-id="${order.id}">
+            <div class="order-card-top">
+              <div class="order-left">
+                <div class="order-head">
+                  <div class="order-thumb" style="display:flex; align-items:center; justify-content:center; background:#333; color:#c8a96a; font-size:20px;">
+                    <i class="fas fa-motorcycle"></i>
+                  </div>
+                  <div>
+                    <div class="order-table">Delivery Order #${order.id}</div>
+                    <div class="order-muted"><i class="fas fa-user"></i> ${escapeHtml(order.guest_name || 'Customer')} (${escapeHtml(order.guest_phone || 'N/A')})</div>
+                    <div class="order-muted"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(order.delivery_address || 'No Address Provided')}</div>
+                  </div>
+                </div>
+                <div class="order-items">
+                  <div style="color:#ccc; font-size:0.85rem;"><i class="fas fa-utensils"></i> ${itemsStr}</div>
+                </div>
+              </div>
+              <div class="order-right">
+                <div class="order-status order-status--ready">Ready for Pickup</div>
+                <div style="margin-top:auto;">
+                  <button class="order-delivered-btn claim-delivery-btn" data-claim-id="${order.id}" style="background:#c8a96a;">Claim Delivery</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      
+      updateOrderStats();
+    } catch (err) {
+      console.error(err);
+      list.innerHTML = '<div class="order-card"><div class="order-table">Failed to load ready deliveries.</div></div>';
+    }
+  }
+
+  const readyDeliveriesList = document.getElementById('readyDeliveriesList');
+  if (readyDeliveriesList) {
+    readyDeliveriesList.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.claim-delivery-btn');
+      if (!btn) return;
+
+      const orderId = btn.dataset.claimId;
+      btn.disabled = true;
+      btn.textContent = 'Claiming...';
+
+      // We can use update_order_status.php to assign the waiter
+      // Waiter calls it, so it uses $_SESSION['user_id'] as waiter_id.
+      // And status stays 'ready', but since we just update it with 'ready', it sets the waiter_id!
+      try {
+        const res = await fetch('../api/update_order_status.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: parseInt(orderId), status: 'ready' }), // stays ready, assigns waiter
+        });
+        const result = await res.json();
+        if (result.success) {
+          showToast('Delivery claimed! Check your orders.');
+          loadReadyDeliveries();
+          // Reload page to show it in My Orders
+          setTimeout(() => window.location.reload(), 1000);
+        } else {
+          showToast(result.error || 'Failed to claim delivery', true);
+        }
+      } catch (err) {
+        showToast('Network error.', true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Claim Delivery';
+      }
+    });
+  }
+
+  // Initial call
+  if (window.location.pathname.includes('Waiter.php')) {
+    loadReadyDeliveries();
+  }
 
 }); // end DOMContentLoaded

@@ -157,7 +157,7 @@ function ensureOrderWorkflowColumns($pdo) {
          FROM INFORMATION_SCHEMA.COLUMNS
          WHERE TABLE_SCHEMA = DATABASE()
            AND TABLE_NAME = 'orders'
-           AND COLUMN_NAME IN ('chef_id', 'scheduled_time', 'total_prep_time')"
+           AND COLUMN_NAME IN ('chef_id', 'scheduled_time', 'total_prep_time', 'delivery_address')"
     );
     $stmt->execute();
     $existing = $stmt->fetchAll(PDO::FETCH_COLUMN);
@@ -171,6 +171,9 @@ function ensureOrderWorkflowColumns($pdo) {
     }
     if (!in_array('total_prep_time', $existing, true)) {
         $alterParts[] = "ADD COLUMN total_prep_time INT NOT NULL DEFAULT 0 AFTER scheduled_time";
+    }
+    if (!in_array('delivery_address', $existing, true)) {
+        $alterParts[] = "ADD COLUMN delivery_address VARCHAR(255) NULL AFTER guest_phone";
     }
 
     if ($alterParts) {
@@ -186,10 +189,10 @@ function ensureOrderWorkflowColumns($pdo) {
     );
     $stmt->execute();
     $statusType = (string) $stmt->fetchColumn();
-    if (strpos($statusType, "'paid'") === false) {
+    if (strpos($statusType, "'paid'") === false || strpos($statusType, "'delivered'") === false) {
         $pdo->exec(
             "ALTER TABLE orders
-             MODIFY status ENUM('queued','in_progress','ready','served','cancelled','paid') NOT NULL DEFAULT 'queued'"
+             MODIFY status ENUM('queued','in_progress','ready','delivered','served','cancelled','paid') NOT NULL DEFAULT 'queued'"
         );
     }
 }

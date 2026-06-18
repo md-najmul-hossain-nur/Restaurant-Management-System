@@ -9,7 +9,7 @@ requireLogin('chief');
  
 $chefId = $_SESSION['user_id'];
 $stmt   = $pdo->prepare(
-    'SELECT id, name, description, price, image_path, status, created_at
+    'SELECT id, name, description, price, prep_time, image_path, status, created_at
      FROM recipes WHERE chef_id = ? ORDER BY created_at DESC'
 );
 $stmt->execute([$chefId]);

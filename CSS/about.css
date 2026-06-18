@@ -630,3 +630,20 @@
     padding: 3px 10px;
   }
 }
+
+/* Services grid: collapse the 3-column desktop layout so the cards
+   never overflow on tablet/phone (was previously left at 3 columns
+   at every width). */
+@media (max-width: 900px) {
+  .services-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+  }
+}
+
+@media (max-width: 600px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}

@@ -96,9 +96,10 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
           <i class="fas fa-user-check"></i>
           <span>Customer</span>
         </div>
-        <div class="tab" data-section="chat">
-          <i class="fas fa-comments"></i>
-          <span>Chat</span>
+
+        <div class="tab" data-section="orders">
+          <i class="fas fa-truck"></i>
+          <span>Delivery Orders</span>
         </div>
         <div class="tab" data-section="tables">
           <i class="fas fa-chair"></i>
@@ -246,6 +247,8 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                     <th>Status</th>
                     <th>Last Clock In</th>
                     <th>Last Clock Out</th>
+                    <th>Total Hours</th>
+                  </tr>
                   </tr>
                 </thead>
               <tbody>
@@ -256,6 +259,21 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                       $in = $att['last_clock_in'] ? date('M j, Y g:i A', strtotime($att['last_clock_in'])) : '-';
                       $out = $att['last_clock_out'] ? date('M j, Y g:i A', strtotime($att['last_clock_out'])) : '-';
                       $status = $att['is_clocked_in'] ? '<span style="color:var(--green);">Clocked In</span>' : '<span style="color:var(--orange);">Clocked Out</span>';
+                      
+                      $totalHoursStr = '-';
+                      if (!empty($att['last_clock_in'])) {
+                          $start = strtotime($att['last_clock_in']);
+                          $end = time();
+                          if (empty($att['is_clocked_in']) && !empty($att['last_clock_out'])) {
+                              $end = strtotime($att['last_clock_out']);
+                          }
+                          if ($end > $start) {
+                              $diff = $end - $start;
+                              $hours = floor($diff / 3600);
+                              $minutes = floor(($diff % 3600) / 60);
+                              $totalHoursStr = $hours . 'h ' . $minutes . 'm';
+                          }
+                      }
                   ?>
                   <tr class="table-body-row">
                     <td><?php echo htmlspecialchars($att['name']); ?></td>
@@ -263,6 +281,8 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                     <td><?php echo $status; ?></td>
                     <td><?php echo $in; ?></td>
                     <td><?php echo $out; ?></td>
+                    <td class="total-hours-cell"><?php echo $totalHoursStr; ?></td>
+                  </tr>
                   </tr>
                   <?php } ?>
                 <?php } ?>
@@ -300,37 +320,19 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
           </div>
         </div>
 
-        <!-- ===================== CHAT ===================== -->
-        <div class="section-content" id="chat">
-          <div class="chat-dashboard">
-            <div class="chat-sidebar">
-              <div class="chat-sidebar-header">
-                <h2>Guest Conversations</h2>
-                <small>Click a session to view and reply</small>
-              </div>
-              <div class="chat-conversation-list" id="conversationList">
-                <div class="empty-state">
-                  <p>Loading conversations...</p>
-                </div>
-              </div>
+
+
+        <!-- ===================== ORDERS ===================== -->
+        <div class="section-content" id="orders">
+          <div class="orders-header">
+            <div>
+              <h2>Delivery Orders</h2>
+              <p class="sub">Assign waiters to unassigned guest delivery orders</p>
             </div>
-            <div class="chat-panel">
-              <div class="chat-panel-header">
-                <div>
-                  <h2 id="chatPanelTitle">Select a conversation</h2>
-                  <small id="chatPanelSubtitle">Guest chat history will appear here</small>
-                </div>
-              </div>
-              <div class="chat-thread" id="chatThread">
-                <div class="empty-state">
-                  <p>Select a conversation from the left to begin.</p>
-                </div>
-              </div>
-              <form class="chat-reply-form" id="chatReplyForm">
-                <input type="text" id="chatReplyInput" placeholder="Type your reply..." autocomplete="off" />
-                <button type="submit">Send</button>
-              </form>
-            </div>
+          </div>
+          
+          <div class="orders-grid" id="adminOrdersGrid">
+            <div class="empty-state"><p>Loading delivery orders...</p></div>
           </div>
         </div>
 
@@ -631,7 +633,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
 
             <?php
             $pendingStmt = $pdo->query(
-              "SELECT r.id, r.name, r.description, r.price, r.category, r.image_path, u.name AS chief_name
+              "SELECT r.id, r.name, r.description, r.price, r.category, r.prep_time, r.image_path, u.name AS chief_name
                FROM recipes r
                LEFT JOIN users u ON u.id = r.chef_id
                WHERE r.status = 'pending'
@@ -640,7 +642,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
             $pendingMenu = $pendingStmt->fetchAll() ?: [];
 
             $approvedStmt = $pdo->query(
-              "SELECT r.id, r.name, r.description, r.price, r.category, r.image_path, u.name AS chief_name
+              "SELECT r.id, r.name, r.description, r.price, r.category, r.prep_time, r.image_path, u.name AS chief_name
                FROM recipes r
                LEFT JOIN users u ON u.id = r.chef_id
                WHERE r.status = 'approved'
@@ -679,9 +681,10 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                     $desc = htmlspecialchars($item['description'] ?? '');
                     $price = number_format((float) ($item['price'] ?? 0), 2);
                     $category = htmlspecialchars($item['category'] ?? '');
+                    $prepTime = (int) ($item['prep_time'] ?? 0);
                     $imageSrc = htmlspecialchars($normalizeMenuImagePath($item['image_path'] ?? ''));
                     ?>
-                    <div class="menu-card pending" data-menu-id="<?php echo $menuId; ?>">
+                    <div class="menu-card pending" data-menu-id="<?php echo $menuId; ?>" data-prep-time="<?php echo $prepTime; ?>">
                       <div class="menu-thumb">
                         <img src="<?php echo $imageSrc; ?>" alt="<?php echo $name; ?>" />
                       </div>
@@ -693,6 +696,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                         <div class="menu-desc"><?php echo $desc; ?></div>
                         <div class="menu-bottom-row">
                           <span class="menu-tag"><?php echo $category; ?></span>
+                          <span class="menu-tag menu-prep-tag"<?php echo $prepTime ? '' : ' style="display:none;"'; ?>><i class="far fa-clock" style="margin-right:4px;"></i><span class="menu-prep-value"><?php echo $prepTime; ?></span> min</span>
                           <span class="menu-tag" style="background: rgba(0,0,0,0.2); color: var(--text-muted);"><i class="fas fa-user" style="margin-right:4px;"></i><?php echo htmlspecialchars($item['chief_name'] ?? 'Unknown'); ?></span>
                           <div class="menu-action-row">
                             <button type="button" class="menu-edit-btn" data-action="edit-menu">Edit</button>
@@ -727,9 +731,10 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                     $desc = htmlspecialchars($item['description'] ?? '');
                     $price = number_format((float) ($item['price'] ?? 0), 2);
                     $category = htmlspecialchars($item['category'] ?? '');
+                    $prepTime = (int) ($item['prep_time'] ?? 0);
                     $imageSrc = htmlspecialchars($normalizeMenuImagePath($item['image_path'] ?? ''));
                     ?>
-                    <div class="menu-card approved" data-menu-id="<?php echo $menuId; ?>">
+                    <div class="menu-card approved" data-menu-id="<?php echo $menuId; ?>" data-prep-time="<?php echo $prepTime; ?>">
                       <div class="menu-thumb">
                         <img src="<?php echo $imageSrc; ?>" alt="<?php echo $name; ?>" />
                       </div>
@@ -742,6 +747,7 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
                         <div class="menu-desc"><?php echo $desc; ?></div>
                         <div class="menu-bottom-row">
                           <span class="menu-tag"><?php echo $category; ?></span>
+                          <span class="menu-tag menu-prep-tag"<?php echo $prepTime ? '' : ' style="display:none;"'; ?>><i class="far fa-clock" style="margin-right:4px;"></i><span class="menu-prep-value"><?php echo $prepTime; ?></span> min</span>
                           <span class="menu-tag" style="background: rgba(0,0,0,0.2); color: var(--text-muted);"><i class="fas fa-user" style="margin-right:4px;"></i><?php echo htmlspecialchars($item['chief_name'] ?? 'Unknown'); ?></span>
                         </div>
                       </div>
@@ -969,6 +975,10 @@ $attendances = $attendanceStmt->fetchAll() ?: [];
           <div class="form-group">
             <label for="editMenuTag">Category</label>
             <input type="text" id="editMenuTag" name="editMenuTag" required>
+          </div>
+          <div class="form-group">
+            <label for="editMenuPrepTime">Prep Time (minutes)</label>
+            <input type="number" id="editMenuPrepTime" name="editMenuPrepTime" min="1" placeholder="e.g., 30" required>
           </div>
         </div>
         <div class="form-group full-width">
